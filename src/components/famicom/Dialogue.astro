@@ -1,18 +1,21 @@
 ---
 import FishSprite from './FishSprite.astro'
+import mikuAvatar from '@/assets/miku-avatar.png'
 
 interface Props {
   speaker?: string
   /** 是否在文本末尾显示闪烁光标（首页用） */
   cursor?: boolean
-  /** 是否显示说话人红鲤头像 */
+  /** 是否显示说话人头像 */
   avatar?: boolean
+  /** 头像类型：'fish' 红鲤勇者 · 'miku' 初音老板娘 */
+  sprite?: 'fish' | 'miku'
   /** 打字机文本：设置后逐字打出（此时忽略 slot） */
   typewriter?: string
   class?: string
 }
 
-const { speaker, cursor = false, avatar = false, typewriter, class: className } = Astro.props
+const { speaker, cursor = false, avatar = false, sprite = 'fish', typewriter, class: className } = Astro.props
 const txt = typewriter ?? undefined
 ---
 
@@ -20,7 +23,13 @@ const txt = typewriter ?? undefined
   {
     avatar && (
       <div class='avatar'>
-        <FishSprite width={44} height={24} label={speaker || 'erywim'} />
+        {
+          sprite === 'miku' ? (
+            <img class='avatar-img' src={mikuAvatar.src} alt={speaker || '酒馆老板娘'} />
+          ) : (
+            <FishSprite width={44} height={24} label={speaker || 'erywim'} />
+          )
+        }
       </div>
     )
   }
@@ -38,3 +47,25 @@ const txt = typewriter ?? undefined
     }
   </div>
 </div>
+
+<script>
+  // —— 打字机：逐字打出所有 data-text 对话框（与首页一致） ——
+  document.querySelectorAll('.dialogue .txt[data-text]').forEach((node) => {
+    const el = node as HTMLElement
+    if (el.dataset.typed) return
+    el.dataset.typed = '1'
+    const full = el.getAttribute('data-text') || ''
+    el.textContent = ''
+    const cur = document.createElement('span')
+    cur.className = 'cur'
+    el.appendChild(cur)
+    let i = 0
+    const timer = setInterval(() => {
+      if (i < full.length) {
+        cur.insertAdjacentText('beforebegin', full[i++])
+      } else {
+        clearInterval(timer)
+      }
+    }, 26)
+  })
+</script>

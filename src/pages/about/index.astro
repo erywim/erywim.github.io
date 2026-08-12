@@ -5,6 +5,7 @@ import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
+import TimelineNode from '@/components/famicom/TimelineNode.astro'
 import { hero } from '@/data/hero'
 import { site } from '@/data/site'
 
@@ -34,9 +35,30 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
         <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
         <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
         <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
-        <div class='hero-bio'>
-          {hero.bio}<br />
-          <b>坐标</b> {hero.location} · <b>状态</b> {hero.status}
+        <div class='hero-bio'>{hero.bio}</div>
+        <div class='hero-tags'>
+          <span class='tag-chip loc'>
+            <span class='tag-label'>
+              <svg class='px-pin' viewBox='0 0 6 7' width='12' height='14' shape-rendering='crispEdges' aria-hidden='true'>
+                <rect x='2' y='0' width='2' height='1'/>
+                <rect x='1' y='1' width='4' height='1'/>
+                <rect x='0' y='2' width='2' height='1'/>
+                <rect x='4' y='2' width='2' height='1'/>
+                <rect x='0' y='3' width='1' height='1'/>
+                <rect x='5' y='3' width='1' height='1'/>
+                <rect x='0' y='4' width='2' height='1'/>
+                <rect x='4' y='4' width='2' height='1'/>
+                <rect x='1' y='5' width='4' height='1'/>
+                <rect x='2' y='6' width='2' height='1'/>
+              </svg>
+              坐标
+            </span>
+            <b>{hero.location}</b>
+          </span>
+          <span class='tag-chip st'>
+            <span class='tag-label'><i class='led' aria-hidden='true'></i>状态</span>
+            <b>{hero.status}</b>
+          </span>
         </div>
       </div>
     </div>
@@ -62,8 +84,11 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       {
         hero.timeline.map((item) => (
           <li class='tl-item'>
-            <span class='tl-date'>{item.date}</span>
-            <div>
+            <span class='tl-rail'>
+              <TimelineNode icon={item.icon} />
+            </span>
+            <div class='tl-body'>
+              <span class='tl-date'>{item.date}</span>
               <h3>{item.title}</h3>
               <p>{item.desc}</p>
             </div>
@@ -73,7 +98,5 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     </ul>
   </Panel>
 
-  <Dialogue speaker={site.heroName} avatar class='reveal'>
-    这就是我的能力面板。想看看我用这些技能打过的仗吗？去冒险记录里挑一卷吧。
-  </Dialogue>
+  <Dialogue speaker={site.heroName} avatar class='reveal' typewriter='这就是我的能力面板。想看看我用这些技能打过的仗吗？去冒险记录里挑一卷吧。' />
 </FamicomLayout>

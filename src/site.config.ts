@@ -48,7 +48,7 @@ export const theme: ThemeUserConfig = {
   /** Configure the header of your site. */
   header: {
     menu: [
-      { title: '冒险', link: '/blog' },
+      { title: '冒险记录', link: '/blog' },
       { title: '勇者档案', link: '/about' },
       { title: '旅行日志', link: '/logs' },
       { title: '伙伴酒馆', link: '/links' },

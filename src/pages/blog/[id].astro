@@ -92,7 +92,5 @@ const qno = String(rankIndex + 1).padStart(2, '0')
     }
   </div>
 
-  <Dialogue speaker={site.heroName} avatar class='reveal'>
-    {post.data.title} —— 任务卷轴已归档。回到冒险记录可以查看其他战役。
-  </Dialogue>
+  <Dialogue speaker={site.heroName} avatar class='reveal' typewriter={`${post.data.title} —— 任务卷轴已归档。回到冒险记录可以查看其他战役。`} />
 </FamicomLayout>

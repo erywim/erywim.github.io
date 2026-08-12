@@ -1292,6 +1292,11 @@ section.panel {
   align-items: center;
   justify-content: center;
 }
+.dialogue .avatar .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .dialogue .body {
   flex: 1;
   min-width: 0;
@@ -1565,6 +1570,57 @@ section.panel {
   color: var(--fg);
   font-weight: 400;
 }
+/* 坐标 / 状态 —— HUD 徽章 */
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.tag-chip {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--black);
+}
+.tag-chip .tag-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: var(--fg);
+  color: var(--panel);
+  font-family: var(--ps2);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.tag-chip b {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-family: var(--pix);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg);
+}
+.tag-chip.loc .tag-label {
+  background: var(--cyan);
+}
+.tag-chip.st .tag-label {
+  background: var(--green);
+}
+.tag-chip .px-pin rect {
+  fill: var(--panel);
+}
+.tag-chip .led {
+  width: 8px;
+  height: 8px;
+  background: var(--panel);
+  border: 1px solid var(--black);
+  animation: pulse 2s steps(2) infinite;
+}
 .skill-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1595,33 +1651,103 @@ section.panel {
   color: var(--cyan);
 }
 
-/* —— 冒险历程 / 时间线 —— */
+/* —— 冒险历程 / 时间线（像素节点） —— */
 .timeline {
   list-style: none;
 }
 .tl-item {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 16px;
+}
+.tl-rail {
   display: flex;
-  gap: 14px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--panel2);
-}
-.tl-item:last-child {
-  border-bottom: none;
-}
-.tl-date {
-  font-family: var(--ps2);
-  font-size: 10px;
-  color: var(--gold);
-  flex: 0 0 110px;
+  flex-direction: column;
+  align-items: center;
   padding-top: 2px;
 }
-.tl-item h3 {
+.tl-node {
+  display: block;
+  line-height: 0;
+  transition: transform 0.18s ease;
+}
+.tl-item:hover .tl-node {
+  transform: translateY(-2px);
+}
+.tl-rail::after {
+  content: '';
+  flex: 1 1 auto;
+  width: 2px;
+  min-height: 14px;
+  margin-top: 6px;
+  background: repeating-linear-gradient(180deg, var(--panel3) 0 3px, transparent 3px 7px);
+}
+.tl-item:last-child .tl-rail::after {
+  display: none;
+}
+.tl-body {
+  min-width: 0;
+  padding: 2px 16px 26px 0;
+}
+.tl-item:last-child .tl-body {
+  padding-bottom: 2px;
+}
+.tl-body .tl-date {
+  display: block;
+  flex: none;
+  padding-top: 0;
+  font-family: var(--ps2);
+  font-size: 9px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.tl-body h3 {
   font-size: 14px;
   margin-bottom: 2px;
 }
-.tl-item p {
+.tl-body p {
   color: var(--dim);
   font-size: 12px;
+}
+/* 像素节点配色（随昼夜主题自适应） */
+.tl-node {
+  --n-line: #26254a;
+  --n-gold: #e9a13b;
+  --n-gold2: #c8861f;
+  --n-cyan: #15708f;
+  --n-green: #2f7d4e;
+  --n-red: #d63a45;
+  --n-hi: #fff8ec;
+}
+html[data-theme='night'] .tl-node {
+  --n-line: #aeb6d9;
+  --n-gold: #f2c56b;
+  --n-gold2: #c98f3a;
+  --n-cyan: #5fd0ef;
+  --n-green: #5ad68a;
+  --n-red: #ff5a63;
+  --n-hi: #eef1fa;
+}
+.tl-node rect {
+  fill: var(--n-line);
+}
+.tl-node .g {
+  fill: var(--n-gold);
+}
+.tl-node .g2 {
+  fill: var(--n-gold2);
+}
+.tl-node .c {
+  fill: var(--n-cyan);
+}
+.tl-node .gr {
+  fill: var(--n-green);
+}
+.tl-node .r {
+  fill: var(--n-red);
+}
+.tl-node .h {
+  fill: var(--n-hi);
 }
 
 /* —— 旅行日志 —— */
@@ -1884,6 +2010,14 @@ footer a:hover {
   }
   .nav-quests {
     grid-template-columns: 1fr;
+  }
+  .tl-item {
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+  }
+  .tl-node {
+    width: 40px;
+    height: auto;
   }
   .tl-date {
     flex: 0 0 84px;

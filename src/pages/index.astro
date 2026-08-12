@@ -235,23 +235,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     })
   }
 
-  // —— 打字机对话框 ——
-  const dt = document.querySelector('.dialogue .txt[data-text]') as HTMLElement | null
-  if (dt) {
-    const full = dt.getAttribute('data-text') || ''
-    dt.textContent = ''
-    const cur = document.createElement('span')
-    cur.className = 'cur'
-    dt.appendChild(cur)
-    let i = 0
-    const timer = setInterval(() => {
-      if (i < full.length) {
-        cur.insertAdjacentText('beforebegin', full[i++])
-      } else {
-        clearInterval(timer)
-      }
-    }, 26)
-  }
+  // —— 打字机对话框（由 Dialogue.astro 全局处理）——
 
   // —— 冒险档案数字滚动 ——
   const ach = document.querySelector('.achieve-rows')
