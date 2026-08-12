@@ -1,10 +1,11 @@
 /**
  * 新建博客文章脚手架
  * 用法：
- *   bun run new-post "文章标题"
- *   bun run new-post "文章标题" my-slug      # 指定 URL slug（可选）
+ *   bun run post "文章标题"
+ *   bun run post "文章标题" my-slug     # 指定 URL slug（可选）
  *
- * 生成 src/content/blog/<slug>/index.md，默认 draft: true（设为 false 后才会发布）。
+ * 生成 src/content/blog/<slug>/index.md，默认 draft: true（草稿不统计、不展示，
+ * 写完把 frontmatter 里 draft 改为 false 后才会发布）。
  */
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
@@ -63,4 +64,4 @@ writeFileSync(file, frontmatter)
 console.log(`✓ 已创建：${file}`)
 console.log(`  标题：${title}`)
 console.log(`  地址：/blog/${slug}`)
-console.log('  注意：默认 draft:true，写完把 frontmatter 里 draft 改为 false 即可发布。')
+console.log('  注意：默认 draft:true（草稿不统计不展示），写完把 draft 改为 false 即发布。')

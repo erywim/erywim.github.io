@@ -2416,12 +2416,18 @@ section.panel {
   gap: 14px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--panel2);
+  text-decoration: none;
+  color: var(--fg);
+  transition:
+    background-color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .travel-item:last-child {
   border-bottom: none;
 }
 .travel-item:hover {
   background: var(--panel2);
+  transform: translateX(3px);
 }
 .travel-item .tl-date {
   flex: 0 0 92px;

@@ -1,0 +1,82 @@
+---
+import { type CollectionEntry } from 'astro:content'
+
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import { site } from '@/data/site'
+import { getPublishedLogs } from '@/utils/collections'
+import { formatLogDate } from '@/utils/format'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const logs = await getPublishedLogs()
+  return logs.map((log) => ({ params: { id: log.id }, props: { log } }))
+}
+
+type Props = {
+  log: CollectionEntry<'logs'>
+}
+
+const { log } = Astro.props
+const logs = await getPublishedLogs()
+const index = logs.findIndex((l) => l.id === log.id)
+const prev = logs[index - 1] // 更新的周
+const next = logs[index + 1] // 更旧的周
+const weekNo = String(log.data.week).padStart(2, '0')
+---
+
+<FamicomLayout title={`第 ${log.data.week} 周 · ${log.data.title}`}>
+  <Breadcrumb
+    items={[
+      { label: '■ 标题画面', href: '/' },
+      { label: '旅行日志', href: '/logs' },
+      { label: `第 ${log.data.week} 周` }
+    ]}
+  />
+
+  <div class='page-head'>
+    <h1>旅行<b>日志</b></h1>
+    <span class='en'>TRAVEL LOG</span>
+  </div>
+
+  <CmdMenu active='logs' />
+
+  <header class='quest-head reveal'>
+    <div class='qno'>
+      JOURNEY <b>W{weekNo}</b> · 第 {log.data.week} 周
+    </div>
+    <h1>{log.data.title}</h1>
+    <div class='qmeta'>
+      <span>日期 <b>{formatLogDate(log.data.publishDate)}</b></span>
+      <span>状态 <b style='color:var(--green)'>已记录</b></span>
+    </div>
+  </header>
+
+  <article class='scroll reveal'>
+    <p>{log.data.description}</p>
+  </article>
+
+  <div class='nav-quests'>
+    {
+      prev && (
+        <a href={`/logs/${prev.id}`}>
+          <span class='dir'>◀ 上一周</span>{prev.data.title}
+        </a>
+      )
+    }
+    {
+      next && (
+        <a href={`/logs/${next.id}`} style='text-align:right'>
+          <span class='dir'>下一周 ▶</span>{next.data.title}
+        </a>
+      )
+    }
+  </div>
+
+  <Dialogue speaker={site.heroName} avatar class='reveal'>
+    第 {log.data.week} 周的旅程已记录。回到旅行日志看看其他周的足迹吧。
+  </Dialogue>
+</FamicomLayout>

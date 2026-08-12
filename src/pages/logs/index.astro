@@ -25,14 +25,14 @@ const logs = await getPublishedLogs()
     <ul class='travel-list'>
       {
         logs.map((log) => (
-          <li class='travel-item'>
+          <a class='travel-item' href={`/logs/${log.id}`}>
             <span class='tl-date'>{formatLogDate(log.data.publishDate)}<span class='tl-week'>第{log.data.week}周</span></span>
             <div class='travel-main'>
               <h3>{log.data.title}</h3>
               <p>{log.data.description}</p>
             </div>
             <span class='travel-status'>已记录</span>
-          </li>
+          </a>
         ))
       }
     </ul>

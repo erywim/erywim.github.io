@@ -1,11 +1,14 @@
 ---
 title: '测试文章'
-description: '（在这里填写文章摘要，不超过 160 字）'
+description: '这是一篇测试文章草稿。'
 publishDate: 2026-08-12
-rank: B
-category: 技术
-tags: []
-draft: true
+rank: A
+category: 笔记
+tags:
+  - Java
+  - Python
+  - Agent
+draft: false
 ---
 
 ## ▍任务摘要
