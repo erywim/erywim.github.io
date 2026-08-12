@@ -6,9 +6,9 @@ import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import QuestItem from '@/components/famicom/QuestItem.astro'
 import { site } from '@/data/site'
-import { getBlogByRank } from '@/utils/collections'
+import { getPublishedBlog } from '@/utils/collections'
 
-const posts = await getBlogByRank()
+const posts = await getPublishedBlog()
 ---
 
 <FamicomLayout title='冒险记录'>

@@ -1935,6 +1935,19 @@ details:not([open]) > .list-rule .ba-arrow::before {
   box-shadow: 5px 5px 0 var(--black);
   padding: 22px 24px;
 }
+.scroll h1 {
+  font-family: var(--ps2), var(--pix), monospace;
+  font-size: 28px;
+  color: var(--red);
+  margin: 40px 0 18px;
+  padding: 0 0 10px;
+  border-bottom: 2px solid var(--panel2);
+  letter-spacing: 0.04em;
+  scroll-margin-top: 70px;
+}
+.scroll h1:first-child {
+  margin-top: 0;
+}
 .scroll h2 {
   font-family: var(--ps2), var(--pix), monospace;
   font-size: 24px;
@@ -1977,6 +1990,18 @@ details:not([open]) > .list-rule .ba-arrow::before {
 .scroll ul,
 .scroll ol {
   margin: 0 0 12px 20px;
+}
+.scroll ul {
+  list-style: disc;
+}
+.scroll ol {
+  list-style: decimal;
+}
+.scroll ul ul {
+  list-style: circle;
+}
+.scroll ul ul ul {
+  list-style: square;
 }
 .scroll li {
   color: var(--fg);
@@ -2834,6 +2859,10 @@ footer a:hover {
 .ticker-track span i {
   font-style: normal;
   color: var(--cyan);
+}
+.ticker-track:hover {
+  /* 鼠标悬停在滚动的字幕上时暂停，移开后恢复 */
+  animation-play-state: paused;
 }
 @keyframes tick {
   from {

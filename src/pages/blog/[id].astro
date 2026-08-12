@@ -5,7 +5,7 @@ import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import { site } from '@/data/site'
-import { getBlogByRank, getPublishedBlog } from '@/utils/collections'
+import { getPublishedBlog } from '@/utils/collections'
 import { formatQuestDate } from '@/utils/format'
 
 export const prerender = true
@@ -22,9 +22,7 @@ type Props = {
 const { post } = Astro.props
 const { Content, headings } = await render(post)
 
-const byRank = await getBlogByRank()
 const byDate = await getPublishedBlog()
-const rankIndex = byRank.findIndex((p) => p.id === post.id)
 const dateIndex = byDate.findIndex((p) => p.id === post.id)
 const prev = byDate[dateIndex - 1] // 更新的任务
 const next = byDate[dateIndex + 1] // 更旧的任务
@@ -37,7 +35,7 @@ const REWARD: Record<string, { exp: number; g: number; ach: string }> = {
   C: { exp: 100, g: 22, ach: '初出茅庐' }
 }
 const reward = REWARD[rank] ?? REWARD.B
-const qno = String(rankIndex + 1).padStart(2, '0')
+const qno = String(dateIndex + 1).padStart(2, '0')
 
 // 目录：展平 headings 树，取 h2 / h3
 interface TocItem {
@@ -48,7 +46,7 @@ interface TocItem {
 const tocItems: TocItem[] = []
 function walk(hs: { depth: number; slug: string; text: string; children: unknown[] }[]) {
   for (const h of hs) {
-    if (h.depth >= 2 && h.depth <= 3) tocItems.push({ depth: h.depth, slug: h.slug, text: h.text })
+    if (h.depth >= 1 && h.depth <= 3) tocItems.push({ depth: h.depth, slug: h.slug, text: h.text })
     if (h.children) walk(h.children as typeof hs)
   }
 }

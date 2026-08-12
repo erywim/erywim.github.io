@@ -33,7 +33,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 | 路由 | 对应原型 | 数据来源 |
 |---|---|---|
 | `/` | 标题屏 + 状态/占卜/冒险记录/道具/队伍/冒险档案 | 内容集合 + `src/data/home.ts` |
-| `/blog` | 冒险记录（文章列表，S/A/B/C 难度） | `src/content/blog/` |
+| `/blog` | 冒险记录（文章列表，按时间倒序，S/A/B/C 难度徽章） | `src/content/blog/` |
 | `/blog/[id]` | 任务详情（文章正文卷轴 + 上/下一任务） | `src/content/blog/` |
 | `/about` | 勇者档案（角色面板 + 技能 + 冒险历程） | `src/data/hero.ts` |
 | `/logs` | 旅行日志（周报） | `src/content/logs/` |
