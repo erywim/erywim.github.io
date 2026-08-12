@@ -5,7 +5,6 @@ import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
-import TimelineNode from '@/components/famicom/TimelineNode.astro'
 import { hero } from '@/data/hero'
 import { site } from '@/data/site'
 
@@ -27,7 +26,9 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
   <Panel title='主人公' en='PLAYER CHARACTER' class='reveal'>
     <div class='hero-card'>
       <div class='hero-av'>
-        <FishSprite width={120} height={64} label='勇者头像' />
+        <span class='fish'>
+          <FishSprite width={120} height={64} label='勇者头像' />
+        </span>
       </div>
       <div>
         <div class='hero-name'>{site.heroName}</div>
@@ -84,8 +85,8 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       {
         hero.timeline.map((item) => (
           <li class='tl-item'>
-            <span class='tl-rail'>
-              <TimelineNode icon={item.icon} />
+            <span class='tl-rail' aria-hidden='true'>
+              <i class='tl-node'></i>
             </span>
             <div class='tl-body'>
               <span class='tl-date'>{item.date}</span>
@@ -96,6 +97,23 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
         ))
       }
     </ul>
+  </Panel>
+
+  <Panel title='联系方式' en='CONTACT' class='reveal'>
+    <div class='contact-body'>
+      {
+        hero.contacts.map((c) => (
+          <a class='contact-item' href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel='noopener'>
+            <span class='ci-ic'>
+              <svg width='20' height='20' viewBox='0 0 10 10' shape-rendering='crispEdges' aria-hidden='true'><use href={`#pix-contact-${c.icon}`}/></svg>
+            </span>
+            <span class='ci-label'>{c.label}</span>
+            <span class='ci-value'>{c.value}</span>
+            <span class='ci-arrow'>→</span>
+          </a>
+        ))
+      }
+    </div>
   </Panel>
 
   <Dialogue speaker={site.heroName} avatar class='reveal' typewriter='这就是我的能力面板。想看看我用这些技能打过的仗吗？去冒险记录里挑一卷吧。' />

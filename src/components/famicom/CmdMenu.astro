@@ -6,10 +6,10 @@ interface Props {
 
 const { active } = Astro.props
 
-// scroll = 首页对应模块的锚点 id；无 scroll 的项（如旅行日志）在首页直接跳转 href
+// 所有页面（含首页）点击均跳转到对应子页面
 const items = [
-  { key: 'about', ic: '♛', label: '勇者档案', href: '/about', scroll: 'status' },
-  { key: 'blog', ic: '◆', label: '冒险记录', href: '/blog', scroll: 'quests' },
+  { key: 'about', ic: '♛', label: '勇者档案', href: '/about' },
+  { key: 'blog', ic: '◆', label: '冒险记录', href: '/blog' },
   { key: 'logs', ic: '✎', label: '旅行日志', href: '/logs' },
   { key: 'links', ic: '♞', label: '伙伴酒馆', href: '/links' }
 ]
@@ -20,7 +20,6 @@ const items = [
     items.map((item) => (
       <a
         href={item.href}
-        data-scroll={item.scroll ?? undefined}
         class={active === item.key ? 'active' : undefined}
       >
         <span class='ic'>{item.ic}</span>{item.label}
@@ -28,22 +27,3 @@ const items = [
     ))
   }
 </nav>
-
-<script>
-  // 首页：平滑滚动到对应模块；子页面：跳转到对应子页面
-  const menu = document.querySelector('.cmd-menu')
-  if (menu) {
-    menu.addEventListener('click', (e) => {
-      const link = (e.target as HTMLElement).closest('a')
-      if (!link) return
-      const scrollId = link.dataset.scroll
-      const onHome = location.pathname === '/' || location.pathname === '/index.html'
-      if (onHome && scrollId) {
-        e.preventDefault()
-        const el = document.getElementById(scrollId)
-        if (el) el.scrollIntoView({ behavior: 'smooth' })
-        else location.href = link.href
-      }
-    })
-  }
-</script>

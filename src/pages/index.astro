@@ -42,47 +42,40 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
 
   <CmdMenu />
 
-  <div class='grid-2'>
-    <Panel title='状态' en='STATUS' id='status' class='reveal' link='/about' linkLabel='勇者档案 →'>
-      <div class='status-body'>
-        <div class='status-avatar'>
-          <FishSprite width={96} height={51} label='玩家头像' />
+  <Panel title='状态' en='STATUS' id='status' class='reveal' link='/about' linkLabel='勇者档案 →'>
+    <div class='status-body'>
+      <div class='status-avatar'>
+        <FishSprite width={96} height={51} label='玩家头像' />
+      </div>
+      <div>
+        <div class='status-name'>{site.heroName}</div>
+        <div class='status-class'>{hero.class}</div>
+        <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
+        <div class='stat-meta'>
+          <span>攻击 <b>长文×{essays}</b></span><span>防御 <b>笔记×{notes}</b></span><span>金币 <b>G{total}</b></span>
         </div>
-        <div>
-          <div class='status-name'>{site.heroName}</div>
-          <div class='status-class'>{hero.class}</div>
-          <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
-          <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
-          <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
-          <div class='stat-meta'>
-            <span>攻击 <b>长文×{essays}</b></span><span>防御 <b>笔记×{notes}</b></span><span>金币 <b>G{total}</b></span>
+      </div>
+      {
+        hero.buffs.length > 0 && (
+          <div class='status-fx'>
+            <div class='fx-title'>状态效果 <span class='en'>BUFF</span></div>
+            {
+              hero.buffs.map((buff) => (
+                <div class='fx-row'>
+                  <svg class='fx-ic' width='18' height='18' viewBox='0 0 10 10' shape-rendering='crispEdges' aria-hidden='true'><use href={`#pix-buff-${buff.icon}`}/></svg>
+                  <span class='fx-name'>{buff.name}</span>
+                  <div class={`fx-bar ${buff.kind}`}><i style={`width:${buff.width}%`}></i></div>
+                  <span class='fx-val'>{buff.val}</span>
+                </div>
+              ))
+            }
           </div>
-        </div>
-      </div>
-    </Panel>
-
-    <Panel title='占卜' en='DIVINATION' id='fortune' class='reveal'>
-      <div class='fortune-body'>
-        <div class='fortune-cup' id='fortuneCup' role='button' tabindex='0' aria-label='点击抽签' title='点击抽签'>
-          <svg width='60' height='76' viewBox='0 0 32 40' shape-rendering='crispEdges' aria-hidden='true'>
-            <rect x='8' y='2' width='2' height='8' fill='#f9f3e2'/><rect x='12' y='2' width='2' height='8' fill='#f9f3e2'/>
-            <rect x='16' y='0' width='2' height='10' fill='#e9a13b'/>
-            <rect x='6' y='10' width='20' height='4' fill='#d63a45'/>
-            <rect x='4' y='14' width='24' height='16' fill='#d63a45'/>
-            <rect x='2' y='16' width='2' height='12' fill='#b22a33'/>
-            <rect x='28' y='16' width='2' height='12' fill='#b22a33'/>
-            <rect x='4' y='30' width='24' height='4' fill='#b22a33'/>
-            <rect x='8' y='14' width='2' height='16' fill='#b22a33'/><rect x='22' y='14' width='2' height='16' fill='#b22a33'/>
-            <rect x='12' y='22' width='8' height='2' fill='#fff'/><rect x='12' y='26' width='8' height='2' fill='#fff'/>
-          </svg>
-        </div>
-        <h3>占卜师的签筒 · 今日运势</h3>
-        <p class='tip'>点击签筒或按 START 揭晓今日运势</p>
-        <button class='fortune-btn' id='fortuneBtn'>摇签 ▶ START</button>
-        <div class='fortune-result' id='fortuneResult' aria-live='polite'></div>
-      </div>
-    </Panel>
-  </div>
+        )
+      }
+    </div>
+  </Panel>
 
   <Panel title='冒险记录' en='QUEST LOG' id='quests' class='reveal' link='/blog' linkLabel='全部冒险 →'>
     <ul class='quest-list'>
@@ -220,20 +213,284 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
   <div class='cmd-tip'>
     <span class='keys'>[ 方向键 ]</span> 选择命令 &nbsp;·&nbsp; <span class='keys'>[ A ]</span> 确定 &nbsp;·&nbsp; <span class='keys'>[ B ]</span> 取消
   </div>
+
+  <div id='fryModal' aria-hidden='true'>
+    <div class='fm-panel' role='dialog' aria-modal='true' aria-label='隐藏彩蛋·薯条占卜'>
+      <button class='fm-close' id='fryClose' aria-label='关闭'>✕</button>
+      <div class='fm-title'>◆ 隐藏彩蛋 · 薯条占卜</div>
+      <div class='fortune-body'>
+        <div class="fortune-cup" id="fortuneCup" role="button" tabindex="0" aria-label="点击抽薯条" title="点击抽薯条">
+          <svg width="66" height="81" viewBox="0 0 30 37" shape-rendering="crispEdges" aria-hidden="true">
+                                    <g class="pixbox">
+              <rect x="3" y="13" width="3" height="1" fill="#d42222"/>
+              <rect x="6" y="13" width="3" height="1" fill="#e0881a"/>
+              <rect x="9" y="13" width="2" height="1" fill="#f2a620"/>
+              <rect x="11" y="13" width="1" height="1" fill="#e0881a"/>
+              <rect x="12" y="13" width="1" height="1" fill="#f2a620"/>
+              <rect x="13" y="13" width="1" height="1" fill="#e0881a"/>
+              <rect x="14" y="13" width="1" height="1" fill="#c96f12"/>
+              <rect x="15" y="13" width="1" height="1" fill="#f2a620"/>
+              <rect x="16" y="13" width="1" height="1" fill="#e0881a"/>
+              <rect x="17" y="13" width="1" height="1" fill="#a8540a"/>
+              <rect x="18" y="13" width="1" height="1" fill="#c96f12"/>
+              <rect x="19" y="13" width="1" height="1" fill="#f2a620"/>
+              <rect x="20" y="13" width="1" height="1" fill="#c96f12"/>
+              <rect x="21" y="13" width="1" height="1" fill="#e0881a"/>
+              <rect x="22" y="13" width="2" height="1" fill="#f2a620"/>
+              <rect x="24" y="13" width="1" height="1" fill="#c96f12"/>
+              <rect x="25" y="13" width="2" height="1" fill="#d42222"/>
+              <rect x="27" y="13" width="2" height="1" fill="#b01414"/>
+              <rect x="3" y="14" width="4" height="1" fill="#d42222"/>
+              <rect x="7" y="14" width="1" height="1" fill="#e0881a"/>
+              <rect x="8" y="14" width="1" height="1" fill="#c96f12"/>
+              <rect x="9" y="14" width="2" height="1" fill="#f2a620"/>
+              <rect x="11" y="14" width="1" height="1" fill="#c96f12"/>
+              <rect x="12" y="14" width="2" height="1" fill="#f2a620"/>
+              <rect x="14" y="14" width="1" height="1" fill="#c96f12"/>
+              <rect x="15" y="14" width="1" height="1" fill="#e0881a"/>
+              <rect x="16" y="14" width="2" height="1" fill="#f2a620"/>
+              <rect x="18" y="14" width="2" height="1" fill="#e0881a"/>
+              <rect x="20" y="14" width="1" height="1" fill="#a8540a"/>
+              <rect x="21" y="14" width="1" height="1" fill="#e0881a"/>
+              <rect x="22" y="14" width="1" height="1" fill="#f2a620"/>
+              <rect x="23" y="14" width="1" height="1" fill="#e0881a"/>
+              <rect x="24" y="14" width="5" height="1" fill="#d42222"/>
+              <rect x="3" y="15" width="4" height="1" fill="#d42222"/>
+              <rect x="7" y="15" width="1" height="1" fill="#a8540a"/>
+              <rect x="8" y="15" width="2" height="1" fill="#c96f12"/>
+              <rect x="10" y="15" width="1" height="1" fill="#f2a620"/>
+              <rect x="11" y="15" width="1" height="1" fill="#c96f12"/>
+              <rect x="12" y="15" width="1" height="1" fill="#e0881a"/>
+              <rect x="13" y="15" width="1" height="1" fill="#f2a620"/>
+              <rect x="14" y="15" width="2" height="1" fill="#c96f12"/>
+              <rect x="16" y="15" width="1" height="1" fill="#e0881a"/>
+              <rect x="17" y="15" width="1" height="1" fill="#f2a620"/>
+              <rect x="18" y="15" width="1" height="1" fill="#e0881a"/>
+              <rect x="19" y="15" width="1" height="1" fill="#c96f12"/>
+              <rect x="20" y="15" width="1" height="1" fill="#a8540a"/>
+              <rect x="21" y="15" width="2" height="1" fill="#f2a620"/>
+              <rect x="23" y="15" width="1" height="1" fill="#e0881a"/>
+              <rect x="24" y="15" width="5" height="1" fill="#d42222"/>
+              <rect x="3" y="16" width="1" height="1" fill="#e83939"/>
+              <rect x="4" y="16" width="4" height="1" fill="#d42222"/>
+              <rect x="8" y="16" width="2" height="1" fill="#f2a620"/>
+              <rect x="10" y="16" width="1" height="1" fill="#e0881a"/>
+              <rect x="11" y="16" width="1" height="1" fill="#c96f12"/>
+              <rect x="12" y="16" width="2" height="1" fill="#f2a620"/>
+              <rect x="14" y="16" width="1" height="1" fill="#c96f12"/>
+              <rect x="15" y="16" width="1" height="1" fill="#a8540a"/>
+              <rect x="16" y="16" width="1" height="1" fill="#f2a620"/>
+              <rect x="17" y="16" width="1" height="1" fill="#e0881a"/>
+              <rect x="18" y="16" width="1" height="1" fill="#c96f12"/>
+              <rect x="19" y="16" width="1" height="1" fill="#a8540a"/>
+              <rect x="20" y="16" width="1" height="1" fill="#c96f12"/>
+              <rect x="21" y="16" width="2" height="1" fill="#f2a620"/>
+              <rect x="23" y="16" width="6" height="1" fill="#d42222"/>
+              <rect x="3" y="17" width="1" height="1" fill="#e83939"/>
+              <rect x="4" y="17" width="4" height="1" fill="#d42222"/>
+              <rect x="8" y="17" width="1" height="1" fill="#e0881a"/>
+              <rect x="9" y="17" width="2" height="1" fill="#f2a620"/>
+              <rect x="11" y="17" width="1" height="1" fill="#c96f12"/>
+              <rect x="12" y="17" width="2" height="1" fill="#f2a620"/>
+              <rect x="14" y="17" width="2" height="1" fill="#e0881a"/>
+              <rect x="16" y="17" width="2" height="1" fill="#f2a620"/>
+              <rect x="18" y="17" width="1" height="1" fill="#e0881a"/>
+              <rect x="19" y="17" width="1" height="1" fill="#a8540a"/>
+              <rect x="20" y="17" width="2" height="1" fill="#f2a620"/>
+              <rect x="22" y="17" width="1" height="1" fill="#e0881a"/>
+              <rect x="23" y="17" width="6" height="1" fill="#d42222"/>
+              <rect x="3" y="18" width="6" height="1" fill="#d42222"/>
+              <rect x="9" y="18" width="1" height="1" fill="#c96f12"/>
+              <rect x="10" y="18" width="1" height="1" fill="#e0881a"/>
+              <rect x="11" y="18" width="1" height="1" fill="#c96f12"/>
+              <rect x="12" y="18" width="1" height="1" fill="#e0881a"/>
+              <rect x="13" y="18" width="1" height="1" fill="#f2a620"/>
+              <rect x="14" y="18" width="1" height="1" fill="#c96f12"/>
+              <rect x="15" y="18" width="6" height="1" fill="#f2a620"/>
+              <rect x="21" y="18" width="1" height="1" fill="#c96f12"/>
+              <rect x="22" y="18" width="6" height="1" fill="#d42222"/>
+              <rect x="28" y="18" width="1" height="1" fill="#e83939"/>
+              <rect x="3" y="19" width="1" height="1" fill="#e83939"/>
+              <rect x="4" y="19" width="6" height="1" fill="#d42222"/>
+              <rect x="10" y="19" width="3" height="1" fill="#a8540a"/>
+              <rect x="13" y="19" width="1" height="1" fill="#e0881a"/>
+              <rect x="14" y="19" width="1" height="1" fill="#c96f12"/>
+              <rect x="15" y="19" width="2" height="1" fill="#f2a620"/>
+              <rect x="17" y="19" width="1" height="1" fill="#e0881a"/>
+              <rect x="18" y="19" width="1" height="1" fill="#f2a620"/>
+              <rect x="19" y="19" width="1" height="1" fill="#e0881a"/>
+              <rect x="20" y="19" width="1" height="1" fill="#a8540a"/>
+              <rect x="21" y="19" width="7" height="1" fill="#d42222"/>
+              <rect x="28" y="19" width="1" height="1" fill="#e83939"/>
+              <rect x="4" y="20" width="8" height="1" fill="#d42222"/>
+              <rect x="12" y="20" width="1" height="1" fill="#b01414"/>
+              <rect x="13" y="20" width="1" height="1" fill="#a8540a"/>
+              <rect x="14" y="20" width="1" height="1" fill="#c96f12"/>
+              <rect x="15" y="20" width="1" height="1" fill="#e0881a"/>
+              <rect x="16" y="20" width="1" height="1" fill="#c96f12"/>
+              <rect x="17" y="20" width="2" height="1" fill="#a8540a"/>
+              <rect x="19" y="20" width="9" height="1" fill="#d42222"/>
+              <rect x="4" y="21" width="23" height="1" fill="#d42222"/>
+              <rect x="27" y="21" width="1" height="1" fill="#b01414"/>
+              <rect x="4" y="22" width="24" height="1" fill="#d42222"/>
+              <rect x="4" y="23" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="23" width="23" height="1" fill="#d42222"/>
+              <rect x="4" y="24" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="24" width="7" height="1" fill="#d42222"/>
+              <rect x="12" y="24" width="2" height="1" fill="#e0881a"/>
+              <rect x="14" y="24" width="3" height="1" fill="#d42222"/>
+              <rect x="17" y="24" width="1" height="1" fill="#e0881a"/>
+              <rect x="18" y="24" width="1" height="1" fill="#c96f12"/>
+              <rect x="19" y="24" width="1" height="1" fill="#e0881a"/>
+              <rect x="20" y="24" width="8" height="1" fill="#d42222"/>
+              <rect x="4" y="25" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="25" width="6" height="1" fill="#d42222"/>
+              <rect x="11" y="25" width="1" height="1" fill="#e0881a"/>
+              <rect x="12" y="25" width="1" height="1" fill="#a8540a"/>
+              <rect x="13" y="25" width="1" height="1" fill="#b01414"/>
+              <rect x="14" y="25" width="1" height="1" fill="#e0881a"/>
+              <rect x="15" y="25" width="1" height="1" fill="#b01414"/>
+              <rect x="16" y="25" width="1" height="1" fill="#e83939"/>
+              <rect x="17" y="25" width="1" height="1" fill="#c96f12"/>
+              <rect x="18" y="25" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="19" y="25" width="1" height="1" fill="#e0881a"/>
+              <rect x="20" y="25" width="1" height="1" fill="#a8540a"/>
+              <rect x="21" y="25" width="6" height="1" fill="#d42222"/>
+              <rect x="27" y="25" width="1" height="1" fill="#e83939"/>
+              <rect x="4" y="26" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="26" width="6" height="1" fill="#d42222"/>
+              <rect x="11" y="26" width="1" height="1" fill="#f2a620"/>
+              <rect x="12" y="26" width="1" height="1" fill="#3c0a0a"/>
+              <rect x="13" y="26" width="1" height="1" fill="#d42222"/>
+              <rect x="14" y="26" width="1" height="1" fill="#e0881a"/>
+              <rect x="15" y="26" width="1" height="1" fill="#a8540a"/>
+              <rect x="16" y="26" width="1" height="1" fill="#e0881a"/>
+              <rect x="17" y="26" width="1" height="1" fill="#781010"/>
+              <rect x="18" y="26" width="2" height="1" fill="#d42222"/>
+              <rect x="20" y="26" width="1" height="1" fill="#e0881a"/>
+              <rect x="21" y="26" width="1" height="1" fill="#b01414"/>
+              <rect x="22" y="26" width="5" height="1" fill="#d42222"/>
+              <rect x="27" y="26" width="1" height="1" fill="#e83939"/>
+              <rect x="4" y="27" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="27" width="5" height="1" fill="#d42222"/>
+              <rect x="10" y="27" width="1" height="1" fill="#e83939"/>
+              <rect x="11" y="27" width="1" height="1" fill="#c96f12"/>
+              <rect x="12" y="27" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="13" y="27" width="1" height="1" fill="#d42222"/>
+              <rect x="14" y="27" width="1" height="1" fill="#e83939"/>
+              <rect x="15" y="27" width="1" height="1" fill="#a8540a"/>
+              <rect x="16" y="27" width="1" height="1" fill="#f2a620"/>
+              <rect x="17" y="27" width="1" height="1" fill="#781010"/>
+              <rect x="18" y="27" width="2" height="1" fill="#d42222"/>
+              <rect x="20" y="27" width="1" height="1" fill="#f2a620"/>
+              <rect x="21" y="27" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="22" y="27" width="4" height="1" fill="#d42222"/>
+              <rect x="26" y="27" width="1" height="1" fill="#b01414"/>
+              <rect x="27" y="27" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="28" width="5" height="1" fill="#d42222"/>
+              <rect x="10" y="28" width="1" height="1" fill="#e0881a"/>
+              <rect x="11" y="28" width="1" height="1" fill="#a8540a"/>
+              <rect x="12" y="28" width="1" height="1" fill="#b01414"/>
+              <rect x="13" y="28" width="2" height="1" fill="#d42222"/>
+              <rect x="15" y="28" width="2" height="1" fill="#f2a620"/>
+              <rect x="17" y="28" width="1" height="1" fill="#781010"/>
+              <rect x="18" y="28" width="2" height="1" fill="#d42222"/>
+              <rect x="20" y="28" width="1" height="1" fill="#e0881a"/>
+              <rect x="21" y="28" width="1" height="1" fill="#a8540a"/>
+              <rect x="22" y="28" width="4" height="1" fill="#d42222"/>
+              <rect x="26" y="28" width="1" height="1" fill="#b01414"/>
+              <rect x="5" y="29" width="5" height="1" fill="#d42222"/>
+              <rect x="10" y="29" width="1" height="1" fill="#e0881a"/>
+              <rect x="11" y="29" width="1" height="1" fill="#a8540a"/>
+              <rect x="12" y="29" width="3" height="1" fill="#d42222"/>
+              <rect x="15" y="29" width="1" height="1" fill="#f2a620"/>
+              <rect x="16" y="29" width="1" height="1" fill="#e0881a"/>
+              <rect x="17" y="29" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="18" y="29" width="2" height="1" fill="#d42222"/>
+              <rect x="20" y="29" width="2" height="1" fill="#c96f12"/>
+              <rect x="22" y="29" width="3" height="1" fill="#d42222"/>
+              <rect x="25" y="29" width="2" height="1" fill="#b01414"/>
+              <rect x="5" y="30" width="1" height="1" fill="#e83939"/>
+              <rect x="6" y="30" width="4" height="1" fill="#d42222"/>
+              <rect x="10" y="30" width="1" height="1" fill="#f2a620"/>
+              <rect x="11" y="30" width="1" height="1" fill="#781010"/>
+              <rect x="12" y="30" width="3" height="1" fill="#d42222"/>
+              <rect x="15" y="30" width="1" height="1" fill="#f2a620"/>
+              <rect x="16" y="30" width="1" height="1" fill="#c96f12"/>
+              <rect x="17" y="30" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="18" y="30" width="2" height="1" fill="#d42222"/>
+              <rect x="20" y="30" width="1" height="1" fill="#e83939"/>
+              <rect x="21" y="30" width="1" height="1" fill="#e0881a"/>
+              <rect x="22" y="30" width="1" height="1" fill="#b01414"/>
+              <rect x="23" y="30" width="2" height="1" fill="#d42222"/>
+              <rect x="25" y="30" width="2" height="1" fill="#b01414"/>
+              <rect x="5" y="31" width="5" height="1" fill="#d42222"/>
+              <rect x="10" y="31" width="1" height="1" fill="#f2a620"/>
+              <rect x="11" y="31" width="1" height="1" fill="#781010"/>
+              <rect x="12" y="31" width="3" height="1" fill="#d42222"/>
+              <rect x="15" y="31" width="1" height="1" fill="#e0881a"/>
+              <rect x="16" y="31" width="1" height="1" fill="#c96f12"/>
+              <rect x="17" y="31" width="1" height="1" fill="#b01414"/>
+              <rect x="18" y="31" width="3" height="1" fill="#d42222"/>
+              <rect x="21" y="31" width="1" height="1" fill="#f2a620"/>
+              <rect x="22" y="31" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="23" y="31" width="4" height="1" fill="#d42222"/>
+              <rect x="5" y="32" width="1" height="1" fill="#e83939"/>
+              <rect x="6" y="32" width="4" height="1" fill="#d42222"/>
+              <rect x="10" y="32" width="1" height="1" fill="#f2a620"/>
+              <rect x="11" y="32" width="1" height="1" fill="#781010"/>
+              <rect x="12" y="32" width="3" height="1" fill="#d42222"/>
+              <rect x="15" y="32" width="1" height="1" fill="#e0881a"/>
+              <rect x="16" y="32" width="1" height="1" fill="#c96f12"/>
+              <rect x="17" y="32" width="1" height="1" fill="#b01414"/>
+              <rect x="18" y="32" width="3" height="1" fill="#d42222"/>
+              <rect x="21" y="32" width="1" height="1" fill="#f2a620"/>
+              <rect x="22" y="32" width="1" height="1" fill="#781010"/>
+              <rect x="23" y="32" width="3" height="1" fill="#d42222"/>
+              <rect x="26" y="32" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="33" width="1" height="1" fill="#e83939"/>
+              <rect x="6" y="33" width="4" height="1" fill="#d42222"/>
+              <rect x="10" y="33" width="1" height="1" fill="#b01414"/>
+              <rect x="11" y="33" width="1" height="1" fill="#781010"/>
+              <rect x="12" y="33" width="3" height="1" fill="#d42222"/>
+              <rect x="15" y="33" width="1" height="1" fill="#b01414"/>
+              <rect x="16" y="33" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="17" y="33" width="1" height="1" fill="#b01414"/>
+              <rect x="18" y="33" width="3" height="1" fill="#d42222"/>
+              <rect x="21" y="33" width="1" height="1" fill="#8a0f0f"/>
+              <rect x="22" y="33" width="1" height="1" fill="#b01414"/>
+              <rect x="23" y="33" width="3" height="1" fill="#d42222"/>
+              <rect x="26" y="33" width="1" height="1" fill="#e83939"/>
+              <rect x="5" y="34" width="1" height="1" fill="#e83939"/>
+              <rect x="6" y="34" width="19" height="1" fill="#d42222"/>
+              <rect x="25" y="34" width="1" height="1" fill="#b01414"/>
+              <rect x="6" y="35" width="5" height="1" fill="#d42222"/>
+              <rect x="11" y="35" width="1" height="1" fill="#e83939"/>
+              <rect x="12" y="35" width="3" height="1" fill="#d42222"/>
+              <rect x="15" y="35" width="1" height="1" fill="#e83939"/>
+              <rect x="16" y="35" width="9" height="1" fill="#d42222"/>
+              <rect x="25" y="35" width="1" height="1" fill="#b01414"/>
+              <rect x="6" y="36" width="3" height="1" fill="#e83939"/>
+              <rect x="23" y="36" width="2" height="1" fill="#d42222"/>
+              <rect x="25" y="36" width="1" height="1" fill="#e83939"/>
+            </g>
+            <g class="fries"></g>
+          </svg>
+        </div>
+        <h3>占卜师的薯条盒 · 今日运势</h3>
+        <p class='tip'>点击薯条盒或按 START 揭晓今日运势</p>
+        <button class='fortune-btn' id='fortuneBtn'>抽薯条 ▶ START</button>
+        <div class='fortune-result' id='fortuneResult' aria-live='polite'></div>
+      </div>
+      <div class='fm-foot'>连点金鱼 5 次可再次开启 · 点遮罩或 ✕ 关闭</div>
+    </div>
+  </div>
 </FamicomLayout>
 
 <script>
-  // —— PRESS START → 滚到状态区 ——
+  // —— PRESS START → 展开薯条占卜 ——
   const ps = document.getElementById('pressStart')
-  if (ps) {
-    ps.addEventListener('click', () => {
-      const s = document.getElementById('status')
-      if (s) {
-        const y = s.getBoundingClientRect().top + window.scrollY - 24
-        window.scrollTo({ top: y, behavior: 'smooth' })
-      }
-    })
-  }
+  if (ps) ps.addEventListener('click', openFry)
 
   // —— 打字机对话框（由 Dialogue.astro 全局处理）——
 
@@ -264,16 +521,56 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     aio.observe(ach)
   }
 
-  // —— 点主角冒「咕嘟♪」气泡 ——
+  // —— 点主角冒气泡 + 连点 5 次开启彩蛋占卜 ——
+  let GU = 0
+  const msgs = ['咕♪', '咕咕♪', '咕咕咕♪', '咕咕咕咕♪', '咕咕咕咕咕！']
   document.querySelectorAll('[data-gu]').forEach((zone) => {
     zone.addEventListener('click', () => {
       zone.querySelectorAll('.gu-bubble').forEach((b) => b.parentNode?.removeChild(b))
+      GU++
       const b = document.createElement('span')
       b.className = 'gu-bubble'
-      b.textContent = '咕嘟♪'
+      b.textContent = GU >= 5 ? '咕咕咕咕咕！彩蛋开启！' : msgs[GU - 1]
       zone.appendChild(b)
       setTimeout(() => b.parentNode?.removeChild(b), 900)
+      if (GU >= 5) {
+        GU = 0
+        openFry()
+      }
     })
+  })
+
+  // —— 彩蛋弹窗开关 ——
+  const fm = document.getElementById('fryModal')
+  function openFry() {
+    if (!fm) return
+    const rs = document.getElementById('fortuneResult')
+    if (rs) rs.classList.remove('show', 'open', 'unfolding')
+    const fb = document.getElementById('fortuneBtn') as HTMLButtonElement | null
+    if (fb) {
+      fb.disabled = false
+      fb.textContent = '抽薯条 ▶ START'
+    }
+    fm.classList.add('show')
+    fm.setAttribute('aria-hidden', 'false')
+    if (fb) setTimeout(() => fb.focus(), 60)
+  }
+  function closeFry() {
+    if (!fm) return
+    fm.classList.remove('show')
+    fm.setAttribute('aria-hidden', 'true')
+    const cup = document.getElementById('fortuneCup')
+    if (cup) cup.classList.remove('shake', 'shaking', 'jolt')
+  }
+  const fc = document.getElementById('fryClose')
+  if (fc) fc.addEventListener('click', closeFry)
+  if (fm) {
+    fm.addEventListener('click', (e) => {
+      if (e.target === fm) closeFry()
+    })
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && fm && fm.classList.contains('show')) closeFry()
   })
 
   // —— 占卜 ——
@@ -292,18 +589,80 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
   const res = document.getElementById('fortuneResult') as HTMLElement
   let t: ReturnType<typeof setTimeout> | null = null
 
-  function burst(el: HTMLElement) {
+  function sparkle(el: HTMLElement, count: number, color?: string) {
     const c = document.createElement('span')
     c.className = 'burst'
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < count; i++) {
       const s = document.createElement('i')
-      s.style.setProperty('--dx', (Math.random() * 90 - 45).toFixed(0) + 'px')
-      s.style.setProperty('--dy', (Math.random() * 70 - 55).toFixed(0) + 'px')
+      s.style.setProperty('--dx', (Math.random() * 100 - 50).toFixed(0) + 'px')
+      s.style.setProperty('--dy', (Math.random() * 80 - 60).toFixed(0) + 'px')
       s.style.setProperty('--rot', (Math.random() * 360).toFixed(0) + 'deg')
+      if (color) s.style.background = color
       c.appendChild(s)
     }
     el.appendChild(c)
     setTimeout(() => c.parentNode?.removeChild(c), 900)
+  }
+
+  function flash(at: HTMLElement) {
+    const f = document.createElement('span')
+    f.className = 'fortune-flash'
+    at.appendChild(f)
+    setTimeout(() => f.parentNode?.removeChild(f), 600)
+  }
+
+  function typeDesc(el: HTMLElement | null) {
+    if (!el) return
+    const full = el.textContent || ''
+    el.textContent = ''
+    let i = 0
+    const cur = document.createElement('span')
+    cur.className = 'cur'
+    el.appendChild(cur)
+    const timer = setInterval(() => {
+      if (!cur.isConnected) {
+        clearInterval(timer)
+        return
+      }
+      if (i < full.length) cur.insertAdjacentText('beforebegin', full[i++])
+      else clearInterval(timer)
+    }, 22)
+  }
+
+  // 生成薯条盒里的薯条
+  function buildFries() {
+    const wrap = document.querySelector<SVGGElement>('.fortune-cup .fries')
+    if (!wrap) return
+    const xs = [7, 10, 13, 16, 19, 22, 25]
+    const hs = [11, 9, 12, 10, 8, 11, 7]
+    let s = ''
+    for (let i = 0; i < xs.length; i++) {
+      const x = xs[i]
+      const h = hs[i]
+      const y = 13 - h
+      const col = i % 2 ? '#e0881a' : '#f2a620'
+      s += `<g class="fry"><rect x="${x}" y="${y}" width="2" height="1" fill="#c96f12"/><rect x="${x}" y="${y + 1}" width="2" height="${h - 1}" fill="${col}"/></g>`
+    }
+    wrap.innerHTML = s
+  }
+
+  // 一根薯条从薯条盒飞向结果
+  function flyFry(fromRect: DOMRect, toRect: DOMRect, cb: () => void) {
+    const w = 10
+    const h = 24
+    const el = document.createElement('div')
+    el.className = 'fly-fry'
+    el.style.left = fromRect.left + fromRect.width / 2 - w / 2 + 'px'
+    el.style.top = fromRect.top + fromRect.height / 2 - h / 2 + 'px'
+    const fx = toRect.left + toRect.width / 2 - (fromRect.left + fromRect.width / 2)
+    const fy = toRect.top - (fromRect.top + fromRect.height / 2)
+    el.style.setProperty('--fx', fx + 'px')
+    el.style.setProperty('--fy', fy + 'px')
+    document.body.appendChild(el)
+    el.addEventListener('animationend', () => {
+      if (el.parentNode) el.parentNode.removeChild(el)
+      if (cb) cb()
+    })
   }
 
   function draw() {
@@ -315,24 +674,50 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       `<div class="ji">${f.ji}</div>` +
       `<div class="desc">${f.desc}</div>` +
       '<button class="again">再抽一次 ↻</button>'
-    if (f.k === 'red') burst(res)
     res.querySelector('.again')?.addEventListener('click', go)
+    // 展开动画：一根薯条从盒里飞向结果，随后展开 + 逐行显现 + 火花
+    res.classList.add('unfolding')
+    const rr = res.getBoundingClientRect()
+    const cr = cup?.getBoundingClientRect()
+    function openResult() {
+      res.classList.remove('unfolding')
+      res.classList.add('open')
+      typeDesc(res.querySelector('.desc'))
+      if (f.k === 'red') {
+        sparkle(res, 12, 'var(--gold)')
+        sparkle(res, 6, 'var(--accent)')
+      } else if (f.k === 'cyan') {
+        sparkle(res, 8, 'var(--cyan)')
+      } else if (f.k === 'gold') {
+        sparkle(res, 5, 'var(--gold)')
+      } else {
+        sparkle(res, 2, 'var(--dim)')
+      }
+    }
+    if (cr) flyFry(cr, rr, openResult)
+    else setTimeout(openResult, 60)
   }
 
   function go() {
     if (btn.disabled) return
     btn.disabled = true
-    btn.textContent = '求签中…'
-    cup?.classList.add('shake')
+    btn.textContent = '摇晃中…'
+    buildFries()
+    cup?.classList.add('shake', 'shaking')
     res.classList.remove('show')
     if (t) clearTimeout(t)
     t = setTimeout(() => {
-      cup?.classList.remove('shake')
+      cup?.classList.remove('shake', 'shaking')
+      cup?.classList.add('jolt')
+      if (cup) flash(cup)
       btn.disabled = false
-      btn.textContent = '摇签 ▶ START'
+      btn.textContent = '抽薯条 ▶ START'
       draw()
-    }, 900)
+      setTimeout(() => cup?.classList.remove('jolt'), 600)
+    }, 620)
   }
+
+  buildFries()
 
   btn.addEventListener('click', go)
   cup?.addEventListener('click', go)

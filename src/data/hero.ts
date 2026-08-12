@@ -4,14 +4,26 @@
  * 任职公司以行业代称呈现。
  */
 
-/** 冒险历程节点的像素图标：edu=学士帽 / telecom=信号塔 / ai=机器人头 */
-export type HeroTimelineIcon = 'edu' | 'telecom' | 'ai'
-
 export interface HeroTimelineItem {
-  icon: HeroTimelineIcon
   date: string
   title: string
   desc: string
+}
+
+export interface HeroBuff {
+  icon: 'coffee' | 'moon' | 'wrench'
+  name: string
+  /** good 绿 / bad 橙 / doing 青 */
+  kind: 'good' | 'bad' | 'doing'
+  width: number
+  val: string
+}
+
+export interface HeroContact {
+  icon: 'github' | 'rss' | 'mug'
+  label: string
+  value: string
+  href: string
 }
 
 export const hero: {
@@ -27,6 +39,8 @@ export const hero: {
   status: string
   skills: { title: string; chips: string[] }[]
   timeline: HeroTimelineItem[]
+  buffs: HeroBuff[]
+  contacts: HeroContact[]
 } = {
   name: 'erywim',
   class: '勇者 · 全栈 Agent 开发工程师',
@@ -47,9 +61,17 @@ export const hero: {
     { title: '模型与理论', chips: ['Prompt / Context / Harness Engineering', 'Transformer', 'KV-Cache / Prompt-Cache', 'MoE'] }
   ],
   timeline: [
-    
-    { icon: 'ai', date: '2025.09 - 至今', title: '某 AI 科技公司 · AI 全栈（Agent 方向）', desc: '志愿填报Agent、LLM网关' },
-    { icon: 'telecom', date: '2023.03 - 2025.08', title: '某通信行业软件公司 · Java 开发 → 项目经理', desc: '哑资源管理、DAS防外破、带领6人Team' },
-    { icon: 'edu', date: '2019.09 - 2023.07', title: '某红色主义大学 · 软件工程', desc: 'GPA 3.3（专业前 5%）' }
+    { date: '2025.09 - 至今', title: '某 AI 科技公司 · AI 全栈（Agent 方向）', desc: '志愿填报Agent、LLM网关' },
+    { date: '2023.03 - 2025.08', title: '某通信行业软件公司 · Java 开发 → 项目经理', desc: '哑资源管理、DAS防外破、带领6人Team' },
+    { date: '2019.09 - 2023.07', title: '某红色主义大学 · 软件工程', desc: 'GPA 3.3（专业前 5%）' }
+  ],
+  buffs: [
+    { icon: 'coffee', name: '咖啡因', kind: 'good', width: 72, val: '+30%' },
+    { icon: 'moon', name: '夜猫', kind: 'bad', width: 48, val: '+15%' },
+    { icon: 'wrench', name: '交付中', kind: 'doing', width: 60, val: '60%' }
+  ],
+  contacts: [
+    { icon: 'github', label: 'GITHUB', value: 'github.com/erywim', href: 'https://github.com/erywim' },
+    { icon: 'mug', label: '伙伴酒馆', value: '友链 · 留言', href: '/links' }
   ]
 }

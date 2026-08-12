@@ -42,17 +42,17 @@ export interface PartyMember {
 
 export const party: PartyMember[] = [
   {
-    title: '……',
-    class: '……',
-    desc: '……',
-    period: '20XX - 20XX',
+    title: 'Javaer',
+    class: '战士 WARRIOR',
+    desc: '重铸java荣光，吾辈义不容辞',
+    period: '2019 - 2025',
     avatar: 'warrior'
   },
   {
-    title: '……',
-    class: '……',
-    desc: '……',
-    period: '20XX -',
+    title: 'AI 全栈',
+    class: '法师 MAGE',
+    desc: '快速落地想法的感觉真不戳～',
+    period: '2025 - ∞',
     avatar: 'mage'
   }
 ]
