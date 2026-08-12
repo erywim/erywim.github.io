@@ -15,8 +15,8 @@ bun install                # 安装依赖（node_modules 不入库）
 bun run dev                # 本地开发服务器
 bun run build              # 构建：astro-pure check && astro check && astro build，产物在 dist/
 bun run preview            # 本地预览构建产物
-bun run new-post "标题"     # 新建文章（自动生成带 frontmatter 的草稿，draft:true）
-bun run new-log "标题" [周]  # 新建周报（不指定周数自动取最大周+1）
+bun run post "标题"        # 新建文章（自动生成带 frontmatter 的草稿，draft:true）
+bun run log "标题" [周]     # 新建周报（不指定周数自动取最大周+1）
 bun run clean              # 清缓存：rm -rf .astro .vercel dist
 ```
 
@@ -43,7 +43,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 
 ## 内容与数据
 
-- **博客文章** `src/content/blog/<slug>/index.md`：frontmatter 含 title / description / publishDate / rank(S·A·B·C) / category(技术·产品·生活·笔记) / tags / draft。`draft: true` 不发布。用 `bun run new-post "标题"` 自动生成模板。
+- **博客文章** `src/content/blog/<slug>/index.md`：frontmatter 含 title / description / publishDate / rank(S·A·B·C) / category(技术·产品·生活·笔记) / tags / draft。`draft: true` 不发布。用 `bun run post "标题"` 自动生成模板。
 - **周报** `src/content/logs/`：title / description / publishDate / week。
 - **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
 - **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。

@@ -16,8 +16,8 @@
     "yijiansilian": "bun lint && bun sync && bun check && bun format",
     "clean": "rm -rf .astro .vercel dist",
     "cache:avatars": "tsx preset/scripts/cacheAvatars.ts",
-    "new-post": "bun scripts/new-post.ts",
-    "new-log": "bun scripts/new-log.ts"
+    "post": "bun scripts/new-post.ts",
+    "log": "bun scripts/new-log.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.9",
