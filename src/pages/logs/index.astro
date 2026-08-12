@@ -1,4 +1,6 @@
 ---
+import { type CollectionEntry } from 'astro:content'
+
 import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
 import CmdMenu from '@/components/famicom/CmdMenu.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
@@ -6,9 +8,47 @@ import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import { site } from '@/data/site'
 import { getPublishedLogs } from '@/utils/collections'
-import { formatLogDate } from '@/utils/format'
+
+interface MonthGroup {
+  key: string
+  label: string
+  weeks: CollectionEntry<'logs'>[]
+}
+interface YearGroup {
+  key: string
+  label: string
+  months: MonthGroup[]
+}
 
 const logs = await getPublishedLogs()
+
+// 按 年 → 月 → 周 分组；时间倒排（大周在上）
+const yearMap = new Map<string, YearGroup>()
+for (const log of logs) {
+  const d = log.data.publishDate
+  const yk = String(d.getFullYear())
+  const mk = `${yk}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  let year = yearMap.get(yk)
+  if (!year) {
+    year = { key: yk, label: `${yk} 年`, months: [] }
+    yearMap.set(yk, year)
+  }
+  let month = year.months.find((m) => m.key === mk)
+  if (!month) {
+    month = { key: mk, label: `${d.getMonth() + 1} 月`, weeks: [] }
+    year.months.push(month)
+  }
+  month.weeks.push(log)
+}
+const years = [...yearMap.values()].sort((a, b) => b.key.localeCompare(a.key))
+for (const y of years) {
+  y.months.sort((a, b) => b.key.localeCompare(a.key))
+  for (const m of y.months) m.weeks.sort((a, b) => b.data.week - a.data.week)
+}
+// 默认展开有数据的最近一个月（其它折叠）
+const openYearKey = years[0]?.key
+const openMonthKey = years[0]?.months[0]?.key
+const totalWeeks = logs.length
 ---
 
 <FamicomLayout title='旅行日志'>
@@ -21,27 +61,47 @@ const logs = await getPublishedLogs()
 
   <CmdMenu active='logs' />
 
-  <Panel title='旅程记录' en={`JOURNAL · ${logs.length} ENTRIES`} class='reveal'>
-    <ul class='travel-list'>
-      {
-        logs.map((log) => (
-          <a class='travel-item' href={`/logs/${log.id}`}>
-            <span class='tl-date'>{formatLogDate(log.data.publishDate)}<span class='tl-week'>第{log.data.week}周</span></span>
-            <div class='travel-main'>
-              <h3>{log.data.title}</h3>
-              <p>{log.data.description}</p>
-            </div>
-            <span class='travel-status'>已记录</span>
-          </a>
-        ))
-      }
-    </ul>
+  <Panel title='旅程记录' en={`JOURNAL · ${totalWeeks} WEEKS`} class='reveal'>
     {
-      logs.length === 0 && (
+      years.length === 0 && (
         <p style='padding:14px 16px;color:var(--dim)'>还没有旅程记录。</p>
       )
     }
+    <div class='log-groups'>
+      {
+        years.map((year) => (
+          <details class='year-group' open={year.key === openYearKey}>
+            <summary class='group-title'>
+              <span class='group-label'>{year.label}</span>
+              <span class='group-count'>{year.months.reduce((n, m) => n + m.weeks.length, 0)} 周</span>
+            </summary>
+            {
+              year.months.map((month) => (
+                <details class='month-group' open={month.key === openMonthKey}>
+                  <summary class='group-title'>
+                    <span class='group-label'>{month.label}</span>
+                    <span class='group-count'>{month.weeks.length} 周</span>
+                  </summary>
+                  {
+                    month.weeks.map((log) => (
+                      <a class='travel-item' href={`/logs/${log.id}`}>
+                        <span class='tl-weekno'>第{log.data.week}周</span>
+                        <div class='travel-main'>
+                          <h3>{log.data.title}</h3>
+                          <p>{log.data.description}</p>
+                        </div>
+                        <span class='travel-status'>已记录</span>
+                      </a>
+                    ))
+                  }
+                </details>
+              ))
+            }
+          </details>
+        ))
+      }
+    </div>
   </Panel>
 
-  <Dialogue speaker={site.heroName} avatar class='reveal' typewriter='旅行日志记录了我每周走过的路。有时是修 Bug，有时是拆架构，偶尔也会在键盘声里打个盹。' />
+  <Dialogue speaker={site.heroName} avatar class='reveal' typewriter='旅行日志记录了我每周走过的路。按年按月归档，点进某一周看看当时都在忙什么。' />
 </FamicomLayout>

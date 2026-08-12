@@ -2458,6 +2458,84 @@ section.panel {
   flex: 0 0 auto;
   padding-top: 4px;
 }
+/* —— 周维度标签 —— */
+.travel-item .tl-weekno {
+  flex: 0 0 60px;
+  font-family: var(--ps2);
+  font-size: 10px;
+  color: var(--gold);
+  padding-top: 3px;
+}
+.travel-item .travel-main p {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+/* —— 旅行日志：按年 / 月分组折叠 —— */
+.log-groups {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.year-group,
+.month-group {
+  border: 2px solid var(--line);
+  background: var(--panel);
+  box-shadow: 5px 5px 0 var(--black);
+}
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--panel2);
+  border-bottom: 2px solid var(--line);
+  font-family: var(--ps2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background-color 0.15s linear;
+}
+.group-title::-webkit-details-marker {
+  display: none;
+}
+.group-title:hover {
+  background: var(--panel);
+}
+.group-title::before {
+  content: '▶';
+  color: var(--gold);
+  font-size: 9px;
+}
+details[open] > .group-title::before {
+  content: '▼';
+}
+.group-title .group-label {
+  color: var(--fg);
+}
+.group-title .group-count {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--dim);
+}
+.month-group {
+  border: none;
+  box-shadow: none;
+  border-top: 2px solid var(--panel2);
+}
+.month-group .group-title {
+  background: transparent;
+  border-bottom: 1px solid var(--panel2);
+  padding: 8px 14px 8px 26px;
+  font-size: 10px;
+}
+.month-group .group-title:hover {
+  background: var(--panel2);
+}
 
 /* —— 伙伴酒馆 —— */
 .intro {
