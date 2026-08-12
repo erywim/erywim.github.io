@@ -1,7 +1,7 @@
 ---
 import config from '@/site-config'
 import { site } from '@/data/site'
-import { getPublishedBlog } from '@/utils/collections'
+import { sayings } from '@/data/sayings'
 import { getMetrics } from '@/utils/metrics'
 import '@/assets/styles/famicom.css'
 
@@ -17,13 +17,6 @@ const pageTitle =
 const { total } = await getMetrics()
 const gold = `G ${String(total).padStart(4, '0')}`
 const level = `LV.${Math.min(99, Math.max(1, total))}`
-
-// 天空频道：滚动展示最新任务
-const posts = await getPublishedBlog()
-const tickerPosts = posts.map((p, i) => ({
-  n: String(i + 1).padStart(2, '0'),
-  title: p.data.title
-}))
 
 const favicon =
   'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%237cc4f2%22/%3E%3Crect x=%223%22 y=%223%22 width=%2210%22 height=%2210%22 fill=%22%23d63a45%22/%3E%3Crect x=%225%22 y=%225%22 width=%226%22 height=%226%22 fill=%22%23fff8ec%22/%3E%3C/svg%3E'
@@ -144,12 +137,9 @@ const favicon =
         <div class='ticker-scroll'>
           <div class='ticker-track' id='tickerTrack'>
             {
-              tickerPosts.map((p) => (
-                <span>Q{p.n} <i>{p.title}</i></span>
+              sayings.map((s) => (
+                <span class='say-item'>{s}</span>
               ))
-            }
-            {
-              tickerPosts.length === 0 && <span>天空频道 <i>静待新的冒险</i></span>
             }
             <span>今日 <span class='weather-slot' data-city={site.weatherCity}><b>晴</b></span> · {level} · {gold}</span>
           </div>
@@ -174,6 +164,30 @@ const favicon =
           <rect x='0' y='2' width='5' height='1' fill='var(--spark)'/>
           <rect x='1' y='3' width='3' height='1' fill='var(--spark)'/>
           <rect x='2' y='4' width='1' height='1' fill='var(--spark)'/>
+        </symbol>
+        <symbol id='pixel-shroom' viewBox='0 0 8 7'>
+          <rect x='2' y='0' width='4' height='1' fill='#d63a45'/>
+          <rect x='1' y='1' width='6' height='2' fill='#d63a45'/>
+          <rect x='0' y='3' width='8' height='1' fill='#d63a45'/>
+          <rect x='2' y='2' width='1' height='1' fill='#fff8ec'/>
+          <rect x='5' y='2' width='1' height='1' fill='#fff8ec'/>
+          <rect x='3' y='4' width='2' height='1' fill='#f2e2c4'/>
+          <rect x='2' y='5' width='4' height='2' fill='#f2e2c4'/>
+        </symbol>
+        <symbol id='pixel-coin' viewBox='0 0 6 6'>
+          <rect x='1' y='0' width='4' height='1' fill='#c8861f'/>
+          <rect x='0' y='1' width='6' height='4' fill='#e9a13b'/>
+          <rect x='1' y='1' width='4' height='4' fill='#ffd84d'/>
+          <rect x='2' y='2' width='2' height='2' fill='#e9a13b'/>
+          <rect x='1' y='5' width='4' height='1' fill='#c8861f'/>
+        </symbol>
+        <symbol id='pixel-heart' viewBox='0 0 7 6'>
+          <rect x='1' y='0' width='1' height='1' fill='#d63a45'/>
+          <rect x='5' y='0' width='1' height='1' fill='#d63a45'/>
+          <rect x='1' y='1' width='5' height='1' fill='#d63a45'/>
+          <rect x='0' y='2' width='7' height='2' fill='#d63a45'/>
+          <rect x='1' y='4' width='5' height='1' fill='#d63a45'/>
+          <rect x='2' y='5' width='3' height='1' fill='#b22a33'/>
         </symbol>
         <symbol id='pixel-fish' viewBox='0 0 10 6'>
           <rect x='2' y='0' width='3' height='1' fill='var(--fish)'/>
@@ -810,7 +824,26 @@ const favicon =
 
   // —— 天空频道：双份内容无缝滚动 + 收起/展开 ——
   const track = document.getElementById('tickerTrack')
-  if (track) track.innerHTML += track.innerHTML
+  if (track) {
+    // 语料随机抽取打乱，每 3 条语料重播一次天气，语料间用像素图分隔，双份内容无缝滚动
+    const says = Array.from(track.querySelectorAll('.say-item')).map((el) => el.textContent || '')
+    const weather = track.querySelector('.weather-slot')?.parentElement?.outerHTML || ''
+    for (let i = says.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[says[i], says[j]] = [says[j], says[i]]
+    }
+    const picked = says.slice(0, 9) // 9 条语料 → 每 3 条插 1 次天气，共 3 次
+    const seps = ['pixel-star', 'pixel-shroom', 'pixel-coin', 'pixel-heart']
+    const sepOf = (i: number) =>
+      `<svg class='ticker-sep' width='12' height='12' viewBox='0 0 12 12' shape-rendering='crispEdges' aria-hidden='true'><use href='#${seps[i % seps.length]}'/></svg>`
+    let part = ''
+    let k = 0
+    picked.forEach((s, i) => {
+      part += `<span>${s}</span>` + sepOf(k++)
+      if ((i + 1) % 3 === 0) part += weather + sepOf(k++) // 每 3 条语料重播一次天气
+    })
+    track.innerHTML = part + part
+  }
   const tkc = document.getElementById('tickerClose')
   const tkt = document.getElementById('tickerTab')
   if (tkc) {

@@ -48,7 +48,8 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 - **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
 - **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。
 - **首页道具/队伍** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
-- **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权。改一处全局生效。
+- **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权、天气兜底城市（`weatherCity`）。改一处全局生效。
+- **频道语料** `src/data/sayings.ts`：天空/深海频道随机展示的像素游戏·动漫短句，每次加载随机抽 9 条，每 3 条语料重播一次天气，语料间以像素图标分隔。
 - **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志，HUD 金币等级、状态面板、冒险档案三处共用，实时计算保持一致。
 - **命令菜单** `src/components/famicom/CmdMenu.astro`：智能导航——首页点击平滑滚动到对应模块锚点，子页面点击跳转到对应页面。
 
