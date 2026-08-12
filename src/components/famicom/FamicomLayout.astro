@@ -41,6 +41,8 @@ const favicon =
     <meta name='color-scheme' content='light' />
     <meta name='theme-color' content='#7cc4f2' />
     <meta name='generator' content={Astro.generator} />
+    <link rel='preload' href='/fonts/fusion-pixel-12px.woff2' as='font' type='font/woff2' crossorigin='anonymous' />
+    <link rel='preload' href='/fonts/press-start-2p.woff2' as='font' type='font/woff2' crossorigin='anonymous' />
     <script is:inline>
       ;(function () {
         try {
@@ -623,14 +625,19 @@ const favicon =
     paint()
   }
 
-  // —— 视差 ——
+  // —— 视差（rAF 节流，避免 mousemove 高频触发重排） ——
   const fx = document.getElementById('skyfx')
   if (fx) {
+    let parId = 0
     window.addEventListener('mousemove', (e) => {
-      const x = e.clientX / window.innerWidth - 0.5
-      const y = e.clientY / window.innerHeight - 0.5
-      fx.style.setProperty('--mx', (x * 18).toFixed(1) + 'px')
-      fx.style.setProperty('--my', (y * 10).toFixed(1) + 'px')
+      if (parId) return
+      parId = requestAnimationFrame(() => {
+        parId = 0
+        const x = e.clientX / window.innerWidth - 0.5
+        const y = e.clientY / window.innerHeight - 0.5
+        fx.style.setProperty('--mx', (x * 18).toFixed(1) + 'px')
+        fx.style.setProperty('--my', (y * 10).toFixed(1) + 'px')
+      })
     })
     const layers = fx.querySelectorAll('.layer')
     const mx = [-0.5, -1, -1.8]
