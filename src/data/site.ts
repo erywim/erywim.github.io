@@ -18,5 +18,7 @@ export const site = {
   /** GitHub 主页 */
   github: 'https://github.com/erywim',
   /** 页脚署名 */
-  copyright: `© ${new Date().getFullYear()} Erywim`
+  copyright: `© ${new Date().getFullYear()} Erywim`,
+  /** 今日天气：IP 定位全部失败时兜底显示的城市（open-meteo 地理编码用） */
+  weatherCity: '北京'
 }

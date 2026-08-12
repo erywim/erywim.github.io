@@ -1,6 +1,7 @@
 ---
 import { render, type CollectionEntry } from 'astro:content'
 
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import { site } from '@/data/site'
@@ -56,7 +57,7 @@ walk(headings as { depth: number; slug: string; text: string; children: unknown[
 ---
 
 <FamicomLayout title={post.data.title} description={post.data.description}>
-  <a class='back-btn' href='/blog' aria-label='返回冒险记录'>← 返回</a>
+  <Breadcrumb items={[{ label: '← 返回', href: '/blog' }]} />
 
   <div class='detail-grid'>
     <div class='detail-main'>

@@ -151,7 +151,7 @@ const favicon =
             {
               tickerPosts.length === 0 && <span>天空频道 <i>静待新的冒险</i></span>
             }
-            <span>今日 <b>晴</b> · {level} · {gold}</span>
+            <span>今日 <span class='weather-slot' data-city={site.weatherCity}><b>晴</b></span> · {level} · {gold}</span>
           </div>
         </div>
         <button class='ticker-close' id='tickerClose'>收起 ▲</button>
@@ -827,6 +827,123 @@ const favicon =
       tkt.classList.remove('show')
     })
   }
+
+  // —— 今日天气：多源 IP 定位 → open-meteo 天气；全失败兜底到配置城市 ——
+  const weatherSlots = document.querySelectorAll<HTMLElement>('.weather-slot')
+  const fallbackCity = weatherSlots[0]?.dataset.city || ''
+  const WX_TTL = 30 * 60 * 1000
+  const WX_DESC: Record<number, string> = {
+    0: '晴', 1: '晴间多云', 2: '多云', 3: '阴',
+    45: '雾', 48: '雾凇',
+    51: '毛毛雨', 53: '毛毛雨', 55: '毛毛雨',
+    56: '冻毛毛雨', 57: '冻毛毛雨',
+    61: '小雨', 63: '中雨', 65: '大雨',
+    66: '冻雨', 67: '冻雨',
+    71: '小雪', 73: '中雪', 75: '大雪',
+    77: '雪粒',
+    80: '阵雨', 81: '阵雨', 82: '强阵雨',
+    85: '阵雪', 86: '阵雪',
+    95: '雷阵雨', 96: '雷暴伴冰雹', 99: '雷暴伴冰雹'
+  }
+  // ipwho.is / ipinfo.io 返回英文城市名，常用城市转中文，未知城市保留原名
+  const WX_CITY: Record<string, string> = {
+    Beijing: '北京', Shanghai: '上海', Guangzhou: '广州', Shenzhen: '深圳',
+    Hangzhou: '杭州', Nanjing: '南京', Suzhou: '苏州', Chengdu: '成都',
+    Chongqing: '重庆', Wuhan: '武汉', "Xi'an": '西安', Tianjin: '天津',
+    Changsha: '长沙', Qingdao: '青岛', Dalian: '大连', Xiamen: '厦门',
+    Fuzhou: '福州', Zhengzhou: '郑州', Hefei: '合肥', Kunming: '昆明',
+    Shenyang: '沈阳', Harbin: '哈尔滨', Changchun: '长春', Jinan: '济南',
+    Nanchang: '南昌', Guiyang: '贵阳', Nanning: '南宁', Haikou: '海口',
+    Sanya: '三亚', Lanzhou: '兰州', Urumqi: '乌鲁木齐', Hohhot: '呼和浩特',
+    Yinchuan: '银川', Xining: '西宁', Lhasa: '拉萨', Taiyuan: '太原',
+    Shijiazhuang: '石家庄', 'Hong Kong': '香港', Macau: '澳门', Taipei: '台北'
+  }
+  const setWeather = (html: string) => weatherSlots.forEach((el) => (el.innerHTML = html))
+  // 带超时的 fetch，避免请求挂起导致占位迟迟不更新
+  const fetchTimeout = (url: string, ms: number) => {
+    const c = new AbortController()
+    const t = setTimeout(() => c.abort(), ms)
+    return fetch(url, { signal: c.signal }).finally(() => clearTimeout(t))
+  }
+  // 定位任务：成功才 resolve，失败/无效一律 reject，供 Promise.any 取最快成功者
+  const geoJob = (p: Promise<{ lat: number; lon: number; city: string } | null>) =>
+    p.then(
+      (v) => (v ? v : Promise.reject(new Error('empty'))),
+      () => Promise.reject(new Error('fail'))
+    )
+
+  async function findLocation(): Promise<{ lat: number; lon: number; city: string } | null> {
+    const jobs = [
+      geoJob(fetchTimeout('https://ipwho.is/', 4000).then((r) => r.json()).then((g: any) =>
+        g?.success && g.latitude != null && g.longitude != null
+          ? { lat: g.latitude, lon: g.longitude, city: WX_CITY[g.city] || g.city || '' }
+          : null)),
+      geoJob(fetchTimeout('https://ip-api.com/json/?lang=zh-CN', 4000).then((r) => r.json()).then((g: any) =>
+        g?.status === 'success' && g.lat != null && g.lon != null
+          ? { lat: g.lat, lon: g.lon, city: g.city || '' }
+          : null)),
+      geoJob(fetchTimeout('https://ipinfo.io/json', 4000).then((r) => r.json()).then((g: any) => {
+        if (!g?.loc) return null
+        const [lat, lon] = String(g.loc).split(',').map(Number)
+        return { lat, lon, city: WX_CITY[g.city] || g.city || '' }
+      }))
+    ]
+    try {
+      return await Promise.any(jobs)
+    } catch (e) {
+      return null
+    }
+  }
+
+  async function loadWeather() {
+    try {
+      const cached = localStorage.getItem('erywim-wx')
+      if (cached) {
+        const { at, html } = JSON.parse(cached) as { at: number; html: string }
+        if (Date.now() - at < WX_TTL) {
+          setWeather(html)
+          return
+        }
+      }
+      let loc = await findLocation()
+      if (!loc) {
+        // 多源定位全失败（如走代理被拦截）：兜底显示配置城市
+        if (!fallbackCity) return
+        const gc = (await (await fetchTimeout(
+          'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(fallbackCity) + '&count=1&language=zh',
+          5000
+        )).json()) as { results?: Array<{ latitude?: number; longitude?: number }> }
+        if (!gc?.results?.[0]?.latitude || !gc?.results?.[0]?.longitude) return
+        loc = { lat: gc.results[0].latitude, lon: gc.results[0].longitude, city: fallbackCity }
+      }
+      const q = new URLSearchParams({
+        latitude: String(loc.lat),
+        longitude: String(loc.lon),
+        current: 'temperature_2m,weather_code',
+        daily: 'temperature_2m_max,temperature_2m_min',
+        timezone: 'auto'
+      })
+      const wx = (await (await fetchTimeout('https://api.open-meteo.com/v1/forecast?' + q, 5000)).json()) as {
+        current?: { temperature_2m?: number; weather_code?: number }
+        daily?: { temperature_2m_max?: number[]; temperature_2m_min?: number[] }
+      }
+      const temp = Math.round(wx.current?.temperature_2m ?? NaN)
+      if (Number.isNaN(temp)) return
+      const desc = WX_DESC[wx.current?.weather_code ?? 0] ?? '未知'
+      let html = (loc.city ? `<i>${loc.city}</i> ` : '') + `${desc} <b>${temp}°C</b>`
+      const hi = Math.round(wx.daily?.temperature_2m_max?.[0] ?? NaN)
+      const lo = Math.round(wx.daily?.temperature_2m_min?.[0] ?? NaN)
+      if (!Number.isNaN(hi)) html += ` ↑${hi}°`
+      if (!Number.isNaN(lo)) html += ` ↓${lo}°`
+      setWeather(html)
+      try {
+        localStorage.setItem('erywim-wx', JSON.stringify({ at: Date.now(), html }))
+      } catch (e) {}
+    } catch (e) {
+      /* 网络失败 / 请求被拦截：保留默认「晴」，静默降级 */
+    }
+  }
+  if (weatherSlots.length) loadWeather()
 
   // —— 阅读进度 + 回到顶部 ——
   const prog = document.getElementById('progress')

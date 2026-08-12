@@ -2112,32 +2112,6 @@ details:not([open]) > .list-rule .ba-arrow::before {
   grid-column: 1 / -1;
 }
 
-/* —— 返回按钮 —— */
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--ps2), var(--pix), monospace;
-  font-size: 10px;
-  color: var(--fg);
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  padding: 6px 14px;
-  margin-bottom: 14px;
-  border: 1px solid var(--line);
-  background: var(--panel2);
-  box-shadow: 2px 2px 0 var(--black);
-  transition:
-    background-color 0.15s linear,
-    color 0.15s linear,
-    transform 0.16s steps(3);
-}
-.back-btn:hover {
-  background: var(--fg);
-  color: var(--panel);
-  transform: translateX(-2px);
-}
-
 /* —— 详情页：正文 + 右侧目录 —— */
 .detail-grid {
   display: grid;
