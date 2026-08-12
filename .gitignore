@@ -1,24 +1,41 @@
-# Compiled class file
-*.class
+### Astro ###
+dist/
+.astro/
 
-# Log file
-*.log
+### Vercel ###
+.vercel/
 
-# BlueJ files
-*.ctxt
+### Vim ###
+[._]*.un~
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+### VisualStudioCode ###
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# Code workspace files
+*.code-workspace
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+### Node ###
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# dependencies
+node_modules/
+
+# environment variables
+.env
+.env.production
+
+### Custom ###
+.DS_Store
+old_blog
+ignore.*
+bunfig.toml
+/src/content/blog/test.*
+/test/
