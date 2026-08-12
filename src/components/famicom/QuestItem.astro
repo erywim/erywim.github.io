@@ -1,0 +1,43 @@
+---
+import type { CollectionEntry } from 'astro:content'
+
+import { formatQuestDate } from '@/utils/format'
+
+interface Props {
+  post: CollectionEntry<'blog'>
+  index: number
+  /** home：状态标记 + 达成；log：查看任务按钮（默认） */
+  variant?: 'home' | 'log'
+}
+
+const { post, index, variant = 'log' } = Astro.props
+const rank = post.data.rank ?? 'B'
+const qno = String(index + 1).padStart(2, '0')
+const href = `/blog/${post.id}`
+const qmeta = `${formatQuestDate(post.data.publishDate)} · 地图「${post.data.category}」${
+  variant === 'log' ? ' · 达成 ✓' : ''
+}`
+---
+
+<li class='quest-item'>
+  <span class='quest-no'>Q<b>{qno}</b></span>
+  <span class={`quest-rank ${rank.toLowerCase()}`}>{rank}</span>
+  <div class='quest-main'>
+    <h3><a href={href}>{post.data.title}</a></h3>
+    <div class='qmeta'>{qmeta}</div>
+    {
+      post.data.tags.length > 0 && (
+        <div class='quest-tags'>
+          {post.data.tags.map((tag) => <span class='tag'>{tag}</span>)}
+        </div>
+      )
+    }
+  </div>
+  {
+    variant === 'log' ? (
+      <a class='quest-go' href={href}>查看任务 →</a>
+    ) : (
+      <span class='quest-status'>达成 ✓</span>
+    )
+  }
+</li>

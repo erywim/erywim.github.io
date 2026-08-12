@@ -1,33 +1,25 @@
 ---
-import { PFSearch } from 'astro-pure/components/pages'
-import { Button } from 'astro-pure/user'
-import PageLayout from '@/layouts/BaseLayout.astro'
-import { integ } from '@/site-config'
-
-const meta = {
-  description: 'Search relative posts of the whole blog',
-  title: 'Search'
-}
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Search from '@/components/famicom/Search.astro'
+import { site } from '@/data/site'
 ---
 
-<PageLayout {meta}>
-  <Button title='Back' href='/blog' variant='back' />
-  <main class='mt-6 lg:mt-10'>
-    <div id='content-header' class='animate'>
-      <h1 class='mb-6 text-3xl font-medium'>Search</h1>
-    </div>
+<FamicomLayout title='站内搜索'>
+  <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '站内搜索' }]} />
 
-    <div id='content' class='animate'>
-      {
-        integ.pagefind ? (
-          <>
-            <p>Enter a search term or phrase to search the blog.</p>
-            <PFSearch />
-          </>
-        ) : (
-          <p>Pagefind is disabled.</p>
-        )
-      }
-    </div>
-  </main>
-</PageLayout>
+  <div class='page-head'>
+    <h1>站内<b>搜索</b></h1>
+    <span class='en'>SEARCH</span>
+  </div>
+
+  <CmdMenu />
+
+  <Search />
+
+  <Dialogue speaker={site.heroName}>
+    想找哪段冒险？输入关键词，我把对应的任务卷轴翻出来给你。
+  </Dialogue>
+</FamicomLayout>

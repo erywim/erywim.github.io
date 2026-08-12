@@ -1,0 +1,62 @@
+---
+import config from '@/site-config'
+import { site } from '@/data/site'
+import { getMetrics } from '@/utils/metrics'
+import '@/assets/styles/famicom.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const { title, description = config.description } = Astro.props
+const pageTitle =
+  title && title !== config.title ? `${title} · ${site.gameTitle}` : site.gameTitle
+
+// HUD 金币/等级：由真实内容统计得出，与冒险档案、状态面板保持一致
+const { total } = await getMetrics()
+const gold = `G ${String(total).padStart(4, '0')}`
+const level = `LV.${Math.min(99, Math.max(1, total))}`
+
+const favicon =
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%230a0e1a%22/%3E%3Crect x=%223%22 y=%223%22 width=%2210%22 height=%2210%22 fill=%22%23ff2b35%22/%3E%3Crect x=%225%22 y=%225%22 width=%226%22 height=%226%22 fill=%22%23f2f5ff%22/%3E%3C/svg%3E'
+---
+
+<!doctype html>
+<html lang={config.locale.lang}>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <title>{pageTitle}</title>
+    <meta name='description' content={description} />
+    <link rel='icon' href={favicon} />
+    <link rel='canonical' href={new URL(Astro.url.pathname, Astro.site).href} />
+    <meta name='color-scheme' content='dark' />
+    <meta name='generator' content={Astro.generator} />
+  </head>
+  <body>
+    <div class='wrap'>
+      <div class='hud-bar'>
+        <span class='pwr'><i></i>PWR</span>
+        <span class='title'>FAMICOM<b> RPG</b> · {site.hudTitle}</span>
+        <span class='meta'>
+          <span class='g'>{gold}</span>
+          <span class='lv hide-s'>{level}</span>
+          <span class='hide-s'>1P</span>
+        </span>
+      </div>
+
+      <slot />
+
+      <footer>
+        <a href='/'>■ 返回标题</a>
+        <a href='/blog'>冒险记录</a>
+        <a href='/about'>勇者档案</a>
+        <a href='/logs'>旅行日志</a>
+        <a href='/links'>伙伴酒馆</a>
+        <a href={site.github} target='_blank' rel='noopener'>GitHub</a>
+        <span>{site.copyright}</span>
+      </footer>
+    </div>
+  </body>
+</html>

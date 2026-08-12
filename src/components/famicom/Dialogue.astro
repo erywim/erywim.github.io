@@ -1,0 +1,17 @@
+---
+interface Props {
+  speaker?: string
+  /** 是否在文本末尾显示闪烁光标（首页用） */
+  cursor?: boolean
+}
+
+const { speaker, cursor = false } = Astro.props
+---
+
+<div class='dialogue'>
+  <span class='speaker'>{speaker}</span>
+  <div class='txt'>
+    <slot />
+    {cursor && <span class='cur'>&nbsp;</span>}
+  </div>
+</div>

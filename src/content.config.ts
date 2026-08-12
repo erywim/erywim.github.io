@@ -37,24 +37,29 @@ const blog = defineCollection({
       language: z.string().optional(),
       draft: z.boolean().default(false),
       // Special fields
-      comment: z.boolean().default(true)
+      comment: z.boolean().default(true),
+      // Famicom RPG theme fields
+      /** 任务难度：S / A / B / C，缺省 B */
+      rank: z.enum(['S', 'A', 'B', 'C']).default('B'),
+      /** 地图「技术 / 产品 / 生活 / 笔记」，缺省 技术 */
+      category: z.string().default('技术')
     })
 })
 
-// Define docs collection
-const docs = defineCollection({
-  loader: glob({ base: './src/content/docs', pattern: '**/*.{md,mdx}' }),
+// Define logs collection (weekly travel logs)
+const logs = defineCollection({
+  loader: glob({ base: './src/content/logs', pattern: '**/*.{md,mdx}' }),
   schema: () =>
     z.object({
       title: z.string().max(60),
       description: z.string().max(160),
-      publishDate: z.coerce.date().optional(),
+      publishDate: z.coerce.date(),
+      /** 第 N 周 */
+      week: z.number(),
       updatedDate: z.coerce.date().optional(),
       tags: z.array(z.string()).default([]).transform(removeDupsAndLowerCase),
-      draft: z.boolean().default(false),
-      // Special fields
-      order: z.number().default(999)
+      draft: z.boolean().default(false)
     })
 })
 
-export const collections = { blog, docs }
+export const collections = { blog, logs }

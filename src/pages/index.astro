@@ -1,197 +1,283 @@
 ---
-import { Image } from 'astro:assets'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Panel from '@/components/famicom/Panel.astro'
+import QuestItem from '@/components/famicom/QuestItem.astro'
+import { items, party } from '@/data/home'
+import { hero } from '@/data/hero'
+import { site } from '@/data/site'
+import { getPublishedBlog } from '@/utils/collections'
+import { getMetrics } from '@/utils/metrics'
 
-import { Quote } from 'astro-pure/advanced'
-import { PostPreview } from 'astro-pure/components/pages'
-import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
-import { Button, Card, Icon, Label } from 'astro-pure/user'
-import PageLayout from '@/layouts/BaseLayout.astro'
-import ProjectCard from '@/components/home/ProjectCard.astro'
-import Section from '@/components/home/Section.astro'
-import SkillLayout from '@/components/home/SkillLayout.astro'
-import config from '@/site-config'
+const posts = await getPublishedBlog()
+const { total, essays, notes, logs } = await getMetrics()
 
-const languages = ['Html', 'JavaScript', 'CSS', 'Shell']
-const frontend = ['TypeScript', 'Vite', 'Webpack', 'Astro']
-const backend = ['Vercel', 'Waline']
+// 探索地图统计（按文章 category）
+const catCounts = new Map<string, number>()
+for (const p of posts) catCounts.set(p.data.category, (catCounts.get(p.data.category) ?? 0) + 1)
+const exploreTags = [...catCounts.entries()]
+  .filter(([c]) => c !== '笔记')
+  .map(([c, n]) => ({ name: c, n }))
+const noteTag = [...catCounts.entries()].find(([c]) => c === '笔记')
 
-const MAX_POSTS = 10
-const allPosts = await getBlogCollection()
-const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
-
-const imagePath = config.logo.src
-const images = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/assets/*.{jpeg,jpg,png,gif,avif,webp}'
-)
-if (!images[imagePath])
-  throw new Error(
-    `"${imagePath}" does not exist in glob: "src/assets/*.{jpeg,jpg,png,gif,avif,webp}"`
-  )
+const hpW = hero.stats.hp.max ? Math.round((hero.stats.hp.value / hero.stats.hp.max) * 100) : 0
+const mpW = hero.stats.mp.max ? Math.round((hero.stats.mp.value / hero.stats.mp.max) * 100) : 0
+const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.exp.max) * 100) : 0
 ---
 
-<PageLayout meta={{ title: 'Home' }} highlightColor='#659EB9'>
-  <main class='flex w-full flex-col items-center'>
-    <section class='animate mb-10 flex flex-col items-center gap-y-7' id='content-header'>
-      <Image
-        src={images[imagePath]()}
-        alt={config.logo.alt || 'Profile'}
-        class='h-28 w-auto rounded-full border p-1'
-        loading='eager'
-        fetchpriority='high'
-      />
+<FamicomLayout>
+  <header class='title-screen'>
+    <div class='stars'>★ ★ ★</div>
+    <div class='game-title'><span class='r'>{site.gameTitleR}</span><span class='g'>{site.gameTitleG}</span></div>
+    <svg class='hero-sprite' width='72' height='72' viewBox='0 0 24 24' shape-rendering='crispEdges' aria-label='像素勇者'>
+      <rect x='10' y='2' width='4' height='2' fill='#f2f5ff'/><rect x='8' y='4' width='8' height='2' fill='#f2f5ff'/>
+      <rect x='7' y='6' width='10' height='4' fill='#f0a030'/><rect x='6' y='6' width='1' height='4' fill='#c01420'/>
+      <rect x='8' y='10' width='2' height='2' fill='#f2f5ff'/><rect x='10' y='10' width='2' height='2' fill='#ff2b35'/><rect x='12' y='10' width='2' height='2' fill='#f2f5ff'/>
+      <rect x='7' y='12' width='10' height='4' fill='#ff2b35'/>
+      <rect x='6' y='16' width='4' height='4' fill='#1d2c4d'/><rect x='14' y='16' width='4' height='4' fill='#1d2c4d'/>
+      <rect x='5' y='20' width='4' height='2' fill='#0e1526'/><rect x='15' y='20' width='4' height='2' fill='#0e1526'/>
+      <rect x='19' y='12' width='2' height='8' fill='#f8d878'/><rect x='20' y='10' width='2' height='2' fill='#f8d878'/>
+    </svg>
+    <p class='subtitle'>{site.tagline}</p>
+    <div class='press-start'>▶ PRESS START ◀</div>
+  </header>
 
-      <div class='flex flex-col items-center gap-y-4'>
-        <h1 class='text-3xl font-medium'>{config.author}</h1>
-        <div class='flex flex-wrap justify-center gap-x-7 gap-y-3'>
-          <Label title='Somewhere'>
-            <Icon name='location' class='size-5' slot='icon' />
-          </Label>
-          <Label
-            title='Source code'
-            as='a'
-            href='https://github.com/cworld1/astro-theme-pure'
-            target='_blank'
-          >
-            <Icon name='github' class='size-5' slot='icon' />
-          </Label>
+  <CmdMenu />
+
+  <div class='grid-2'>
+    <Panel title='状态' en='STATUS' id='status' link='/about' linkLabel='勇者档案 →'>
+      <div class='status-body'>
+        <div class='status-avatar'>
+          <svg width='96' height='104' viewBox='0 0 32 36' shape-rendering='crispEdges' aria-label='玩家头像'>
+            <rect x='14' y='2' width='4' height='4' fill='#f2f5ff'/><rect x='10' y='6' width='12' height='6' fill='#f0a030'/>
+            <rect x='12' y='12' width='2' height='2' fill='#f2f5ff'/><rect x='14' y='12' width='4' height='2' fill='#ff2b35'/><rect x='18' y='12' width='2' height='2' fill='#f2f5ff'/>
+            <rect x='10' y='16' width='12' height='6' fill='#ff2b35'/>
+            <rect x='8' y='22' width='6' height='6' fill='#1d2c4d'/><rect x='18' y='22' width='6' height='6' fill='#1d2c4d'/>
+            <rect x='6' y='28' width='6' height='4' fill='#0e1526'/><rect x='20' y='28' width='6' height='4' fill='#0e1526'/>
+            <rect x='26' y='14' width='2' height='10' fill='#f8d878'/><rect x='28' y='12' width='2' height='2' fill='#f8d878'/>
+          </svg>
+        </div>
+        <div>
+          <div class='status-name'>{site.heroName}</div>
+          <div class='status-class'>{hero.class}</div>
+          <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`width:${hpW}%`}></i></span></div>
+          <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`width:${mpW}%`}></i></span></div>
+          <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`width:${expW}%`}></i></span></div>
+          <div class='stat-meta'>
+            <span>攻击 <b>长文×{essays}</b></span><span>防御 <b>笔记×{notes}</b></span><span>金币 <b>G{total}</b></span>
+          </div>
         </div>
       </div>
+    </Panel>
 
-      {/* Get template */}
-      <a
-        href='https://github.com/cworld1/astro-theme-pure'
-        target='_blank'
-        class='flex flex-row items-center gap-x-3 rounded-full border bg-background px-4 py-2 text-sm shadow-sm transition-shadow hover:shadow-md'
-      >
-        <span class='relative flex items-center justify-center'>
-          <span
-            class='absolute size-2 animate-ping rounded-full border border-green-400 bg-green-400 opacity-75'
-          ></span>
-          <span class='size-2 rounded-full bg-green-400'></span>
-        </span>
-        <p class='font-medium text-muted-foreground'>Get Template</p>
-      </a>
-    </section>
-
-    <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
-      <Section title='About'>
-        <p class='text-muted-foreground'>Developer / Designer</p>
-        <p class='text-muted-foreground'>
-          Lorem ipsum dolor sit amet, vidit suscipit at mei. Quem denique mea id. Usu ei regione
-          indoctum dissentiunt, cu meliore fuisset mei, vel quod voluptua ne. Ex dicat impedit mel,
-          at eum oratio possit voluptatum.
-        </p>
-        <Button title='More about me' class='w-fit self-end' href='/about' variant='ahead' />
-      </Section>
-      {
-        allPostsByDate.length > 0 && (
-          <Section title='Posts'>
-            <ul class='flex flex-col gap-y-1.5 sm:gap-y-2'>
-              {allPostsByDate.map((p) => (
-                <li class='flex flex-col gap-x-2 sm:flex-row'>
-                  <PostPreview post={p} />
-                </li>
-              ))}
-            </ul>
-            <Button title='More posts' class='w-fit self-end' href='/blog' variant='ahead' />
-          </Section>
-        )
-      }
-
-      {
-        /* <Section title='Experience'>
-      <Card
-        heading='Lorem Ipsum'
-        subheading='Sit amet consectetur'
-        date='Dec 2022 - Nov 2023'
-        imagePath='/src/assets/about-astro.png'
-        altText='Lorem, ipsum dolor sit'
-        imageClass='h-12 w-auto md:-start-16'
-      >
-        <ul class='ms-4 list-disc text-muted-foreground'>
-          <li>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore debitis recusandae, ut
-            molestiae laboriosam pariatur!
-
-            <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, pariatur!</li>
-          </li>
-        </ul>
-      </Card>
-      <Card
-        heading='Lorem Ipsum'
-        subheading='Sit amet consectetur'
-        date='Dec 2022 - Nov 2023'
-        imagePath='/src/assets/about-astro.png'
-        altText='Lorem, ipsum dolor sit'
-        imageClass='h-12 w-auto md:-start-16'
-      />
-    </Section> */
-      }
-      <Section title='Education'>
-        <Card
-          as='a'
-          heading='Lorem ipsum'
-          subheading='Lorem ipsum dolor sit amet, vidit suscipit at mei.'
-          date='August 2021 - July 2025'
-          href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-        >
-          {
-            /* <ul class='ms-4 list-disc text-muted-foreground'>
-          <li>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore debitis recusandae, ut
-            molestiae laboriosam pariatur!
-          </li>
-          <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, pariatur!</li>
-        </ul> */
-          }
-        </Card>
-      </Section>
-
-      <Section title='Website List'>
-        <div class='grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          <ProjectCard
-            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            heading='Lorem ipsum'
-            subheading='Do not go gentle into that good night'
-            imagePath='/src/assets/projects/1.avif'
-          />
-          <ProjectCard
-            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            heading='Lorem ipsum'
-            subheading='Old age burn and rave at close of day'
-            imagePath='/src/assets/projects/2.avif'
-          />
-          <ProjectCard
-            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            heading='Lorem ipsum'
-            subheading='Rage, rage against the dying of the light'
-            imagePath='/src/assets/projects/3.avif'
-          />
-          <ProjectCard
-            href='/projects'
-            heading='More projects'
-            subheading='Check out more projects'
-            imagePath='/src/assets/projects/4.avif'
-          />
+    <Panel title='占卜' en='DIVINATION' id='fortune'>
+      <div class='fortune-body'>
+        <div class='fortune-cup' id='fortuneCup' role='button' tabindex='0' aria-label='点击抽签' title='点击抽签'>
+          <svg width='60' height='76' viewBox='0 0 32 40' shape-rendering='crispEdges' aria-hidden='true'>
+            <rect x='8' y='2' width='2' height='8' fill='#f2f5ff'/><rect x='12' y='2' width='2' height='8' fill='#f2f5ff'/>
+            <rect x='16' y='0' width='2' height='10' fill='#f8d878'/>
+            <rect x='6' y='10' width='20' height='4' fill='#ff2b35'/>
+            <rect x='4' y='14' width='24' height='16' fill='#ff2b35'/>
+            <rect x='2' y='16' width='2' height='12' fill='#c01420'/>
+            <rect x='28' y='16' width='2' height='12' fill='#c01420'/>
+            <rect x='4' y='30' width='24' height='4' fill='#c01420'/>
+            <rect x='8' y='14' width='2' height='16' fill='#c01420'/><rect x='22' y='14' width='2' height='16' fill='#c01420'/>
+            <rect x='12' y='22' width='8' height='2' fill='#fff'/><rect x='12' y='26' width='8' height='2' fill='#fff'/>
+          </svg>
         </div>
-      </Section>
+        <h3>占卜师的签筒 · 今日运势</h3>
+        <p class='tip'>点击签筒或按 START 揭晓今日运势</p>
+        <button class='fortune-btn' id='fortuneBtn'>摇签 ▶ START</button>
+        <div class='fortune-result' id='fortuneResult' aria-live='polite'></div>
+      </div>
+    </Panel>
+  </div>
 
-      <Section title='Certifications'>
-        <Card
-          as='a'
-          heading='Lorem ipsum'
-          subheading='Lorem ipsum dolor sit amet, vidit suscipit at mei. Quem denique mea id. Usu ei regione indoctum dissentiunt, cu meliore fuisset mei, vel quod voluptua ne. Ex dicat impedit mel, at eum oratio possit voluptatum. Dicat ceteros cu vim. Impetus fuisset ullamcorper pri cu, his posse iisque ad, aliquam honestatis usu id.'
-          date='July 2024'
-          href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-        />
-      </Section>
+  <Panel title='冒险记录' en='QUEST LOG' id='quests' link='/blog' linkLabel='全部冒险 →'>
+    <ul class='quest-list'>
+      {
+        posts.map((post, i) => (
+          <QuestItem {post} index={i} variant='home' />
+        ))
+      }
+    </ul>
+    {
+      posts.length === 0 && (
+        <p style='padding:14px 16px;color:var(--dim)'>暂无任务。</p>
+      )
+    }
+  </Panel>
 
-      <Section title='Skills'>
-        <SkillLayout title='Languages' skills={languages} />
-        <SkillLayout title='Frontend' skills={frontend} />
-        <SkillLayout title='Backend' skills={backend} />
-      </Section>
+  <div class='grid-2'>
+    <Panel title='道具袋' en='ITEMS' id='items'>
+      <div class='item-grid'>
+        {
+          items.map((item) => (
+            <div class='item-card'>
+              <div class='item-icon'>{item.icon}</div>
+              <div>
+                <div class='it'>{item.rarity}</div>
+                <h3>
+                  {
+                    item.repo.href.startsWith('http') ? (
+                      <a href={item.repo.href} target='_blank' rel='noopener'>{item.title}</a>
+                    ) : (
+                      item.title
+                    )
+                  }
+                </h3>
+                <p>{item.desc}</p>
+                <div class='btns'>
+                  {
+                    item.repo.href.startsWith('http') ? (
+                      <a class='primary' href={item.repo.href} target='_blank' rel='noopener'>{item.repo.label}</a>
+                    ) : (
+                      <span class='primary'>{item.repo.label}</span>
+                    )
+                  }
+                  {
+                    item.demo.href.startsWith('http') ? (
+                      <a href={item.demo.href} target='_blank' rel='noopener'>{item.demo.label}</a>
+                    ) : (
+                      <span>{item.demo.label}</span>
+                    )
+                  }
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </Panel>
+
+    <Panel title='队伍' en='PARTY' id='party' link='/about' linkLabel='勇者档案 →'>
+      <div class='party-grid'>
+        {
+          party.map((member) => (
+            <div class='party-card'>
+              <div class='party-av'>
+                {
+                  member.avatar === 'warrior' ? (
+                    <svg width='48' height='48' viewBox='0 0 24 24' shape-rendering='crispEdges' aria-hidden='true'>
+                      <rect x='9' y='2' width='6' height='4' fill='#f0a030'/><rect x='8' y='6' width='8' height='6' fill='#ff2b35'/><rect x='10' y='12' width='4' height='2' fill='#f2f5ff'/><rect x='8' y='14' width='8' height='6' fill='#1d2c4d'/><rect x='6' y='20' width='4' height='2' fill='#0e1526'/><rect x='14' y='20' width='4' height='2' fill='#0e1526'/>
+                    </svg>
+                  ) : (
+                    <svg width='48' height='48' viewBox='0 0 24 24' shape-rendering='crispEdges' aria-hidden='true'>
+                      <rect x='9' y='2' width='6' height='4' fill='#33d5ff'/><rect x='8' y='6' width='8' height='6' fill='#1d2c4d'/><rect x='10' y='12' width='4' height='2' fill='#f2f5ff'/><rect x='8' y='14' width='8' height='6' fill='#33d5ff'/><rect x='6' y='20' width='4' height='2' fill='#0e1526'/><rect x='14' y='20' width='4' height='2' fill='#0e1526'/><rect x='18' y='8' width='2' height='6' fill='#f8d878'/>
+                    </svg>
+                  )
+                }
+              </div>
+              <div>
+                <h3>{member.title}</h3>
+                <div class='cls'>{member.class}</div>
+                <p>{member.desc}</p>
+                <div class='period'>{member.period}</div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </Panel>
+  </div>
+
+  <Panel title='冒险档案' en='ACHIEVEMENTS'>
+    <div class='achieve-rows'>
+      <div class='achieve-row'>
+        <div class='ar-title'>
+          冒险记录 <span class='en'>ADVENTURES</span>
+          <a class='px-link' href='/blog'>冒险记录 →</a>
+        </div>
+        <div class='ar-stats'>
+          <div class='ar-stat'><b>{essays}</b> 长文</div>
+          <div class='ar-stat'><b>{notes}</b> 笔记</div>
+          <div class='ar-stat'><b>{essays + notes}</b> 文章</div>
+        </div>
+        {
+          (exploreTags.length > 0 || noteTag) && (
+            <div class='ar-tags'>
+              <span>✍️ 探索地图：</span>
+              {exploreTags.map((t) => <span class='tag'>{t.name} {t.n}</span>)}
+              {noteTag && (
+                <>
+                  <span>·</span><span>📓 笔记：</span><span class='tag'>{noteTag[0]} {noteTag[1]}</span>
+                </>
+              )}
+            </div>
+          )
+        }
+      </div>
+      <div class='achieve-row'>
+        <div class='ar-title'>
+          旅行日志 <span class='en'>JOURNEY</span>
+          <a class='px-link' href='/logs'>旅行日志 →</a>
+        </div>
+        <div class='ar-stats'>
+          <div class='ar-stat'><b>{logs}</b> 日志</div>
+        </div>
+      </div>
     </div>
-    <Quote class='mt-12' />
-  </main>
-</PageLayout>
+  </Panel>
+
+  <Dialogue speaker={site.heroName} cursor>
+    欢迎来到我的冒险世界。我是全栈 Agent 开发工程师，正在用代码探索这片星海。用下面的命令菜单逛逛我的旅程吧。
+  </Dialogue>
+
+  <div class='cmd-tip'>
+    <span class='keys'>[ 方向键 ]</span> 选择命令 &nbsp;·&nbsp; <span class='keys'>[ A ]</span> 确定 &nbsp;·&nbsp; <span class='keys'>[ B ]</span> 取消
+  </div>
+</FamicomLayout>
+
+<script>
+  const FORTUNES = [
+    { t: '大吉', k: 'red', yi: '宜：合并 PR 一次通过', ji: '忌：周五下午部署代码', desc: '代码如行云流水，单测覆盖率直逼 100%，今天你是编译器的主宰！' },
+    { t: '大吉', k: 'red', yi: '宜：一击定位遗留的远古 Bug', ji: '忌：参加没有议程的长会', desc: '直觉敏锐，内存泄漏一点即中，连主架构师都对你刮目相看。' },
+    { t: '中吉', k: 'cyan', yi: '宜：重构一段烂代码', ji: '忌：依赖未文档化的第三方库', desc: '今天写出的每一行都是艺术品，Code Review 直接通过。' },
+    { t: '中吉', k: 'cyan', yi: '宜：抽空给开源项目提 Issue', ji: '忌：无视编译器警告', desc: '作者秒回，你不仅解了题还交了个极客朋友。' },
+    { t: '小吉', k: 'gold', yi: '宜：清理过期的本地分支', ji: '忌：加糖奶茶超大杯', desc: '无大富，但也没有 Core Dump，平安即福，早点睡觉。' },
+    { t: '小吉', k: 'gold', yi: '宜：为开源贡献第一行代码', ji: '忌：留下 // TODO: fix later', desc: '小步也是通往大黑客的巨跃，适合启动那个副业项目。' },
+    { t: '末吉', k: 'dim', yi: '宜：保存进度，早点下班', ji: '忌：通宵硬刚需求', desc: '运势平平，稳住别浪，把存档保存好，明天再战。' }
+  ]
+
+  const btn = document.getElementById('fortuneBtn') as HTMLButtonElement
+  const cup = document.getElementById('fortuneCup')
+  const res = document.getElementById('fortuneResult') as HTMLElement
+  let t: ReturnType<typeof setTimeout> | null = null
+
+  function draw() {
+    const f = FORTUNES[Math.floor(Math.random() * FORTUNES.length)]
+    res.className = 'fortune-result show'
+    res.innerHTML =
+      `<div class="type ${f.k}">${f.t}</div>` +
+      `<div class="yi">${f.yi}</div>` +
+      `<div class="ji">${f.ji}</div>` +
+      `<div class="desc">${f.desc}</div>` +
+      '<button class="again">再抽一次 ↻</button>'
+    res.querySelector('.again')?.addEventListener('click', go)
+  }
+
+  function go() {
+    if (btn.disabled) return
+    btn.disabled = true
+    btn.textContent = '求签中…'
+    cup?.classList.add('shake')
+    res.classList.remove('show')
+    if (t) clearTimeout(t)
+    t = setTimeout(() => {
+      cup?.classList.remove('shake')
+      btn.disabled = false
+      btn.textContent = '摇签 ▶ START'
+      draw()
+    }, 900)
+  }
+
+  btn.addEventListener('click', go)
+  cup?.addEventListener('click', go)
+  cup?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      go()
+    }
+  })
+</script>

@@ -1,0 +1,70 @@
+---
+import '@pagefind/default-ui/css/ui.css'
+---
+
+<section class='px'>
+  <div class='px-title'>站内搜索 <span class='en'>SEARCH</span></div>
+  <div class='search-body'>
+    {
+      import.meta.env.DEV ? (
+        <p class='dim'>开发模式下搜索不可用，请构建后查看。</p>
+      ) : (
+        <div id='site-search' />
+      )
+    }
+  </div>
+</section>
+
+<script>
+  const formatURL = (path: string) => path.replace(/(.)\/(#.*)?$/, '$1$2')
+
+  class SiteSearch extends HTMLElement {
+    constructor() {
+      super()
+      window.addEventListener('DOMContentLoaded', () => {
+        const onIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 1))
+        onIdle(async () => {
+          // @ts-expect-error — Module has no declaration file.
+          const { PagefindUI } = await import('@pagefind/default-ui')
+          new PagefindUI({
+            element: '#site-search',
+            baseUrl: import.meta.env.BASE_URL,
+            bundlePath: `${import.meta.env.BASE_URL.replace(/\/$/, '')}/pagefind/`,
+            showImages: false,
+            showSubResults: true,
+            processResult: (result: { url: string; sub_results: Array<{ url: string }> }) => {
+              result.url = formatURL(result.url)
+              result.sub_results = result.sub_results.map((sub) => {
+                sub.url = formatURL(sub.url)
+                return sub
+              })
+            }
+          })
+        })
+      })
+    }
+  }
+  customElements.define('site-search', SiteSearch)
+</script>
+
+<style>
+  .search-body {
+    padding: 16px;
+  }
+  .dim {
+    color: var(--dim);
+  }
+  :global(#site-search) {
+    --pagefind-ui-scale: 0.9;
+    --pagefind-ui-primary: #ff2b35;
+    --pagefind-ui-text: #f2f5ff;
+    --pagefind-ui-background: #0e1526;
+    --pagefind-ui-border: #1a2540;
+    --pagefind-ui-tag: #8b9ac0;
+    --pagefind-ui-font: 'Fusion Pixel 12px Proportional SC', monospace;
+    --pagefind-ui-border-width: 2px;
+    --pagefind-ui-border-radius: 0;
+    --pagefind-ui-image-border-radius: 0;
+    --pagefind-ui-image-box-ratio: 3 / 2;
+  }
+</style>

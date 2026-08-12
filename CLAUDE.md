@@ -4,20 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概况
 
-部署在 GitHub Pages 的个人博客，基于 **Astro + astro-theme-pure**（`bun` 管理依赖）。仓库 `erywim/erywim.github.io` 是 user site，`https://erywim.github.io/` 从根路径发布。
+部署在 GitHub Pages 的个人博客，基于 **Astro**（`bun` 管理依赖），主题为自研的**红白机 RPG 像素风**（「ERYWIM'S BLOG」）。仓库 `erywim/erywim.github.io` 是 user site，`https://erywim.github.io/` 从根路径发布。
+
+保留的 astro-pure 集成仅作为基础设施（pagefind 站内搜索、sitemap、unocss、mdx）；页面视觉全部由 `src/components/famicom/` 自写组件 + `src/assets/styles/famicom.css` 实现。
 
 ## 常用命令（包管理器用 bun）
 
 ```sh
-bun install            # 安装依赖（node_modules 不入库）
-bun run dev            # 本地开发服务器
-bun run build          # 构建：astro-pure check && astro check && astro build，产物在 dist/
-bun run preview        # 本地预览构建产物
-bun pure new           # 新建一篇文章
-bun run clean          # 清缓存：rm -rf .astro .vercel dist
+bun install                # 安装依赖（node_modules 不入库）
+bun run dev                # 本地开发服务器
+bun run build              # 构建：astro-pure check && astro check && astro build，产物在 dist/
+bun run preview            # 本地预览构建产物
+bun run new-post "标题"     # 新建文章（自动生成带 frontmatter 的草稿，draft:true）
+bun run new-log "标题" [周]  # 新建周报（不指定周数自动取最大周+1）
+bun run clean              # 清缓存：rm -rf .astro .vercel dist
 ```
 
-注意：构建若报图片缓存损坏，先 `rm -rf .astro dist node_modules/.astro` 再重新 build。
+**缓存坑**：`bun run clean` 不会清 `node_modules/.astro` 的内容缓存。删除/重命名内容文件后若构建结果仍是旧内容，执行 `rm -rf .astro dist node_modules/.astro && bun run build`。
 
 ## 部署方式
 
@@ -25,15 +28,33 @@ bun run clean          # 清缓存：rm -rf .astro .vercel dist
 - 前提：仓库 Settings → Pages → Source 必须选 **"GitHub Actions"**（不是 "Deploy from a branch"）。
 - `astro.config.ts` 已配置 `output: 'static'`、`site: 'https://erywim.github.io'`（无 base，user site 从根路径发布）。不要改回 server/vercel 模式。
 
-## 配置与内容
+## 页面结构（红白机 RPG 主题）
 
-- `src/site.config.ts`：站点配置（title、author、header/footer 菜单、友链、评论等）。评论系统 waline 当前 `enable: false`。
-- `astro.config.ts`：Astro 构建配置。
-- `src/content/blog/`：博客文章（每篇一个目录，内含 `index.md`/`index.mdx` + 资源）。`src/content/docs/`：文档站内容。
-- `public/links.json`：友链数据。**友链头像必须是本地路径**——远程图片 URL 会在构建时被 astro:assets fetch 并优化，若源站证书失效（如 `cdn.arthals.ink` 的证书在 2026-08-11 过期）会导致构建失败。本地占位图在 `public/avatar.png`。
+| 路由 | 对应原型 | 数据来源 |
+|---|---|---|
+| `/` | 标题屏 + 状态/占卜/冒险记录/道具/队伍/冒险档案 | 内容集合 + `src/data/home.ts` |
+| `/blog` | 冒险记录（文章列表，S/A/B/C 难度） | `src/content/blog/` |
+| `/blog/[id]` | 任务详情（文章正文卷轴 + 上/下一任务） | `src/content/blog/` |
+| `/about` | 勇者档案（角色面板 + 技能 + 冒险历程） | `src/data/hero.ts` |
+| `/logs` | 旅行日志（周报） | `src/content/logs/` |
+| `/links` | 伙伴酒馆（友链） | `src/data/friends.ts` |
+| `/search` | 站内搜索（pagefind） | 构建时自动索引 |
+| `/404` | 迷路页 | — |
+
+## 内容与数据
+
+- **博客文章** `src/content/blog/<slug>/index.md`：frontmatter 含 title / description / publishDate / rank(S·A·B·C) / category(技术·产品·生活·笔记) / tags / draft。`draft: true` 不发布。用 `bun run new-post "标题"` 自动生成模板。
+- **周报** `src/content/logs/`：title / description / publishDate / week。
+- **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
+- **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。
+- **首页道具/队伍** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
+- **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权。改一处全局生效。
+- **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志，HUD 金币等级、状态面板、冒险档案三处共用，实时计算保持一致。
+- **命令菜单** `src/components/famicom/CmdMenu.astro`：智能导航——首页点击平滑滚动到对应模块锚点，子页面点击跳转到对应页面。
 
 ## 注意事项
 
-- 默认 locale 是 `en-US`，做中文站需改 `site.config.ts` 的 `locale`。
-- demo 内容是主题自带的示例（blog/docs 都是占位），上线后按需替换。
-- 主题默认样式是演示样式，博客 UI 的定制属后续工作。
+- 站点已配置 `locale: zh-CN`。
+- 友链不再用 `public/links.json`（数据在 `src/data/friends.ts`）。
+- 评论系统未集成（waline 配置保持关闭）。
+- 新增文章/周报后 `bun run dev` 自动刷新；统计数值会自动更新。

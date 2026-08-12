@@ -1,18 +1,24 @@
 ---
-import { Button } from 'astro-pure/user'
-import PageLayout from '@/layouts/BaseLayout.astro'
-
-const meta = {
-  description: 'Not found',
-  title: '404'
-}
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import { site } from '@/data/site'
 ---
 
-<PageLayout {meta}>
-  <div class='px-4 py-10 text-center sm:px-6 lg:px-8'>
-    <h1 class='block text-7xl font-bold sm:text-9xl'>404</h1>
-    <p class='mt-3 text-muted-foreground'>Oops, something went wrong.</p>
-    <p class='text-lg'>Sorry, we couldn't find your page.</p>
-    <Button title='Back to home' href='/' variant='ahead' class='mt-5' />
+<FamicomLayout title='404'>
+  <div class='page-head'>
+    <h1>404</h1>
+    <span class='en'>NOT FOUND</span>
   </div>
-</PageLayout>
+
+  <div class='scroll' style='text-align:center;padding:40px 24px'>
+    <h2>▍此处空无一物</h2>
+    <p>你似乎走到了一片没有怪物也没有宝箱的区域……</p>
+    <p style='margin-top:20px'>
+      <a class='quest-go' href='/' style='display:inline-flex'>■ 返回标题画面</a>
+    </p>
+  </div>
+
+  <Dialogue speaker={site.heroName}>
+    地图上还没有这个坐标。回标题画面选个新去处吧。
+  </Dialogue>
+</FamicomLayout>

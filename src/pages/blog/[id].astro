@@ -1,0 +1,98 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import { site } from '@/data/site'
+import { getBlogByRank, getPublishedBlog } from '@/utils/collections'
+import { formatQuestDate } from '@/utils/format'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const posts = await getPublishedBlog()
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }))
+}
+
+type Props = {
+  post: CollectionEntry<'blog'>
+}
+
+const { post } = Astro.props
+const { Content } = await render(post)
+
+const byRank = await getBlogByRank()
+const byDate = await getPublishedBlog()
+const rankIndex = byRank.findIndex((p) => p.id === post.id)
+const dateIndex = byDate.findIndex((p) => p.id === post.id)
+const prev = byDate[dateIndex - 1] // 更新的任务
+const next = byDate[dateIndex + 1] // 更旧的任务
+
+const rank = post.data.rank ?? 'B'
+const REWARD: Record<string, { exp: number; g: number; ach: string }> = {
+  S: { exp: 500, g: 88, ach: '传说级冒险家' },
+  A: { exp: 300, g: 66, ach: '精英冒险家' },
+  B: { exp: 200, g: 44, ach: '熟练冒险家' },
+  C: { exp: 100, g: 22, ach: '初出茅庐' }
+}
+const reward = REWARD[rank] ?? REWARD.B
+const qno = String(rankIndex + 1).padStart(2, '0')
+---
+
+<FamicomLayout title={post.data.title} description={post.data.description}>
+  <Breadcrumb
+    items={[
+      { label: '■ 标题画面', href: '/' },
+      { label: '冒险记录', href: '/blog' },
+      { label: '任务详情' }
+    ]}
+  />
+
+  <header class='quest-head'>
+    <div class='qno'>
+      QUEST <b>{qno}</b> · <span style='color:var(--gold)'>RANK {rank}</span>
+    </div>
+    <h1>{post.data.title}</h1>
+    <div class='qmeta'>
+      <span>地图 <b>{post.data.category}</b></span>
+      <span>日期 <b>{formatQuestDate(post.data.publishDate)}</b></span>
+      <span>状态 <b style='color:var(--green)'>已达成</b></span>
+    </div>
+    {
+      post.data.tags.length > 0 && (
+        <div class='quest-tags'>
+          {post.data.tags.map((tag) => <span class='tag'>{tag}</span>)}
+        </div>
+      )
+    }
+    <div class='reward'>
+      任务奖励：<b>EXP +{reward.exp}</b> · <b>G +{reward.g}</b> · 解锁成就「{reward.ach}」
+    </div>
+  </header>
+
+  <article class='scroll'>
+    <Content />
+  </article>
+
+  <div class='nav-quests'>
+    {
+      prev && (
+        <a href={`/blog/${prev.id}`}>
+          <span class='dir'>◀ 上一任务</span>{prev.data.title}
+        </a>
+      )
+    }
+    {
+      next && (
+        <a href={`/blog/${next.id}`} style='text-align:right'>
+          <span class='dir'>下一任务 ▶</span>{next.data.title}
+        </a>
+      )
+    }
+  </div>
+
+  <Dialogue speaker={site.heroName}>
+    {post.data.title} —— 任务卷轴已归档。回到冒险记录可以查看其他战役。
+  </Dialogue>
+</FamicomLayout>

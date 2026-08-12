@@ -1,0 +1,42 @@
+---
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Panel from '@/components/famicom/Panel.astro'
+import QuestItem from '@/components/famicom/QuestItem.astro'
+import { site } from '@/data/site'
+import { getBlogByRank } from '@/utils/collections'
+
+const posts = await getBlogByRank()
+---
+
+<FamicomLayout title='冒险记录'>
+  <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '冒险记录' }]} />
+
+  <div class='page-head'>
+    <h1>冒险<b>记录</b></h1>
+    <span class='en'>QUEST LOG</span>
+  </div>
+
+  <CmdMenu active='blog' />
+
+  <Panel title='已接任务' en={`CURRENT QUESTS · ${posts.length}`}>
+    <ul class='quest-list'>
+      {
+        posts.map((post, i) => (
+          <QuestItem {post} index={i} variant='log' />
+        ))
+      }
+    </ul>
+    {
+      posts.length === 0 && (
+        <p style='padding:14px 16px;color:var(--dim)'>暂无任务，去写一篇吧。</p>
+      )
+    }
+  </Panel>
+
+  <Dialogue speaker={site.heroName}>
+    这些是我完成过的冒险。点开任务卷轴，可以查看当时的战斗记录与思考。
+  </Dialogue>
+</FamicomLayout>

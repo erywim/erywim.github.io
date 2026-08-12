@@ -1,0 +1,24 @@
+---
+interface Props {
+  title: string
+  en?: string
+  id?: string
+  class?: string
+  /** 右上角跳转链接（如「勇者档案 →」） */
+  link?: string
+  linkLabel?: string
+}
+
+const { title, en, id, class: className, link, linkLabel } = Astro.props
+const panelClass = `px${className ? ` ${className}` : ''}`
+---
+
+<section class={panelClass} id={id}>
+  <div class='px-title'>
+    <span class='bar-l'></span>
+    {title}
+    {en && <span class='en'>{en}</span>}
+    {link && <a class='px-link' href={link}>{linkLabel}</a>}
+  </div>
+  <slot />
+</section>
