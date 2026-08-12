@@ -49,7 +49,7 @@ const qno = String(rankIndex + 1).padStart(2, '0')
     ]}
   />
 
-  <header class='quest-head'>
+  <header class='quest-head reveal'>
     <div class='qno'>
       QUEST <b>{qno}</b> · <span style='color:var(--gold)'>RANK {rank}</span>
     </div>
@@ -71,7 +71,7 @@ const qno = String(rankIndex + 1).padStart(2, '0')
     </div>
   </header>
 
-  <article class='scroll'>
+  <article class='scroll reveal'>
     <Content />
   </article>
 
@@ -92,7 +92,7 @@ const qno = String(rankIndex + 1).padStart(2, '0')
     }
   </div>
 
-  <Dialogue speaker={site.heroName}>
+  <Dialogue speaker={site.heroName} avatar class='reveal'>
     {post.data.title} —— 任务卷轴已归档。回到冒险记录可以查看其他战役。
   </Dialogue>
 </FamicomLayout>

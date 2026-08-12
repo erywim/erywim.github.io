@@ -3,6 +3,7 @@ import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
 import CmdMenu from '@/components/famicom/CmdMenu.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import { hero } from '@/data/hero'
 import { site } from '@/data/site'
@@ -22,24 +23,17 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
 
   <CmdMenu active='about' />
 
-  <Panel title='主人公' en='PLAYER CHARACTER'>
+  <Panel title='主人公' en='PLAYER CHARACTER' class='reveal'>
     <div class='hero-card'>
       <div class='hero-av'>
-        <svg width='120' height='128' viewBox='0 0 32 36' shape-rendering='crispEdges' aria-label='勇者头像'>
-          <rect x='14' y='2' width='4' height='4' fill='#f2f5ff'/><rect x='10' y='6' width='12' height='6' fill='#f0a030'/>
-          <rect x='12' y='12' width='2' height='2' fill='#f2f5ff'/><rect x='14' y='12' width='4' height='2' fill='#ff2b35'/><rect x='18' y='12' width='2' height='2' fill='#f2f5ff'/>
-          <rect x='10' y='16' width='12' height='6' fill='#ff2b35'/>
-          <rect x='8' y='22' width='6' height='6' fill='#1d2c4d'/><rect x='18' y='22' width='6' height='6' fill='#1d2c4d'/>
-          <rect x='6' y='28' width='6' height='4' fill='#0e1526'/><rect x='20' y='28' width='6' height='4' fill='#0e1526'/>
-          <rect x='26' y='14' width='2' height='10' fill='#f8d878'/><rect x='28' y='12' width='2' height='2' fill='#f8d878'/>
-        </svg>
+        <FishSprite width={120} height={64} label='勇者头像' />
       </div>
       <div>
         <div class='hero-name'>{site.heroName}</div>
         <div class='hero-class'>{hero.class}</div>
-        <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`width:${hpW}%`}></i></span></div>
-        <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`width:${mpW}%`}></i></span></div>
-        <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`width:${expW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
         <div class='hero-bio'>
           {hero.bio}<br />
           <b>坐标</b> {hero.location} · <b>状态</b> {hero.status}
@@ -48,7 +42,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     </div>
   </Panel>
 
-  <Panel title='习得技能' en='SKILLS & SPELLS'>
+  <Panel title='习得技能' en='SKILLS & SPELLS' class='reveal'>
     <div class='skill-grid'>
       {
         hero.skills.map((skill) => (
@@ -63,7 +57,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     </div>
   </Panel>
 
-  <Panel title='冒险历程' en='ADVENTURE HISTORY'>
+  <Panel title='冒险历程' en='ADVENTURE HISTORY' class='reveal'>
     <ul class='timeline'>
       {
         hero.timeline.map((item) => (
@@ -79,7 +73,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     </ul>
   </Panel>
 
-  <Dialogue speaker={site.heroName}>
+  <Dialogue speaker={site.heroName} avatar class='reveal'>
     这就是我的能力面板。想看看我用这些技能打过的仗吗？去冒险记录里挑一卷吧。
   </Dialogue>
 </FamicomLayout>

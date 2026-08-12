@@ -17,9 +17,9 @@ import { friends } from '@/data/friends'
 
   <CmdMenu active='links' />
 
-  <Panel title='伙伴名单' en={`ALLIES · ${friends.length}`}>
+  <Panel title='伙伴名单' en={`ALLIES · ${friends.length}`} class='reveal'>
     <div class='intro'>
-      「星河灿烂，这是我的<b>伙伴们</b>，排名不分先后。」—— 酒馆老板娘说，他们在这片大陆上各有各的冒险。
+      「这是我的<b>伙伴们</b>，排名不分先后。」—— 酒馆老板娘说，他们在这片大陆上各有各的冒险。
     </div>
     {
       friends.length > 0 ? (

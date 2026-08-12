@@ -21,7 +21,7 @@ const posts = await getBlogByRank()
 
   <CmdMenu active='blog' />
 
-  <Panel title='已接任务' en={`CURRENT QUESTS · ${posts.length}`}>
+  <Panel title='已接任务' en={`CURRENT QUESTS · ${posts.length}`} class='reveal'>
     <ul class='quest-list'>
       {
         posts.map((post, i) => (
@@ -31,7 +31,7 @@ const posts = await getBlogByRank()
     </ul>
     {
       posts.length === 0 && (
-        <p style='padding:14px 16px;color:var(--dim)'>暂无任务，去写一篇吧。</p>
+        <p style='padding:14px 16px;color:var(--dim)'>暂无任务。</p>
       )
     }
   </Panel>

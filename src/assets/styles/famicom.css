@@ -1,6 +1,6 @@
 /* ============================================================
-   ERYWIM'S BLOG · 红白机 RPG 主题
-   从 famicom-rpg 原型提取重构（深海军蓝 + 红白机红 + 金色，CRT 扫描线）
+   ERYWIM'S BLOG · 红白机 RPG 主题（白昼云海版 · 昼夜双主题）
+   深海军蓝重构为亮色大陆；steps() 像素节奏动画 + 天空视差背景
    ============================================================ */
 
 @font-face {
@@ -18,25 +18,62 @@
   src: url('/fonts/fusion-pixel-12px.woff2') format('woff2');
 }
 
+/* —— 昼夜主题令牌（默认白昼） —— */
 :root {
-  --bg: #0a0e1a;
-  --bg2: #0e1526;
-  --panel: #131c30;
-  --panel2: #1a2540;
-  --panel3: #0c1222;
-  --fg: #f2f5ff;
-  --dim: #8b9ac0;
-  --line: #f2f5ff;
-  --black: #05070f;
-  --red: #ff2b35;
-  --red-hi: #ff6a70;
-  --cyan: #33d5ff;
-  --cyan-hi: #7ce8ff;
-  --green: #4ede6b;
-  --gold: #f8d878;
-  --orange: #f0a030;
+  --sky-top: #7cc4f2;
+  --sky-mid: #a8dcf7;
+  --sky-bot: #f6e9cb;
+  --panel: #fff8ec;
+  --panel2: #f6ecd6;
+  --panel3: #e6d6b2;
+  --bg2: #e6d6b2;
+  --fg: #3b3a54;
+  --dim: #6d6790;
+  --line: #3b3a54;
+  --black: #26254a;
+  --red: #d63a45;
+  --red-hi: #e05560;
+  --cyan: #15708f;
+  --cyan-hi: #0e5670;
+  --green: #2f7d4e;
+  --gold: #c8861f;
+  --gold-hi: #e9a13b;
+  --orange: #c96a1f;
+  --cloud1: #ffffff;
+  --cloud2: #e9f4fc;
+  --cloudsh: #d2e6f4;
+  --spark: #f2c96b;
+  --fish: #5a5878;
+  --scan: rgba(24, 30, 60, 0.055);
   --ps2: 'Press Start 2P', monospace;
   --pix: 'Fusion Pixel 12px Proportional SC', 'Fusion Pixel 12px Monospaced SC', monospace;
+}
+html[data-theme='night'] {
+  --sky-top: #141b33;
+  --sky-mid: #1e2a49;
+  --sky-bot: #2b3a5e;
+  --panel: #1d2540;
+  --panel2: #252f52;
+  --panel3: #161d33;
+  --bg2: #161d33;
+  --fg: #eef1fa;
+  --dim: #a2abc9;
+  --line: #eef1fa;
+  --black: #0a0e1e;
+  --red: #ff5a63;
+  --red-hi: #ff7a81;
+  --cyan: #5fd0ef;
+  --cyan-hi: #8fe0f5;
+  --green: #5ad68a;
+  --gold: #f2c56b;
+  --gold-hi: #ffd98a;
+  --orange: #f2a05a;
+  --cloud1: #28324f;
+  --cloud2: #2f3b5e;
+  --cloudsh: #1a2140;
+  --spark: #ffd98a;
+  --fish: #0c1124;
+  --scan: rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -46,35 +83,26 @@
 }
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
+}
+html[data-theme='night'] {
   color-scheme: dark;
 }
 body {
-  background: var(--bg);
+  background: var(--sky-top);
   color: var(--fg);
   font: 14px/1.8 var(--pix);
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
+  overflow-x: hidden;
 }
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 9990;
+  z-index: 9000;
   pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0 2px,
-    rgba(0, 0, 0, 0.16) 2px 4px
-  );
-  mix-blend-mode: multiply;
-}
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9989;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 62%, rgba(5, 7, 15, 0.4) 100%);
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 2px, var(--scan) 2px 4px);
 }
 a {
   color: var(--cyan);
@@ -90,10 +118,161 @@ button {
   outline: 3px solid var(--cyan);
   outline-offset: 2px;
 }
+svg {
+  image-rendering: pixelated;
+}
+
+/* —— 天穹背景（白昼云海 / 夜空） —— */
+#sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 0 2px, rgba(255, 255, 255, 0) 2px 4px),
+    linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 46%, var(--sky-bot) 100%);
+}
+#skyfx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.layer .cl {
+  position: absolute;
+  will-change: transform;
+}
+.layer-1 {
+  animation: pxl 3s steps(2) infinite alternate;
+}
+.layer-2 {
+  animation: pxl 4s steps(2) infinite alternate-reverse;
+}
+.layer-3 {
+  animation: pxl 5s steps(2) infinite alternate;
+}
+.cl-a {
+  animation: drift1 95s linear infinite;
+}
+.cl-b {
+  animation: drift1 62s linear infinite;
+}
+.cl-c {
+  animation: drift2 40s linear infinite;
+}
+.cl-d {
+  animation: drift2 28s linear infinite;
+}
+@keyframes drift1 {
+  from {
+    transform: translateX(-18vw);
+  }
+  to {
+    transform: translateX(108vw);
+  }
+}
+@keyframes drift2 {
+  from {
+    transform: translateX(-26vw);
+  }
+  to {
+    transform: translateX(118vw);
+  }
+}
+@keyframes pxl {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(1px, 0);
+  }
+}
+.spark {
+  position: absolute;
+  animation: twinkle 3.4s steps(3) infinite;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.ffish {
+  position: absolute;
+  animation: fly 46s linear infinite;
+}
+@keyframes fly {
+  from {
+    transform: translateX(-12vw) translateY(0);
+  }
+  to {
+    transform: translateX(112vw) translateY(-4vh);
+  }
+}
+/* —— 阅读进度条 / 回到顶部 —— */
+#progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 0;
+  z-index: 9600;
+  background: repeating-linear-gradient(90deg, var(--gold) 0 4px, var(--red) 4px 8px);
+  box-shadow: 0 2px 0 var(--black);
+}
+#toTop {
+  position: fixed;
+  right: 14px;
+  bottom: 72px;
+  z-index: 9400;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--black);
+  color: var(--fg);
+  font-family: var(--ps2);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s linear,
+    transform 0.16s steps(3),
+    background-color 0.15s linear,
+    color 0.15s linear;
+}
+#toTop.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-2px);
+}
+#toTop:hover {
+  background: var(--fg);
+  color: var(--panel);
+}
+
 .wrap {
+  position: relative;
+  z-index: 1;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 18px 14px 40px;
+  padding: 18px 14px 96px;
 }
 
 /* —— 顶栏 HUD —— */
@@ -103,7 +282,7 @@ button {
   align-items: center;
   gap: 10px 14px;
   padding: 10px 16px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   background: var(--panel);
   border: 2px solid var(--line);
   box-shadow: 5px 5px 0 var(--black);
@@ -119,6 +298,7 @@ button {
 .hud-bar .meta {
   margin-left: auto;
   display: flex;
+  align-items: center;
   gap: 14px;
   font-family: var(--ps2);
   font-size: 9px;
@@ -142,8 +322,37 @@ button {
   width: 10px;
   height: 10px;
   background: var(--red);
-  box-shadow: 0 0 8px var(--red);
-  border: 1px solid #fff;
+  border: 1px solid var(--fg);
+  animation: pulse 2s steps(2) infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--fg);
+  font-family: var(--ps2);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  transition:
+    background-color 0.15s linear,
+    transform 0.16s steps(3);
+}
+.theme-btn:hover {
+  background: var(--fg);
+  color: var(--panel);
 }
 
 /* —— 面包屑 —— */
@@ -184,14 +393,25 @@ button {
 
 /* —— 标题屏 —— */
 .title-screen {
+  position: relative;
   text-align: center;
-  padding: 30px 20px 26px;
-  margin-bottom: 16px;
-  background: linear-gradient(180deg, var(--bg2), var(--panel) 60%, var(--bg));
+  padding: 26px 20px 24px;
+  margin-bottom: 18px;
+  background: var(--panel);
   border: 2px solid var(--line);
   box-shadow: 5px 5px 0 var(--black);
-  position: relative;
   overflow: hidden;
+  animation: popIn 0.5s steps(5) both;
+}
+@keyframes popIn {
+  from {
+    transform: scale(0.78);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 .title-screen .stars {
   color: var(--gold);
@@ -201,8 +421,8 @@ button {
 }
 .title-screen .game-title {
   font-family: var(--ps2);
-  font-size: clamp(22px, 4.5vw, 40px);
-  line-height: 1.4;
+  font-size: clamp(20px, 4.2vw, 38px);
+  line-height: 1.35;
   color: var(--fg);
   letter-spacing: 0.06em;
   text-shadow: 4px 4px 0 var(--black);
@@ -213,6 +433,116 @@ button {
 .title-screen .game-title .g {
   color: var(--gold);
 }
+.title-sprite-zone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px auto 4px;
+  padding: 12px 20px;
+  background: var(--panel3);
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--black);
+  width: fit-content;
+  cursor: pointer;
+}
+.title-sprite-zone .fish {
+  animation: bob 2.6s steps(4) infinite;
+}
+.title-sprite-zone:hover .fish {
+  animation: hop 0.55s steps(5);
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-6px);
+  }
+  65% {
+    transform: translateY(-2px);
+  }
+}
+.fish-sprite {
+  display: block;
+}
+.eye {
+  animation: blink 3.8s infinite;
+}
+.lid {
+  animation: lidk 3.8s infinite;
+}
+@keyframes blink {
+  0%,
+  91% {
+    opacity: 1;
+  }
+  93.5%,
+  96.5% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes lidk {
+  0%,
+  91% {
+    opacity: 0;
+  }
+  93.5%,
+  96.5% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.gu-bubble {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--ps2);
+  font-size: 9px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 2px solid var(--line);
+  padding: 3px 9px;
+  box-shadow: 2px 2px 0 var(--black);
+  animation: guPop 0.9s steps(5) forwards;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+@keyframes guPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+}
 .title-screen .subtitle {
   color: var(--dim);
   font-size: 14px;
@@ -222,10 +552,6 @@ button {
   color: var(--cyan);
   font-weight: 400;
 }
-.title-screen .hero-sprite {
-  display: block;
-  margin: 16px auto 4px;
-}
 .press-start {
   display: inline-block;
   margin-top: 12px;
@@ -233,9 +559,10 @@ button {
   font-size: 12px;
   color: var(--gold);
   letter-spacing: 0.12em;
-  animation: blink 1.2s steps(1) infinite;
+  animation: blink2 1.2s steps(1) infinite;
+  cursor: pointer;
 }
-@keyframes blink {
+@keyframes blink2 {
   0%,
   60% {
     opacity: 1;
@@ -254,6 +581,7 @@ button {
   margin-bottom: 18px;
 }
 .cmd-menu a {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -266,25 +594,38 @@ button {
   text-decoration: none;
   font-size: 13px;
   box-shadow: 3px 3px 0 var(--black);
+  transition:
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3),
+    background-color 0.16s linear,
+    color 0.16s linear;
 }
 .cmd-menu a .ic {
   font-family: var(--ps2);
   font-size: 10px;
   color: var(--gold);
+  transition: color 0.16s linear;
 }
 .cmd-menu a:hover {
-  background: var(--red);
-  color: #fff;
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 5px 0 var(--black);
+  background: var(--fg);
+  color: var(--panel);
 }
 .cmd-menu a:hover .ic {
-  color: #fff;
+  color: var(--gold-hi);
+}
+.cmd-menu a:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--black);
 }
 .cmd-menu a.active {
-  background: var(--red);
-  color: #fff;
+  background: var(--fg);
+  color: var(--panel);
+  box-shadow: 5px 5px 0 var(--black);
 }
 .cmd-menu a.active .ic {
-  color: #fff;
+  color: var(--gold-hi);
 }
 
 /* —— 面板通用 —— */
@@ -292,6 +633,7 @@ button {
   border: 2px solid var(--line);
   background: var(--panel);
   box-shadow: 5px 5px 0 var(--black);
+  margin-bottom: 18px;
 }
 .px-title {
   display: flex;
@@ -304,14 +646,15 @@ button {
   font-size: 11px;
   letter-spacing: 0.06em;
 }
+.px-title .bar-l {
+  width: 12px;
+  height: 14px;
+  background: var(--fg);
+}
 .px-title .en {
   font-size: 9px;
   color: var(--dim);
-}
-.px-title .bar-l {
-  width: 10px;
-  height: 14px;
-  background: var(--red);
+  letter-spacing: 0.02em;
 }
 .px-link {
   margin-left: auto;
@@ -322,18 +665,34 @@ button {
   border: 1px solid var(--line);
   padding: 3px 8px;
   background: var(--panel3);
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .px-link:hover {
-  background: var(--cyan);
-  color: #06121a;
+  background: var(--fg);
+  color: var(--panel);
+  transform: translateY(-1px);
 }
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 18px;
 }
 section.panel {
   margin-bottom: 18px;
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.35s steps(5),
+    transform 0.35s steps(5);
 }
 
 /* —— 状态面板 —— */
@@ -346,7 +705,7 @@ section.panel {
 .status-avatar {
   width: 140px;
   height: 150px;
-  background: var(--bg2);
+  background: var(--panel3);
   border: 2px solid var(--line);
   display: flex;
   align-items: center;
@@ -373,6 +732,8 @@ section.panel {
 .stat-row .k {
   width: 36px;
   color: var(--dim);
+  font-family: var(--ps2);
+  font-size: 9px;
 }
 .stat-row .v {
   width: 34px;
@@ -382,7 +743,7 @@ section.panel {
 .stat-bar {
   flex: 1;
   height: 12px;
-  background: var(--bg2);
+  background: var(--panel3);
   border: 1px solid var(--line);
   overflow: hidden;
   max-width: 200px;
@@ -390,6 +751,11 @@ section.panel {
 .stat-bar i {
   display: block;
   height: 100%;
+  width: 0;
+  transition: width 1s steps(8);
+}
+.in .stat-bar i {
+  width: var(--w, 0%);
 }
 .stat-bar.hp i {
   background: var(--green);
@@ -425,6 +791,10 @@ section.panel {
 .fortune-cup {
   cursor: pointer;
   user-select: none;
+  transition: transform 0.18s steps(4);
+}
+.fortune-cup:hover {
+  transform: translateY(-3px);
 }
 .fortune-cup.shake {
   animation: shake 0.5s steps(4) infinite;
@@ -462,13 +832,25 @@ section.panel {
   border: 2px solid var(--line);
   box-shadow: 3px 3px 0 var(--black);
   font-size: 12px;
+  transition:
+    background-color 0.15s linear,
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3);
 }
 .fortune-btn:hover {
   background: var(--red-hi);
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 var(--black);
+}
+.fortune-btn:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 var(--black);
 }
 .fortune-btn:disabled {
   opacity: 0.55;
   cursor: wait;
+  transform: none;
+  box-shadow: 3px 3px 0 var(--black);
 }
 .fortune-result {
   display: none;
@@ -478,17 +860,20 @@ section.panel {
   padding: 12px 14px;
   width: 100%;
   text-align: left;
+  position: relative;
 }
 .fortune-result.show {
   display: block;
-  animation: pop 0.25s steps(3);
+  animation: pop 0.3s steps(4);
 }
 @keyframes pop {
-  0% {
+  from {
     transform: scale(0.7);
+    opacity: 0;
   }
-  100% {
+  to {
     transform: scale(1);
+    opacity: 1;
   }
 }
 .fortune-result .type {
@@ -531,10 +916,41 @@ section.panel {
   border: 2px solid var(--line);
   color: var(--fg);
   font-size: 10px;
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .fortune-result .again:hover {
-  background: var(--cyan);
-  color: #06121a;
+  background: var(--fg);
+  color: var(--panel);
+  transform: translateY(-1px);
+}
+.burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.burst i {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  box-shadow: 2px 2px 0 var(--black);
+  animation: burst 0.75s steps(5) forwards;
+}
+@keyframes burst {
+  from {
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) rotate(var(--rot, 0deg)) scale(0.3);
+    opacity: 0;
+  }
 }
 
 /* —— 任务列表 —— */
@@ -547,12 +963,16 @@ section.panel {
   padding: 12px 16px;
   border-bottom: 1px solid var(--panel2);
   align-items: flex-start;
+  transition:
+    background-color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .quest-item:last-child {
   border-bottom: none;
 }
 .quest-item:hover {
   background: var(--panel2);
+  transform: translateX(3px);
 }
 .quest-no {
   font-family: var(--ps2);
@@ -578,9 +998,11 @@ section.panel {
 }
 .quest-rank.a {
   color: var(--orange);
+  border-color: var(--orange);
 }
 .quest-rank.b {
   color: var(--cyan);
+  border-color: var(--cyan);
 }
 .quest-rank.c {
   color: var(--dim);
@@ -596,6 +1018,7 @@ section.panel {
 .quest-main h3 a {
   color: var(--fg);
   text-decoration: none;
+  transition: color 0.15s linear;
 }
 .quest-main h3 a:hover {
   color: var(--cyan);
@@ -639,10 +1062,15 @@ section.panel {
   text-decoration: none;
   box-shadow: 2px 2px 0 var(--black);
   font-family: var(--ps2);
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .quest-go:hover {
   background: var(--gold);
-  color: #0a0e1a;
+  color: var(--panel);
+  transform: translateY(-1px);
 }
 
 /* —— 任务详情头部 —— */
@@ -758,7 +1186,7 @@ section.panel {
   color: var(--cyan);
 }
 .scroll pre {
-  background: var(--bg);
+  background: var(--panel3);
   border: 1px solid var(--panel2);
   padding: 14px;
   overflow-x: auto;
@@ -820,6 +1248,9 @@ section.panel {
   color: var(--fg);
   font-size: 12px;
   box-shadow: 3px 3px 0 var(--black);
+  transition:
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3);
 }
 .nav-quests a .dir {
   display: block;
@@ -830,6 +1261,7 @@ section.panel {
 }
 .nav-quests a:hover {
   box-shadow: 3px 3px 0 var(--gold);
+  transform: translateY(-2px);
 }
 .nav-quests a:hover .dir {
   color: var(--gold);
@@ -841,16 +1273,33 @@ section.panel {
 /* —— 对话框 —— */
 .dialogue {
   margin-top: 18px;
-  background: var(--panel3);
+  background: var(--panel);
   border: 2px solid var(--line);
   box-shadow: 5px 5px 0 var(--black);
-  padding: 16px 18px;
+  padding: 14px 18px;
   position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.dialogue .avatar {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  background: var(--panel3);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dialogue .body {
+  flex: 1;
+  min-width: 0;
 }
 .dialogue .speaker {
   display: inline-block;
   font-family: var(--ps2);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--orange);
   margin-bottom: 8px;
   padding: 3px 10px;
@@ -860,15 +1309,17 @@ section.panel {
 .dialogue .txt {
   color: var(--fg);
   font-size: 14px;
-  min-height: 48px;
+  min-height: 26px;
+  white-space: pre-wrap;
 }
-.dialogue .txt .cur {
+.dialogue .cur {
   display: inline-block;
-  width: 8px;
+  width: 9px;
   height: 14px;
   background: var(--gold);
   vertical-align: -2px;
-  animation: blink 1s steps(1) infinite;
+  margin-left: 2px;
+  animation: blink2 1s steps(1) infinite;
 }
 
 /* —— 命令提示 —— */
@@ -899,22 +1350,23 @@ section.panel {
   gap: 12px;
   align-items: flex-start;
   box-shadow: 3px 3px 0 var(--black);
+  transition:
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3);
 }
 .item-card:hover {
-  box-shadow: 3px 3px 0 var(--gold);
+  transform: translateY(-3px);
+  box-shadow: 6px 6px 0 var(--black);
 }
 .item-icon {
-  width: 44px;
-  height: 44px;
-  background: var(--bg2);
+  width: 48px;
+  height: 48px;
+  background: var(--panel3);
   border: 1px solid var(--line);
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--ps2);
-  font-size: 9px;
-  color: var(--gold);
 }
 .item-card h3 {
   font-size: 15px;
@@ -923,12 +1375,13 @@ section.panel {
 .item-card h3 a {
   color: var(--fg);
   text-decoration: none;
+  transition: color 0.15s linear;
 }
 .item-card h3 a:hover {
   color: var(--cyan);
 }
 .item-card .it {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--orange);
   font-family: var(--ps2);
   margin-bottom: 6px;
@@ -954,6 +1407,10 @@ section.panel {
   color: var(--fg);
   text-decoration: none;
   box-shadow: 2px 2px 0 var(--black);
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .item-card .btns a.primary,
 .item-card .btns span.primary {
@@ -962,11 +1419,17 @@ section.panel {
 }
 .item-card .btns a:hover,
 .item-card .btns span:hover {
-  background: var(--cyan);
-  color: #06121a;
+  background: var(--fg);
+  color: var(--panel);
+  transform: translateY(-1px);
+}
+.item-card .btns a.primary:hover,
+.item-card .btns span.primary:hover {
+  background: var(--red-hi);
+  color: #fff;
 }
 
-/* —— 队伍（首页） —— */
+/* —— 队伍 —— */
 .party-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -981,11 +1444,18 @@ section.panel {
   gap: 14px;
   align-items: center;
   box-shadow: 3px 3px 0 var(--black);
+  transition:
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3);
+}
+.party-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 6px 6px 0 var(--black);
 }
 .party-av {
   width: 64px;
   height: 64px;
-  background: var(--bg2);
+  background: var(--panel3);
   border: 1px solid var(--line);
   flex: 0 0 auto;
   display: flex;
@@ -996,7 +1466,7 @@ section.panel {
   font-size: 15px;
 }
 .party-card .cls {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--gold);
   font-family: var(--ps2);
   margin: 4px 0 6px;
@@ -1068,7 +1538,7 @@ section.panel {
   padding: 18px;
 }
 .hero-av {
-  background: var(--bg2);
+  background: var(--panel3);
   border: 2px solid var(--line);
   display: flex;
   align-items: center;
@@ -1242,10 +1712,15 @@ section.panel {
   color: var(--cyan);
   text-decoration: none;
   box-shadow: 2px 2px 0 var(--black);
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear,
+    transform 0.16s steps(3);
 }
 .party-card .go:hover {
   background: var(--cyan);
-  color: #06121a;
+  color: var(--panel);
+  transform: translateY(-1px);
 }
 
 /* —— 页脚 —— */
@@ -1261,9 +1736,117 @@ footer {
 }
 footer a {
   color: var(--dim);
+  transition: color 0.15s linear;
 }
 footer a:hover {
   color: var(--cyan);
+}
+
+/* —— 天空频道字幕 —— */
+#ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9500;
+  background: var(--panel);
+  border-top: 2px solid var(--line);
+  box-shadow: 0 -4px 0 var(--black);
+  overflow: hidden;
+  padding: 0;
+}
+.ticker-viewport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+}
+.ticker-label {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--ps2);
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+.ticker-scroll {
+  flex: 1;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+}
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: tick 36s linear infinite;
+  will-change: transform;
+}
+.ticker-track span {
+  font-size: 12px;
+  color: var(--dim);
+  margin-right: 44px;
+}
+.ticker-track span b {
+  color: var(--fg);
+  font-weight: 400;
+}
+.ticker-track span i {
+  font-style: normal;
+  color: var(--cyan);
+}
+@keyframes tick {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ticker-close {
+  flex: 0 0 auto;
+  min-height: 26px;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--dim);
+  font-family: var(--ps2);
+  font-size: 8px;
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear;
+}
+.ticker-close:hover {
+  background: var(--fg);
+  color: var(--panel);
+}
+.ticker-tab {
+  position: fixed;
+  left: 14px;
+  bottom: 10px;
+  z-index: 9500;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--black);
+  color: var(--gold);
+  font-family: var(--ps2);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition:
+    background-color 0.15s linear,
+    transform 0.16s steps(3);
+}
+.ticker-tab.show {
+  display: inline-flex;
+}
+.ticker-tab:hover {
+  background: var(--fg);
+  color: var(--panel);
 }
 
 /* —— 响应式 —— */
@@ -1304,5 +1887,20 @@ footer a:hover {
   }
   .tl-date {
     flex: 0 0 84px;
+  }
+  .ticker-label {
+    display: none;
+  }
+  #toTop {
+    bottom: 62px;
+    right: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

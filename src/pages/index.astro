@@ -2,6 +2,7 @@
 import CmdMenu from '@/components/famicom/CmdMenu.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import QuestItem from '@/components/famicom/QuestItem.astro'
 import { items, party } from '@/data/home'
@@ -30,40 +31,29 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
   <header class='title-screen'>
     <div class='stars'>★ ★ ★</div>
     <div class='game-title'><span class='r'>{site.gameTitleR}</span><span class='g'>{site.gameTitleG}</span></div>
-    <svg class='hero-sprite' width='72' height='72' viewBox='0 0 24 24' shape-rendering='crispEdges' aria-label='像素勇者'>
-      <rect x='10' y='2' width='4' height='2' fill='#f2f5ff'/><rect x='8' y='4' width='8' height='2' fill='#f2f5ff'/>
-      <rect x='7' y='6' width='10' height='4' fill='#f0a030'/><rect x='6' y='6' width='1' height='4' fill='#c01420'/>
-      <rect x='8' y='10' width='2' height='2' fill='#f2f5ff'/><rect x='10' y='10' width='2' height='2' fill='#ff2b35'/><rect x='12' y='10' width='2' height='2' fill='#f2f5ff'/>
-      <rect x='7' y='12' width='10' height='4' fill='#ff2b35'/>
-      <rect x='6' y='16' width='4' height='4' fill='#1d2c4d'/><rect x='14' y='16' width='4' height='4' fill='#1d2c4d'/>
-      <rect x='5' y='20' width='4' height='2' fill='#0e1526'/><rect x='15' y='20' width='4' height='2' fill='#0e1526'/>
-      <rect x='19' y='12' width='2' height='8' fill='#f8d878'/><rect x='20' y='10' width='2' height='2' fill='#f8d878'/>
-    </svg>
+    <div class='title-sprite-zone' data-gu>
+      <span class='fish'>
+        <FishSprite width={120} height={64} label='红鲤勇者' />
+      </span>
+    </div>
     <p class='subtitle'>{site.tagline}</p>
-    <div class='press-start'>▶ PRESS START ◀</div>
+    <div class='press-start' id='pressStart'>▶ PRESS START ◀</div>
   </header>
 
   <CmdMenu />
 
   <div class='grid-2'>
-    <Panel title='状态' en='STATUS' id='status' link='/about' linkLabel='勇者档案 →'>
+    <Panel title='状态' en='STATUS' id='status' class='reveal' link='/about' linkLabel='勇者档案 →'>
       <div class='status-body'>
         <div class='status-avatar'>
-          <svg width='96' height='104' viewBox='0 0 32 36' shape-rendering='crispEdges' aria-label='玩家头像'>
-            <rect x='14' y='2' width='4' height='4' fill='#f2f5ff'/><rect x='10' y='6' width='12' height='6' fill='#f0a030'/>
-            <rect x='12' y='12' width='2' height='2' fill='#f2f5ff'/><rect x='14' y='12' width='4' height='2' fill='#ff2b35'/><rect x='18' y='12' width='2' height='2' fill='#f2f5ff'/>
-            <rect x='10' y='16' width='12' height='6' fill='#ff2b35'/>
-            <rect x='8' y='22' width='6' height='6' fill='#1d2c4d'/><rect x='18' y='22' width='6' height='6' fill='#1d2c4d'/>
-            <rect x='6' y='28' width='6' height='4' fill='#0e1526'/><rect x='20' y='28' width='6' height='4' fill='#0e1526'/>
-            <rect x='26' y='14' width='2' height='10' fill='#f8d878'/><rect x='28' y='12' width='2' height='2' fill='#f8d878'/>
-          </svg>
+          <FishSprite width={96} height={51} label='玩家头像' />
         </div>
         <div>
           <div class='status-name'>{site.heroName}</div>
           <div class='status-class'>{hero.class}</div>
-          <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`width:${hpW}%`}></i></span></div>
-          <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`width:${mpW}%`}></i></span></div>
-          <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`width:${expW}%`}></i></span></div>
+          <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
+          <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
+          <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
           <div class='stat-meta'>
             <span>攻击 <b>长文×{essays}</b></span><span>防御 <b>笔记×{notes}</b></span><span>金币 <b>G{total}</b></span>
           </div>
@@ -71,18 +61,18 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       </div>
     </Panel>
 
-    <Panel title='占卜' en='DIVINATION' id='fortune'>
+    <Panel title='占卜' en='DIVINATION' id='fortune' class='reveal'>
       <div class='fortune-body'>
         <div class='fortune-cup' id='fortuneCup' role='button' tabindex='0' aria-label='点击抽签' title='点击抽签'>
           <svg width='60' height='76' viewBox='0 0 32 40' shape-rendering='crispEdges' aria-hidden='true'>
-            <rect x='8' y='2' width='2' height='8' fill='#f2f5ff'/><rect x='12' y='2' width='2' height='8' fill='#f2f5ff'/>
-            <rect x='16' y='0' width='2' height='10' fill='#f8d878'/>
-            <rect x='6' y='10' width='20' height='4' fill='#ff2b35'/>
-            <rect x='4' y='14' width='24' height='16' fill='#ff2b35'/>
-            <rect x='2' y='16' width='2' height='12' fill='#c01420'/>
-            <rect x='28' y='16' width='2' height='12' fill='#c01420'/>
-            <rect x='4' y='30' width='24' height='4' fill='#c01420'/>
-            <rect x='8' y='14' width='2' height='16' fill='#c01420'/><rect x='22' y='14' width='2' height='16' fill='#c01420'/>
+            <rect x='8' y='2' width='2' height='8' fill='#f9f3e2'/><rect x='12' y='2' width='2' height='8' fill='#f9f3e2'/>
+            <rect x='16' y='0' width='2' height='10' fill='#e9a13b'/>
+            <rect x='6' y='10' width='20' height='4' fill='#d63a45'/>
+            <rect x='4' y='14' width='24' height='16' fill='#d63a45'/>
+            <rect x='2' y='16' width='2' height='12' fill='#b22a33'/>
+            <rect x='28' y='16' width='2' height='12' fill='#b22a33'/>
+            <rect x='4' y='30' width='24' height='4' fill='#b22a33'/>
+            <rect x='8' y='14' width='2' height='16' fill='#b22a33'/><rect x='22' y='14' width='2' height='16' fill='#b22a33'/>
             <rect x='12' y='22' width='8' height='2' fill='#fff'/><rect x='12' y='26' width='8' height='2' fill='#fff'/>
           </svg>
         </div>
@@ -94,7 +84,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     </Panel>
   </div>
 
-  <Panel title='冒险记录' en='QUEST LOG' id='quests' link='/blog' linkLabel='全部冒险 →'>
+  <Panel title='冒险记录' en='QUEST LOG' id='quests' class='reveal' link='/blog' linkLabel='全部冒险 →'>
     <ul class='quest-list'>
       {
         posts.map((post, i) => (
@@ -110,7 +100,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
   </Panel>
 
   <div class='grid-2'>
-    <Panel title='道具袋' en='ITEMS' id='items'>
+    <Panel title='道具袋' en='ITEMS' id='items' class='reveal'>
       <div class='item-grid'>
         {
           items.map((item) => (
@@ -151,7 +141,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       </div>
     </Panel>
 
-    <Panel title='队伍' en='PARTY' id='party' link='/about' linkLabel='勇者档案 →'>
+    <Panel title='队伍' en='PARTY' id='party' class='reveal' link='/about' linkLabel='勇者档案 →'>
       <div class='party-grid'>
         {
           party.map((member) => (
@@ -182,7 +172,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
     </Panel>
   </div>
 
-  <Panel title='冒险档案' en='ACHIEVEMENTS'>
+  <Panel title='冒险档案' en='ACHIEVEMENTS' class='reveal'>
     <div class='achieve-rows'>
       <div class='achieve-row'>
         <div class='ar-title'>
@@ -190,9 +180,9 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
           <a class='px-link' href='/blog'>冒险记录 →</a>
         </div>
         <div class='ar-stats'>
-          <div class='ar-stat'><b>{essays}</b> 长文</div>
-          <div class='ar-stat'><b>{notes}</b> 笔记</div>
-          <div class='ar-stat'><b>{essays + notes}</b> 文章</div>
+          <div class='ar-stat'><b data-count={essays}>0</b> 长文</div>
+          <div class='ar-stat'><b data-count={notes}>0</b> 笔记</div>
+          <div class='ar-stat'><b data-count={essays + notes}>0</b> 文章</div>
         </div>
         {
           (exploreTags.length > 0 || noteTag) && (
@@ -214,15 +204,18 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
           <a class='px-link' href='/logs'>旅行日志 →</a>
         </div>
         <div class='ar-stats'>
-          <div class='ar-stat'><b>{logs}</b> 日志</div>
+          <div class='ar-stat'><b data-count={logs}>0</b> 日志</div>
         </div>
       </div>
     </div>
   </Panel>
 
-  <Dialogue speaker={site.heroName} cursor>
-    欢迎来到我的冒险世界。我是全栈 Agent 开发工程师，正在用代码探索这片星海。用下面的命令菜单逛逛我的旅程吧。
-  </Dialogue>
+  <Dialogue
+    speaker={site.heroName}
+    avatar
+    class='reveal'
+    typewriter='欢迎来到我的冒险世界。我是全栈 Agent 开发工程师，正在用代码探索这片星海。用下面的命令菜单逛逛我的旅程吧。'
+  />
 
   <div class='cmd-tip'>
     <span class='keys'>[ 方向键 ]</span> 选择命令 &nbsp;·&nbsp; <span class='keys'>[ A ]</span> 确定 &nbsp;·&nbsp; <span class='keys'>[ B ]</span> 取消
@@ -230,6 +223,76 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
 </FamicomLayout>
 
 <script>
+  // —— PRESS START → 滚到状态区 ——
+  const ps = document.getElementById('pressStart')
+  if (ps) {
+    ps.addEventListener('click', () => {
+      const s = document.getElementById('status')
+      if (s) {
+        const y = s.getBoundingClientRect().top + window.scrollY - 24
+        window.scrollTo({ top: y, behavior: 'smooth' })
+      }
+    })
+  }
+
+  // —— 打字机对话框 ——
+  const dt = document.querySelector('.dialogue .txt[data-text]') as HTMLElement | null
+  if (dt) {
+    const full = dt.getAttribute('data-text') || ''
+    dt.textContent = ''
+    const cur = document.createElement('span')
+    cur.className = 'cur'
+    dt.appendChild(cur)
+    let i = 0
+    const timer = setInterval(() => {
+      if (i < full.length) {
+        cur.insertAdjacentText('beforebegin', full[i++])
+      } else {
+        clearInterval(timer)
+      }
+    }, 26)
+  }
+
+  // —— 冒险档案数字滚动 ——
+  const ach = document.querySelector('.achieve-rows')
+  if (ach && 'IntersectionObserver' in window) {
+    const aio = new IntersectionObserver(
+      (es) => {
+        es.forEach((e) => {
+          if (!e.isIntersecting) return
+          const box = e.target
+          box.querySelectorAll('[data-count]').forEach((n) => {
+            const el = n as HTMLElement
+            const target = Number(el.dataset.count)
+            const t0 = performance.now()
+            function step(ts: number) {
+              const p = Math.min((ts - t0) / 700, 1)
+              el.textContent = String(Math.round(target * (1 - Math.pow(1 - p, 3))))
+              if (p < 1) requestAnimationFrame(step)
+            }
+            requestAnimationFrame(step)
+          })
+          aio.unobserve(box)
+        })
+      },
+      { threshold: 0.4 }
+    )
+    aio.observe(ach)
+  }
+
+  // —— 点主角冒「咕嘟♪」气泡 ——
+  document.querySelectorAll('[data-gu]').forEach((zone) => {
+    zone.addEventListener('click', () => {
+      zone.querySelectorAll('.gu-bubble').forEach((b) => b.parentNode?.removeChild(b))
+      const b = document.createElement('span')
+      b.className = 'gu-bubble'
+      b.textContent = '咕嘟♪'
+      zone.appendChild(b)
+      setTimeout(() => b.parentNode?.removeChild(b), 900)
+    })
+  })
+
+  // —— 占卜 ——
   const FORTUNES = [
     { t: '大吉', k: 'red', yi: '宜：合并 PR 一次通过', ji: '忌：周五下午部署代码', desc: '代码如行云流水，单测覆盖率直逼 100%，今天你是编译器的主宰！' },
     { t: '大吉', k: 'red', yi: '宜：一击定位遗留的远古 Bug', ji: '忌：参加没有议程的长会', desc: '直觉敏锐，内存泄漏一点即中，连主架构师都对你刮目相看。' },
@@ -245,6 +308,20 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
   const res = document.getElementById('fortuneResult') as HTMLElement
   let t: ReturnType<typeof setTimeout> | null = null
 
+  function burst(el: HTMLElement) {
+    const c = document.createElement('span')
+    c.className = 'burst'
+    for (let i = 0; i < 8; i++) {
+      const s = document.createElement('i')
+      s.style.setProperty('--dx', (Math.random() * 90 - 45).toFixed(0) + 'px')
+      s.style.setProperty('--dy', (Math.random() * 70 - 55).toFixed(0) + 'px')
+      s.style.setProperty('--rot', (Math.random() * 360).toFixed(0) + 'deg')
+      c.appendChild(s)
+    }
+    el.appendChild(c)
+    setTimeout(() => c.parentNode?.removeChild(c), 900)
+  }
+
   function draw() {
     const f = FORTUNES[Math.floor(Math.random() * FORTUNES.length)]
     res.className = 'fortune-result show'
@@ -254,6 +331,7 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       `<div class="ji">${f.ji}</div>` +
       `<div class="desc">${f.desc}</div>` +
       '<button class="again">再抽一次 ↻</button>'
+    if (f.k === 'red') burst(res)
     res.querySelector('.again')?.addEventListener('click', go)
   }
 

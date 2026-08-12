@@ -1,6 +1,7 @@
 ---
 import config from '@/site-config'
 import { site } from '@/data/site'
+import { getPublishedBlog } from '@/utils/collections'
 import { getMetrics } from '@/utils/metrics'
 import '@/assets/styles/famicom.css'
 
@@ -13,17 +14,23 @@ const { title, description = config.description } = Astro.props
 const pageTitle =
   title && title !== config.title ? `${title} · ${site.gameTitle}` : site.gameTitle
 
-// HUD 金币/等级：由真实内容统计得出，与冒险档案、状态面板保持一致
 const { total } = await getMetrics()
 const gold = `G ${String(total).padStart(4, '0')}`
 const level = `LV.${Math.min(99, Math.max(1, total))}`
 
+// 天空频道：滚动展示最新任务
+const posts = await getPublishedBlog()
+const tickerPosts = posts.map((p, i) => ({
+  n: String(i + 1).padStart(2, '0'),
+  title: p.data.title
+}))
+
 const favicon =
-  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%230a0e1a%22/%3E%3Crect x=%223%22 y=%223%22 width=%2210%22 height=%2210%22 fill=%22%23ff2b35%22/%3E%3Crect x=%225%22 y=%225%22 width=%226%22 height=%226%22 fill=%22%23f2f5ff%22/%3E%3C/svg%3E'
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%237cc4f2%22/%3E%3Crect x=%223%22 y=%223%22 width=%2210%22 height=%2210%22 fill=%22%23d63a45%22/%3E%3Crect x=%225%22 y=%225%22 width=%226%22 height=%226%22 fill=%22%23fff8ec%22/%3E%3C/svg%3E'
 ---
 
 <!doctype html>
-<html lang={config.locale.lang}>
+<html lang={config.locale.lang} data-theme='day'>
   <head>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width, initial-scale=1' />
@@ -31,10 +38,50 @@ const favicon =
     <meta name='description' content={description} />
     <link rel='icon' href={favicon} />
     <link rel='canonical' href={new URL(Astro.url.pathname, Astro.site).href} />
-    <meta name='color-scheme' content='dark' />
+    <meta name='color-scheme' content='light' />
+    <meta name='theme-color' content='#7cc4f2' />
     <meta name='generator' content={Astro.generator} />
+    <script is:inline>
+      ;(function () {
+        try {
+          if (localStorage.getItem('cq-theme') === 'night') {
+            document.documentElement.setAttribute('data-theme', 'night')
+          }
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
+    <div id='progress' aria-hidden='true'></div>
+    <a id='toTop' href='#' aria-label='回到顶部'>▲ TOP</a>
+
+    <!-- 天穹背景 -->
+    <div id='sky' aria-hidden='true'></div>
+    <div id='skyfx' aria-hidden='true'>
+      <div class='layer layer-1'>
+        <svg class='cl cl-a' style='top:16%;left:2%;width:110px;opacity:.55'><use href='#pixel-cloud'/></svg>
+        <svg class='cl cl-b' style='top:58%;left:12%;width:160px;opacity:.7'><use href='#pixel-cloud'/></svg>
+        <svg class='cl cl-b' style='top:32%;left:70%;width:130px;opacity:.5'><use href='#pixel-cloud'/></svg>
+      </div>
+      <div class='layer layer-2'>
+        <svg class='cl cl-c' style='top:26%;left:8%;width:150px;opacity:.85'><use href='#pixel-cloud'/></svg>
+        <svg class='cl cl-c' style='top:70%;left:40%;width:180px;opacity:.9'><use href='#pixel-cloud'/></svg>
+        <svg class='cl cl-d' style='top:44%;left:80%;width:120px;opacity:.75'><use href='#pixel-cloud'/></svg>
+      </div>
+      <div class='layer layer-3'>
+        <svg class='cl cl-d' style='top:64%;left:24%;width:210px;opacity:.95'><use href='#pixel-cloud'/></svg>
+        <svg class='cl cl-c' style='top:40%;left:52%;width:150px;opacity:.8'><use href='#pixel-cloud'/></svg>
+      </div>
+      <svg class='spark' style='top:18%;left:18%;width:12px'><use href='#pixel-star'/></svg>
+      <svg class='spark' style='top:30%;left:86%;width:14px'><use href='#pixel-star'/></svg>
+      <svg class='spark' style='top:52%;left:6%;width:10px'><use href='#pixel-star'/></svg>
+      <svg class='spark' style='top:64%;left:94%;width:12px'><use href='#pixel-star'/></svg>
+      <svg class='spark' style='top:22%;left:62%;width:9px'><use href='#pixel-star'/></svg>
+      <svg class='spark' style='top:74%;left:70%;width:10px'><use href='#pixel-star'/></svg>
+      <svg class='ffish' style='top:20%;width:34px;opacity:.6'><use href='#pixel-fish'/></svg>
+      <svg class='ffish' style='top:48%;width:26px;opacity:.45'><use href='#pixel-fish'/></svg>
+    </div>
+
     <div class='wrap'>
       <div class='hud-bar'>
         <span class='pwr'><i></i>PWR</span>
@@ -42,7 +89,7 @@ const favicon =
         <span class='meta'>
           <span class='g'>{gold}</span>
           <span class='lv hide-s'>{level}</span>
-          <span class='hide-s'>1P</span>
+          <button class='theme-btn' id='themeToggle' aria-label='切换昼夜'>NIGHT</button>
         </span>
       </div>
 
@@ -58,5 +105,180 @@ const favicon =
         <span>{site.copyright}</span>
       </footer>
     </div>
+
+    <!-- 天空频道字幕 -->
+    <div id='ticker'>
+      <div class='ticker-viewport'>
+        <span class='ticker-label'>
+          <svg width='16' height='12' viewBox='0 0 12 7' shape-rendering='crispEdges' aria-hidden='true'><use href='#pixel-cloud'/></svg>
+          天空频道
+        </span>
+        <div class='ticker-scroll'>
+          <div class='ticker-track' id='tickerTrack'>
+            {
+              tickerPosts.map((p) => (
+                <span>Q{p.n} <i>{p.title}</i></span>
+              ))
+            }
+            {
+              tickerPosts.length === 0 && <span>天空频道 <i>静待新的冒险</i></span>
+            }
+            <span>今日 <b>晴</b> · {level} · {gold}</span>
+          </div>
+        </div>
+        <button class='ticker-close' id='tickerClose'>收起 ▲</button>
+      </div>
+    </div>
+    <button class='ticker-tab' id='tickerTab' aria-label='展开天空频道'>天空频道 ▲</button>
+
+    <svg width='0' height='0' style='position:absolute' aria-hidden='true'>
+      <defs>
+        <symbol id='pixel-cloud' viewBox='0 0 12 6'>
+          <rect x='4' y='0' width='4' height='1' fill='var(--cloud1)'/>
+          <rect x='2' y='1' width='8' height='1' fill='var(--cloud1)'/>
+          <rect x='0' y='2' width='12' height='2' fill='var(--cloud1)'/>
+          <rect x='0' y='4' width='12' height='1' fill='var(--cloud2)'/>
+          <rect x='0' y='5' width='12' height='1' fill='var(--cloudsh)'/>
+        </symbol>
+        <symbol id='pixel-star' viewBox='0 0 5 5'>
+          <rect x='2' y='0' width='1' height='1' fill='var(--spark)'/>
+          <rect x='1' y='1' width='3' height='1' fill='var(--spark)'/>
+          <rect x='0' y='2' width='5' height='1' fill='var(--spark)'/>
+          <rect x='1' y='3' width='3' height='1' fill='var(--spark)'/>
+          <rect x='2' y='4' width='1' height='1' fill='var(--spark)'/>
+        </symbol>
+        <symbol id='pixel-fish' viewBox='0 0 10 6'>
+          <rect x='2' y='0' width='3' height='1' fill='var(--fish)'/>
+          <rect x='1' y='1' width='5' height='1' fill='var(--fish)'/>
+          <rect x='8' y='1' width='1' height='1' fill='var(--fish)'/>
+          <rect x='0' y='2' width='8' height='1' fill='var(--fish)'/>
+          <rect x='9' y='2' width='1' height='1' fill='var(--fish)'/>
+          <rect x='0' y='3' width='8' height='1' fill='var(--fish)'/>
+          <rect x='9' y='3' width='1' height='1' fill='var(--fish)'/>
+          <rect x='1' y='4' width='6' height='1' fill='var(--fish)'/>
+          <rect x='8' y='4' width='1' height='1' fill='var(--fish)'/>
+          <rect x='3' y='5' width='3' height='1' fill='var(--fish)'/>
+        </symbol>
+      </defs>
+    </svg>
   </body>
 </html>
+
+<script>
+  // —— 昼夜切换 ——
+  const root = document.documentElement
+  const tb = document.getElementById('themeToggle')
+  function paint() {
+    const n = root.getAttribute('data-theme') === 'night'
+    if (tb) tb.textContent = n ? 'DAY' : 'NIGHT'
+    const tc = document.querySelector('meta[name="theme-color"]')
+    if (tc) tc.setAttribute('content', n ? '#141b33' : '#7cc4f2')
+  }
+  if (tb) {
+    tb.addEventListener('click', () => {
+      const n = root.getAttribute('data-theme') === 'night'
+      if (n) root.removeAttribute('data-theme')
+      else root.setAttribute('data-theme', 'night')
+      try {
+        localStorage.setItem('cq-theme', n ? 'day' : 'night')
+      } catch (e) {}
+      paint()
+    })
+    paint()
+  }
+
+  // —— 视差 ——
+  const fx = document.getElementById('skyfx')
+  if (fx) {
+    window.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth - 0.5
+      const y = e.clientY / window.innerHeight - 0.5
+      fx.style.setProperty('--mx', (x * 18).toFixed(1) + 'px')
+      fx.style.setProperty('--my', (y * 10).toFixed(1) + 'px')
+    })
+    const layers = fx.querySelectorAll('.layer')
+    const mx = [-0.5, -1, -1.8]
+    const my = [-0.4, -0.7, -1.1]
+    layers.forEach((l, i) => {
+      ;(l as HTMLElement).style.transform = `translate(calc(var(--mx,0px) * ${mx[i]}), calc(var(--my,0px) * ${my[i]}))`
+    })
+  }
+
+  // —— 滚动显现 ——
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('in'))
+  }
+  const io = new IntersectionObserver(
+    (es) => {
+      es.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in')
+          io.unobserve(e.target)
+        }
+      })
+    },
+    { threshold: 0.06 }
+  )
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
+
+  // —— 天空频道：双份内容无缝滚动 + 收起/展开 ——
+  const track = document.getElementById('tickerTrack')
+  if (track) track.innerHTML += track.innerHTML
+  const tkc = document.getElementById('tickerClose')
+  const tkt = document.getElementById('tickerTab')
+  if (tkc) {
+    tkc.addEventListener('click', () => {
+      const tk = document.getElementById('ticker')
+      if (tk) tk.style.display = 'none'
+      if (tkt) tkt.classList.add('show')
+    })
+  }
+  if (tkt) {
+    tkt.addEventListener('click', () => {
+      const tk = document.getElementById('ticker')
+      if (tk) tk.style.display = ''
+      tkt.classList.remove('show')
+    })
+  }
+
+  // —— 阅读进度 + 回到顶部 ——
+  const prog = document.getElementById('progress')
+  const tot = document.getElementById('toTop')
+  function onScroll() {
+    const h = document.documentElement
+    const max = h.scrollHeight - h.clientHeight || 1
+    if (prog) prog.style.width = (h.scrollTop / max) * 100 + '%'
+    if (tot) {
+      if (h.scrollTop > 500) tot.classList.add('show')
+      else tot.classList.remove('show')
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+  if (tot) {
+    tot.addEventListener('click', (e) => {
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  }
+
+  // —— 命令菜单：方向键移动 + A/Enter 确定 ——
+  const menu = document.querySelector<HTMLElement>('.cmd-menu')
+  if (menu) {
+    const items = Array.from(menu.querySelectorAll('a'))
+    menu.addEventListener('keydown', (e: KeyboardEvent) => {
+      const idx = items.indexOf(document.activeElement as HTMLAnchorElement)
+      if (idx < 0) return
+      let to = null
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') to = (idx + 1) % items.length
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') to = (idx - 1 + items.length) % items.length
+      if (to != null) {
+        e.preventDefault()
+        items[to].focus()
+      } else if (e.key.toLowerCase() === 'a') {
+        e.preventDefault()
+        ;(document.activeElement as HTMLElement).click()
+      }
+    })
+  }
+</script>

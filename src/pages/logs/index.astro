@@ -21,7 +21,7 @@ const logs = await getPublishedLogs()
 
   <CmdMenu active='logs' />
 
-  <Panel title='旅程记录' en={`JOURNAL · ${logs.length} ENTRIES`}>
+  <Panel title='旅程记录' en={`JOURNAL · ${logs.length} ENTRIES`} class='reveal'>
     <ul class='travel-list'>
       {
         logs.map((log) => (

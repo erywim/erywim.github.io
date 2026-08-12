@@ -1,0 +1,70 @@
+---
+interface Props {
+  width?: number
+  height?: number
+  class?: string
+  label?: string
+}
+
+const { width = 120, height = 64, class: className, label = '红鲤勇者' } = Astro.props
+---
+
+<svg
+  class={className}
+  width={width}
+  height={height}
+  viewBox='0 0 28 15'
+  shape-rendering='crispEdges'
+  aria-label={label}
+>
+  <rect x='9' y='0' width='3' height='1' fill='#e04030'/>
+  <rect x='0' y='1' width='3' height='1' fill='#e04030'/>
+  <rect x='9' y='1' width='4' height='1' fill='#e04030'/>
+  <rect x='0' y='2' width='5' height='1' fill='#e04030'/>
+  <rect x='9' y='2' width='5' height='1' fill='#e04030'/>
+  <rect x='0' y='3' width='7' height='1' fill='#e04030'/>
+  <rect x='9' y='3' width='6' height='1' fill='#e04030'/>
+  <rect x='0' y='4' width='14' height='1' fill='#e04030'/>
+  <rect x='21' y='4' width='4' height='1' fill='#2a2950'/>
+  <rect x='0' y='5' width='9' height='1' fill='#e04030'/>
+  <rect x='9' y='5' width='2' height='1' fill='#3b3a54' class='eye'/>
+  <rect x='11' y='5' width='2' height='1' fill='#fff4e6'/>
+  <rect x='13' y='5' width='1' height='1' fill='#e04030'/>
+  <rect x='21' y='5' width='2' height='1' fill='#9fe8f8'/>
+  <rect x='23' y='5' width='3' height='1' fill='#2a2950'/>
+  <rect x='0' y='6' width='8' height='1' fill='#e04030'/>
+  <rect x='8' y='6' width='2' height='1' fill='#3b3a54' class='eye'/>
+  <rect x='10' y='6' width='4' height='1' fill='#fff4e6'/>
+  <rect x='14' y='6' width='1' height='1' fill='#e04030'/>
+  <rect x='22' y='6' width='2' height='1' fill='#9fe8f8'/>
+  <rect x='24' y='6' width='3' height='1' fill='#2a2950'/>
+  <rect x='0' y='7' width='7' height='1' fill='#e04030'/>
+  <rect x='8' y='7' width='1' height='1' fill='#e04030'/>
+  <rect x='9' y='7' width='6' height='1' fill='#fff4e6'/>
+  <rect x='15' y='7' width='1' height='1' fill='#e04030'/>
+  <rect x='22' y='7' width='2' height='1' fill='#9fe8f8'/>
+  <rect x='24' y='7' width='3' height='1' fill='#2a2950'/>
+  <rect x='0' y='8' width='5' height='1' fill='#e04030'/>
+  <rect x='8' y='8' width='7' height='1' fill='#fff4e6'/>
+  <rect x='15' y='8' width='1' height='1' fill='#e04030'/>
+  <rect x='19' y='8' width='2' height='1' fill='#a03028'/>
+  <rect x='22' y='8' width='2' height='1' fill='#9fe8f8'/>
+  <rect x='24' y='8' width='3' height='1' fill='#2a2950'/>
+  <rect x='0' y='9' width='5' height='1' fill='#e04030'/>
+  <rect x='8' y='9' width='6' height='1' fill='#fff4e6'/>
+  <rect x='14' y='9' width='1' height='1' fill='#e04030'/>
+  <rect x='19' y='9' width='2' height='1' fill='#a03028'/>
+  <rect x='22' y='9' width='2' height='1' fill='#9fe8f8'/>
+  <rect x='24' y='9' width='3' height='1' fill='#2a2950'/>
+  <rect x='0' y='10' width='4' height='1' fill='#e04030'/>
+  <rect x='9' y='10' width='6' height='1' fill='#fff4e6'/>
+  <rect x='23' y='10' width='5' height='1' fill='#2a2950'/>
+  <rect x='1' y='11' width='3' height='1' fill='#e04030'/>
+  <rect x='9' y='11' width='5' height='1' fill='#fff4e6'/>
+  <rect x='23' y='11' width='3' height='1' fill='#2a2950'/>
+  <rect x='9' y='12' width='14' height='1' fill='#2a2950'/>
+  <rect x='8' y='13' width='14' height='1' fill='#b98a5e'/>
+  <rect x='8' y='14' width='14' height='1' fill='#b98a5e'/>
+  <rect x='9' y='5' width='1' height='1' fill='#ffffff' class='eye'/>
+  <rect x='9' y='5' width='2' height='1' fill='#3b3a54' class='lid'/>
+</svg>
