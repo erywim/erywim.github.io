@@ -1,7 +1,6 @@
 ---
 import { render, type CollectionEntry } from 'astro:content'
 
-import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import { site } from '@/data/site'
@@ -20,7 +19,7 @@ type Props = {
 }
 
 const { post } = Astro.props
-const { Content } = await render(post)
+const { Content, headings } = await render(post)
 
 const byRank = await getBlogByRank()
 const byDate = await getPublishedBlog()
@@ -38,59 +37,115 @@ const REWARD: Record<string, { exp: number; g: number; ach: string }> = {
 }
 const reward = REWARD[rank] ?? REWARD.B
 const qno = String(rankIndex + 1).padStart(2, '0')
+
+// 目录：展平 headings 树，取 h2 / h3
+interface TocItem {
+  depth: number
+  slug: string
+  text: string
+}
+const tocItems: TocItem[] = []
+function walk(hs: { depth: number; slug: string; text: string; children: unknown[] }[]) {
+  for (const h of hs) {
+    if (h.depth >= 2 && h.depth <= 3) tocItems.push({ depth: h.depth, slug: h.slug, text: h.text })
+    if (h.children) walk(h.children as typeof hs)
+  }
+}
+walk(headings as { depth: number; slug: string; text: string; children: unknown[] }[])
+
 ---
 
 <FamicomLayout title={post.data.title} description={post.data.description}>
-  <Breadcrumb
-    items={[
-      { label: '■ 标题画面', href: '/' },
-      { label: '冒险记录', href: '/blog' },
-      { label: '任务详情' }
-    ]}
-  />
+  <a class='back-btn' href='/blog' aria-label='返回冒险记录'>← 返回</a>
 
-  <header class='quest-head reveal'>
-    <div class='qno'>
-      QUEST <b>{qno}</b> · <span style='color:var(--gold)'>RANK {rank}</span>
-    </div>
-    <h1>{post.data.title}</h1>
-    <div class='qmeta'>
-      <span>地图 <b>{post.data.category}</b></span>
-      <span>日期 <b>{formatQuestDate(post.data.publishDate)}</b></span>
-      <span>状态 <b style='color:var(--green)'>已达成</b></span>
-    </div>
-    {
-      post.data.tags.length > 0 && (
-        <div class='quest-tags'>
-          {post.data.tags.map((tag) => <span class='tag'>{tag}</span>)}
+  <div class='detail-grid'>
+    <div class='detail-main'>
+      <header class='quest-head reveal'>
+        <div class='qno'>
+          QUEST <b>{qno}</b> · <span style='color:var(--gold)'>RANK {rank}</span>
         </div>
-      )
-    }
-    <div class='reward'>
-      任务奖励：<b>EXP +{reward.exp}</b> · <b>G +{reward.g}</b> · 解锁成就「{reward.ach}」
+        <h1>{post.data.title}</h1>
+        <div class='qmeta'>
+          <span>地图 <b>{post.data.category}</b></span>
+          <span>日期 <b>{formatQuestDate(post.data.publishDate)}</b></span>
+          <span>状态 <b style='color:var(--green)'>已达成</b></span>
+        </div>
+        {
+          post.data.tags.length > 0 && (
+            <div class='quest-tags'>
+              {post.data.tags.map((tag) => <span class='tag'>{tag}</span>)}
+            </div>
+          )
+        }
+        <div class='reward'>
+          任务奖励：<b>EXP +{reward.exp}</b> · <b>G +{reward.g}</b> · 解锁成就「{reward.ach}」
+        </div>
+      </header>
+
+      <article class='scroll reveal'>
+        <Content />
+      </article>
+
+      <div class='nav-quests'>
+        {
+          prev && (
+            <a href={`/blog/${prev.id}`}>
+              <span class='dir'>◀ 上一任务</span>{prev.data.title}
+            </a>
+          )
+        }
+        {
+          next && (
+            <a href={`/blog/${next.id}`} style='text-align:right'>
+              <span class='dir'>下一任务 ▶</span>{next.data.title}
+            </a>
+          )
+        }
+      </div>
+
+      <Dialogue speaker={site.heroName} avatar class='reveal' typewriter={`${post.data.title} —— 任务卷轴已归档。回到冒险记录可以查看其他战役。`} />
     </div>
-  </header>
 
-  <article class='scroll reveal'>
-    <Content />
-  </article>
-
-  <div class='nav-quests'>
     {
-      prev && (
-        <a href={`/blog/${prev.id}`}>
-          <span class='dir'>◀ 上一任务</span>{prev.data.title}
-        </a>
-      )
-    }
-    {
-      next && (
-        <a href={`/blog/${next.id}`} style='text-align:right'>
-          <span class='dir'>下一任务 ▶</span>{next.data.title}
-        </a>
+      tocItems.length > 0 && (
+        <aside class='toc reveal'>
+          <div class='toc-title'>本卷目录 <span style='font-size:8px;color:var(--dim)'>TOC</span></div>
+          <ul class='toc-list'>
+            {
+              tocItems.map((item) => (
+                <li class={item.depth === 3 ? 'toc-l3' : undefined}>
+                  <a href={`#${item.slug}`}>{item.text}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </aside>
       )
     }
   </div>
-
-  <Dialogue speaker={site.heroName} avatar class='reveal' typewriter={`${post.data.title} —— 任务卷轴已归档。回到冒险记录可以查看其他战役。`} />
 </FamicomLayout>
+
+<script>
+  // —— 目录滚动高亮 ——
+  const tocLinks = Array.from(document.querySelectorAll('.toc-list a'))
+  if (tocLinks.length > 0) {
+    const ids = tocLinks
+      .map((a) => a.getAttribute('href')?.slice(1))
+      .filter((id): id is string => Boolean(id))
+    const map = new Map<string, HTMLElement | null>()
+    ids.forEach((id) => map.set(id, document.getElementById(id)))
+    const current = () => {
+      const pos = window.scrollY + 110
+      let activeId = ids[0]
+      for (const id of ids) {
+        const el = map.get(id)
+        if (el && el.offsetTop <= pos) activeId = id
+      }
+      tocLinks.forEach((a) => {
+        a.classList.toggle('active', a.getAttribute('href') === `#${activeId}`)
+      })
+    }
+    window.addEventListener('scroll', current, { passive: true })
+    current()
+  }
+</script>

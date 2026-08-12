@@ -7,13 +7,7 @@ import remarkMath from 'remark-math'
 // Local integrations
 import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
 // Shiki
-import {
-  addCollapse,
-  addCopyButton,
-  addLanguage,
-  addTitle,
-  updateStyle
-} from './src/plugins/shiki-custom-transformers.ts'
+import { updateStyle } from './src/plugins/shiki-custom-transformers.ts'
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
@@ -96,18 +90,9 @@ export default defineConfig({
         // @ts-ignore this happens due to multiple versions of shiki types
         transformerNotationHighlight(),
         // @ts-ignore this happens due to multiple versions of shiki types
-        transformerRemoveNotationEscape(),
-        // Custom transformers
-        // @ts-ignore this happens due to multiple versions of shiki types
-        updateStyle(),
-        // @ts-ignore this happens due to multiple versions of shiki types
-        addTitle(),
-        // @ts-ignore this happens due to multiple versions of shiki types
-        addLanguage(),
-        // @ts-ignore this happens due to multiple versions of shiki types
-        addCopyButton(2000), // timeout in ms
-        // @ts-ignore this happens due to multiple versions of shiki types
-        addCollapse(15) // max lines that needs to collapse
+        transformerRemoveNotationEscape()
+        // 注：不启用 addTitle / addLanguage / addCopyButton / addCollapse，
+        // 它们依赖主题样式，未加载时会在代码块里渲染出破损 UI（如语言标签、复制图标）。
       ]
     }
   },

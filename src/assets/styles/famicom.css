@@ -785,16 +785,42 @@ html[data-theme='night'] .tl-ic-night {
 
 /* —— 面包屑 —— */
 .crumb {
-  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 9px 12px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--black);
+}
+.crumb .sep {
+  color: var(--gold);
   font-size: 12px;
-  color: var(--dim);
+}
+.crumb a,
+.crumb .cur {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  box-shadow: 2px 2px 0 var(--black);
+  font-size: 12px;
+  text-decoration: none;
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear;
 }
 .crumb a {
   color: var(--cyan);
-  text-decoration: none;
 }
 .crumb a:hover {
-  color: var(--cyan-hi);
+  background: var(--fg);
+  color: var(--panel);
+}
+.crumb .cur {
+  color: var(--gold);
 }
 
 /* —— 页标题 —— */
@@ -1646,7 +1672,7 @@ section.panel {
   display: flex;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--panel2);
+  border-bottom: 1px solid var(--panel3);
   align-items: flex-start;
   transition:
     background-color 0.15s linear,
@@ -1758,6 +1784,96 @@ section.panel {
   transform: translateY(-1px);
 }
 
+/* —— 列表分组：章节头 / 规则线 —— */
+/* 顶级章节头（日志年份）：沿用面板标题条语言 */
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--panel2);
+  border-bottom: 2px solid var(--line);
+  font-family: var(--ps2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s linear;
+}
+.group-head::-webkit-details-marker {
+  display: none;
+}
+.group-head:hover {
+  background: var(--panel);
+}
+.group-head .gh-bar {
+  width: 12px;
+  height: 14px;
+  background: var(--fg);
+  flex: 0 0 auto;
+}
+.group-head .ba-arrow::before {
+  content: '▼';
+}
+.group-head .ba-arrow {
+  font-size: 9px;
+  color: var(--gold);
+}
+.group-head .group-label {
+  color: var(--gold);
+}
+.group-head .group-count {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--dim);
+}
+/* 次级分组规则线（月份） */
+.list-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 30px;
+  font-family: var(--ps2);
+  font-size: 10px;
+  list-style: none;
+  background: transparent;
+}
+.list-rule::-webkit-details-marker {
+  display: none;
+}
+summary.list-rule {
+  cursor: pointer;
+  user-select: none;
+}
+.list-rule::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--panel3);
+  margin-left: 6px;
+}
+.list-rule .ba-arrow::before {
+  content: '▼';
+}
+details:not([open]) > .group-head .ba-arrow::before,
+details:not([open]) > .list-rule .ba-arrow::before {
+  content: '▶';
+}
+.list-rule .ba-arrow {
+  font-size: 8px;
+  color: var(--gold);
+}
+.list-rule .rule-mark {
+  color: var(--gold);
+}
+.list-rule .group-label {
+  color: var(--cyan);
+}
+.list-rule .group-count {
+  font-size: 8px;
+  color: var(--dim);
+}
+
 /* —— 任务详情头部 —— */
 .quest-head {
   border: 2px solid var(--line);
@@ -1820,28 +1936,39 @@ section.panel {
   padding: 22px 24px;
 }
 .scroll h2 {
-  font-family: var(--ps2);
-  font-size: 12px;
+  font-family: var(--ps2), var(--pix), monospace;
+  font-size: 24px;
   color: var(--orange);
-  margin: 22px 0 10px;
+  margin: 36px 0 16px;
+  padding: 0 0 10px;
+  border-bottom: 2px solid var(--panel2);
   letter-spacing: 0.04em;
+  scroll-margin-top: 70px;
 }
 .scroll h2:first-child {
   margin-top: 0;
 }
 .scroll h3 {
-  color: var(--fg);
-  font-size: 15px;
-  margin: 18px 0 8px;
+  font-family: var(--ps2), var(--pix), monospace;
+  font-size: 19px;
+  color: var(--cyan);
+  margin: 28px 0 12px;
+  letter-spacing: 0.04em;
+  scroll-margin-top: 70px;
 }
 .scroll h4 {
-  color: var(--dim);
-  font-size: 14px;
-  margin: 16px 0 8px;
+  font-family: var(--ps2), var(--pix), monospace;
+  font-size: 17px;
+  color: var(--gold);
+  margin: 22px 0 10px;
+  scroll-margin-top: 70px;
 }
 .scroll p {
   color: var(--fg);
-  font-size: 14px;
+  /* 正文：四号宋体，阅读舒适 */
+  font-family: 'Songti SC', 'SimSun', '宋体', serif;
+  font-size: 14pt;
+  line-height: 1.9;
   margin-bottom: 12px;
 }
 .scroll p.dim {
@@ -1853,7 +1980,9 @@ section.panel {
 }
 .scroll li {
   color: var(--fg);
-  font-size: 14px;
+  font-family: 'Songti SC', 'SimSun', '宋体', serif;
+  font-size: 14pt;
+  line-height: 1.9;
   margin-bottom: 4px;
 }
 .scroll blockquote {
@@ -1861,6 +1990,7 @@ section.panel {
   padding-left: 14px;
   margin: 14px 0;
   color: var(--dim);
+  font-family: 'Songti SC', 'SimSun', '宋体', serif;
   font-size: 13px;
 }
 .scroll code {
@@ -1870,6 +2000,33 @@ section.panel {
   font-size: 12px;
   color: var(--cyan);
 }
+/* 代码块（shiki）：固定深色终端风格，双主题一致，避免浅色主题白底 */
+.scroll .astro-code {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+  border: 1px solid var(--panel2);
+  padding: 14px;
+  overflow-x: auto;
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.scroll .astro-code pre {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+}
+.scroll .astro-code code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: 12px;
+}
+.scroll .astro-code span {
+  color: var(--shiki-dark) !important;
+}
+/* 兜底：非 shiki 的普通 pre */
 .scroll pre {
   background: var(--panel3);
   border: 1px solid var(--panel2);
@@ -1953,6 +2110,93 @@ section.panel {
 }
 .nav-quests a:only-child {
   grid-column: 1 / -1;
+}
+
+/* —— 返回按钮 —— */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ps2), var(--pix), monospace;
+  font-size: 10px;
+  color: var(--fg);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  padding: 6px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  box-shadow: 2px 2px 0 var(--black);
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear,
+    transform 0.16s steps(3);
+}
+.back-btn:hover {
+  background: var(--fg);
+  color: var(--panel);
+  transform: translateX(-2px);
+}
+
+/* —— 详情页：正文 + 右侧目录 —— */
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 20px;
+  align-items: start;
+}
+.detail-main {
+  min-width: 0;
+}
+.toc {
+  position: sticky;
+  top: 16px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  box-shadow: 5px 5px 0 var(--black);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.toc-title {
+  font-family: var(--ps2);
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  padding: 10px 14px;
+  background: var(--panel2);
+  border-bottom: 2px solid var(--line);
+}
+.toc-list {
+  list-style: none;
+  padding: 8px 10px;
+}
+.toc-list li {
+  margin: 2px 0;
+}
+.toc-list a {
+  display: block;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--dim);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition:
+    color 0.15s linear,
+    border-color 0.15s linear,
+    background-color 0.15s linear;
+}
+.toc-list a:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: var(--panel2);
+}
+.toc-list li.toc-l3 a {
+  padding-left: 20px;
+  font-size: 11px;
+}
+.toc-list a.active {
+  color: var(--gold);
+  border-color: var(--gold);
 }
 
 /* —— 对话框 —— */
@@ -2414,8 +2658,8 @@ section.panel {
 .travel-item {
   display: flex;
   gap: 14px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--panel2);
+  padding: 12px 30px;
+  border-bottom: 1px solid var(--panel3);
   text-decoration: none;
   color: var(--fg);
   transition:
@@ -2477,64 +2721,14 @@ section.panel {
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
+/* 年份/月份分组：章节头与规则线样式由 .group-head / .list-rule 提供 */
 .year-group,
 .month-group {
-  border: 2px solid var(--line);
-  background: var(--panel);
-  box-shadow: 5px 5px 0 var(--black);
-}
-.group-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--panel2);
-  border-bottom: 2px solid var(--line);
-  font-family: var(--ps2);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  transition: background-color 0.15s linear;
-}
-.group-title::-webkit-details-marker {
-  display: none;
-}
-.group-title:hover {
-  background: var(--panel);
-}
-.group-title::before {
-  content: '▶';
-  color: var(--gold);
-  font-size: 9px;
-}
-details[open] > .group-title::before {
-  content: '▼';
-}
-.group-title .group-label {
-  color: var(--fg);
-}
-.group-title .group-count {
-  margin-left: auto;
-  font-size: 9px;
-  color: var(--dim);
-}
-.month-group {
   border: none;
-  box-shadow: none;
-  border-top: 2px solid var(--panel2);
-}
-.month-group .group-title {
   background: transparent;
-  border-bottom: 1px solid var(--panel2);
-  padding: 8px 14px 8px 26px;
-  font-size: 10px;
-}
-.month-group .group-title:hover {
-  background: var(--panel2);
+  box-shadow: none;
 }
 
 /* —— 伙伴酒馆 —— */
@@ -2845,6 +3039,13 @@ footer a:hover {
 @media (max-width: 860px) {
   .grid-2 {
     grid-template-columns: 1fr;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .toc {
+    position: static;
+    max-height: none;
   }
   .status-body {
     grid-template-columns: 1fr;

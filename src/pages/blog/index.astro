@@ -14,11 +14,6 @@ const posts = await getBlogByRank()
 <FamicomLayout title='冒险记录'>
   <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '冒险记录' }]} />
 
-  <div class='page-head'>
-    <h1>冒险<b>记录</b></h1>
-    <span class='en'>QUEST LOG</span>
-  </div>
-
   <CmdMenu active='blog' />
 
   <Panel title='已接任务' en={`CURRENT QUESTS · ${posts.length}`} class='reveal'>

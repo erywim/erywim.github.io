@@ -54,11 +54,6 @@ const totalWeeks = logs.length
 <FamicomLayout title='旅行日志'>
   <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '旅行日志' }]} />
 
-  <div class='page-head'>
-    <h1>旅行<b>日志</b></h1>
-    <span class='en'>TRAVEL LOG</span>
-  </div>
-
   <CmdMenu active='logs' />
 
   <Panel title='旅程记录' en={`JOURNAL · ${totalWeeks} WEEKS`} class='reveal'>
@@ -71,14 +66,18 @@ const totalWeeks = logs.length
       {
         years.map((year) => (
           <details class='year-group' open={year.key === openYearKey}>
-            <summary class='group-title'>
+            <summary class='group-head'>
+              <span class='gh-bar'></span>
+              <span class='ba-arrow'></span>
               <span class='group-label'>{year.label}</span>
               <span class='group-count'>{year.months.reduce((n, m) => n + m.weeks.length, 0)} 周</span>
             </summary>
             {
               year.months.map((month) => (
                 <details class='month-group' open={month.key === openMonthKey}>
-                  <summary class='group-title'>
+                  <summary class='list-rule'>
+                    <span class='ba-arrow'></span>
+                    <span class='rule-mark'>◆</span>
                     <span class='group-label'>{month.label}</span>
                     <span class='group-count'>{month.weeks.length} 周</span>
                   </summary>

@@ -15,7 +15,7 @@ const { items } = Astro.props
     items.map((item, i) => (
       <span>
         {i > 0 && <span class='sep'> » </span>}
-        {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+        {item.href ? <a href={item.href}>{item.label}</a> : <span class='cur'>{item.label}</span>}
       </span>
     ))
   }

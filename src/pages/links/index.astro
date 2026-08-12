@@ -10,11 +10,6 @@ import { friends } from '@/data/friends'
 <FamicomLayout title='伙伴酒馆'>
   <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '伙伴酒馆' }]} />
 
-  <div class='page-head'>
-    <h1>伙伴<b>酒馆</b></h1>
-    <span class='en'>GUILD</span>
-  </div>
-
   <CmdMenu active='links' />
 
   <Panel title='伙伴名单' en={`ALLIES · ${friends.length}`} class='reveal'>
