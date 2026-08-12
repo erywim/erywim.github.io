@@ -107,8 +107,10 @@ const favicon =
 
     <div class='wrap'>
       <div class='hud-bar'>
-        <span class='pwr'><i></i>PWR</span>
-        <span class='title'>FAMICOM<b> RPG</b> · {site.hudTitle}</span>
+        <a class='hud-home' href='/' aria-label='返回首页'>
+          <span class='pwr'><i></i>PWR</span>
+          <span class='title'>FAMICOM<b> RPG</b> · {site.hudTitle}</span>
+        </a>
         <span class='meta'>
           <span class='g'>{gold}</span>
           <span class='lv hide-s'>{level}</span>
@@ -588,8 +590,11 @@ const favicon =
       document.body.classList.add('dive', toNight ? 'to-night' : 'to-day')
       // 每个面板分配错峰序号 + 随机偏移/旋转
       const kids = document.querySelectorAll('.wrap > *')
+      const total = kids.length
       kids.forEach((kid, i) => {
-        ;(kid as HTMLElement).style.setProperty('--ri', String(i))
+        // 下潜(→夜)按 DOM 顺序自上而下；上浮(→昼)反向自下而上
+        const ri = toNight ? i : total - 1 - i
+        ;(kid as HTMLElement).style.setProperty('--ri', String(ri))
         ;(kid as HTMLElement).style.setProperty('--sx', (Math.random() * 40 - 20).toFixed(0) + 'px')
         ;(kid as HTMLElement).style.setProperty('--rz', (Math.random() * 4 - 2).toFixed(1) + 'deg')
       })
