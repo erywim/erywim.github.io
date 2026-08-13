@@ -38,6 +38,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 | `/about` | 勇者档案（角色面板 + 技能 + 冒险历程） | `src/data/hero.ts` |
 | `/logs` | 旅行日志（周报） | `src/content/logs/` |
 | `/links` | 伙伴酒馆（友链） | `src/data/friends.ts` |
+| `/guestbook` | 留言板（giscus · GitHub Discussions 后端，未配置 `repoId`/`categoryId` 时显示占位） | `src/data/site.ts` |
 | `/search` | 站内搜索（pagefind） | 构建时自动索引 |
 | `/404` | 迷路页 | — |
 
@@ -48,7 +49,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 - **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
 - **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。
 - **首页道具/存档** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
-- **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权、天气兜底城市（`weatherCity`）。改一处全局生效。
+- **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权、天气兜底城市（`weatherCity`）、留言板配置（`giscus`）。改一处全局生效。
 - **频道语料** `src/data/sayings.ts`：天空/深海频道随机展示的像素游戏·动漫短句，每次加载随机抽 9 条，每 3 条语料重播一次天气，语料间以像素图标分隔。
 - **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志（构建期实时计算，冒险档案等共用）。
 - **RPG 掉落统计** `src/utils/rpg.ts`：每篇已发布文章的 gold/exp 合计与等级（每 100 经验升 1 级，上限 100）。`FamicomLayout` 构建期内嵌 `{quests, titles}` JSON，客户端异步求和、按日缓存（localStorage 键 `erywim-rpg-stats`）并滚动回显到 HUD/状态面板/天空频道（`[data-stat]` 标记）。新增文章后合计自动变化，无需手改。
@@ -60,5 +61,5 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 
 - 站点已配置 `locale: zh-CN`。
 - 友链不再用 `public/links.json`（数据在 `src/data/friends.ts`）。
-- 评论系统未集成（waline 配置保持关闭）。
+- 文章评论系统未集成（astro-pure 的 waline 集成保持关闭）；`/guestbook` 留言板用 giscus（后端=本仓库 GitHub Discussions，零部署零密钥），配置在 `site.giscus`，`repoId`/`categoryId` 未填时显示「尚未开放」占位。
 - 新增文章/周报后 `bun run dev` 自动刷新；统计数值会自动更新。

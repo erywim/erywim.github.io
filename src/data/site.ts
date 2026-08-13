@@ -22,5 +22,16 @@ export const site = {
   /** 构建框架署名（Powered by Astro，MIT 协议礼貌性致谢） */
   poweredBy: 'https://astro.build',
   /** 今日天气：IP 定位全部失败时兜底显示的城市（open-meteo 地理编码用） */
-  weatherCity: '北京'
+  weatherCity: '北京',
+  /** 留言板配置（giscus · 后端为 GitHub Discussions，零部署零密钥） */
+  giscus: {
+    /** 仓库（已按本仓库填好） */
+    repo: 'erywim/erywim.github.io',
+    /** 仓库 ID（在 giscus.app 配置后生成，填入即可启用留言板） */
+    repoId: 'R_kgDOT12JSw',
+    /** Discussions 分类名（默认 General，可自建「留言板」分类后改这里） */
+    category: 'General',
+    /** 分类 ID（在 giscus.app 配置后生成） */
+    categoryId: 'DIC_kwDOT12JS84DDR3l'
+  }
 }

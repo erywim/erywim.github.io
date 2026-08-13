@@ -1,7 +1,7 @@
 ---
 interface Props {
   /** 当前高亮的命令项；首页/搜索页传空则不高亮 */
-  active?: 'about' | 'blog' | 'logs' | 'links' | 'search' | 'treasure'
+  active?: 'about' | 'blog' | 'logs' | 'links' | 'search' | 'treasure' | 'guestbook'
 }
 
 const { active } = Astro.props
@@ -12,7 +12,8 @@ const items = [
   { key: 'blog', ic: '◆', label: '冒险记录', href: '/blog' },
   { key: 'logs', ic: '✎', label: '旅行日志', href: '/logs' },
   { key: 'treasure', ic: '▣', label: '道具宝箱', href: '/treasure' },
-  { key: 'links', ic: '♞', label: '伙伴酒馆', href: '/links' }
+  { key: 'links', ic: '♞', label: '伙伴酒馆', href: '/links' },
+  { key: 'guestbook', ic: '✉', label: '留言板', href: '/guestbook' }
 ]
 ---
 
