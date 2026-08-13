@@ -32,7 +32,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 
 | 路由 | 对应原型 | 数据来源 |
 |---|---|---|
-| `/` | 标题屏 + 状态/占卜/冒险记录/道具/队伍/冒险档案 | 内容集合 + `src/data/home.ts` |
+| `/` | 标题屏 + 状态/占卜/冒险记录/道具/存档/冒险档案 | 内容集合 + `src/data/home.ts` |
 | `/blog` | 冒险记录（文章列表，按时间倒序，S/A/B/C 难度徽章） | `src/content/blog/` |
 | `/blog/[id]` | 任务详情（文章正文卷轴 + 上/下一任务） | `src/content/blog/` |
 | `/about` | 勇者档案（角色面板 + 技能 + 冒险历程） | `src/data/hero.ts` |
@@ -47,7 +47,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 - **周报** `src/content/logs/`：title / description / publishDate / week。
 - **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
 - **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。
-- **首页道具/队伍** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
+- **首页道具/存档** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
 - **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权、天气兜底城市（`weatherCity`）。改一处全局生效。
 - **频道语料** `src/data/sayings.ts`：天空/深海频道随机展示的像素游戏·动漫短句，每次加载随机抽 9 条，每 3 条语料重播一次天气，语料间以像素图标分隔。
 - **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志（构建期实时计算，冒险档案等共用）。
