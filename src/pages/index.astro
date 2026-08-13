@@ -7,6 +7,7 @@ import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import QuestItem from '@/components/famicom/QuestItem.astro'
+import Timeline from '@/components/famicom/Timeline.astro'
 import TreasureData from '@/components/famicom/TreasureData.astro'
 import { party } from '@/data/home'
 import { hero } from '@/data/hero'
@@ -227,6 +228,8 @@ const bagItems = [...allTreasure].sort(() => Math.random() - 0.5).slice(0, 2)
       </div>
     </div>
   </Panel>
+
+  <Timeline />
 
   <Dialogue
     speaker={site.heroName}

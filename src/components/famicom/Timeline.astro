@@ -1,0 +1,39 @@
+---
+import Panel from '@/components/famicom/Panel.astro'
+import { timeline } from '@/data/timeline'
+
+const hasLink = (link?: string) => !!link && link !== '#'
+---
+
+<Panel title='旅程大事记' en='MILESTONES' class='reveal'>
+  <div class='tl-scroll'>
+    <ul class='timeline'>
+      {
+        timeline.map((item) => (
+          <li class='tl-item'>
+            <span class='tl-rail' aria-hidden='true'>
+              <i class='tl-node'></i>
+            </span>
+            <div class='tl-body'>
+              <div class='tl-card'>
+                <span class='tl-date'>{item.date}</span>
+                {
+                  hasLink(item.link) ? (
+                    <h3>
+                      <a href={item.link} target={item.link!.startsWith('http') ? '_blank' : undefined} rel='noopener'>
+                        {item.title}
+                      </a>
+                    </h3>
+                  ) : (
+                    <h3>{item.title}</h3>
+                  )
+                }
+                <p>{item.desc}</p>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Panel>

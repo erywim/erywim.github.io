@@ -1,7 +1,7 @@
 ---
 title: 'Prompt 工程学习笔记'
 description: 'prompt engineering 理论与实践'
-publishDate: 2026-08-13
+publishDate: 2026-04-08
 gold: 16
 exp: 84
 rank: B
