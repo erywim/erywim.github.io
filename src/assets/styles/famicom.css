@@ -782,6 +782,15 @@ html[data-theme='night'] .tl-ic-night {
   background: var(--fg);
   color: var(--panel);
 }
+/* 顶栏 GitHub 链接按钮：复用 theme-btn 外观，去掉链接默认下划线 */
+a.theme-btn {
+  text-decoration: none;
+  cursor: pointer;
+}
+a.theme-btn svg {
+  display: block;
+  flex: 0 0 auto;
+}
 
 /* —— 面包屑 —— */
 .crumb {
@@ -2537,6 +2546,16 @@ details:not([open]) > .list-rule .ba-arrow::before {
 .hero-bio b {
   color: var(--fg);
   font-weight: 400;
+}
+/* 勇者档案 bio 末尾的像素红爱心：上下微微跳动 */
+.hero-heart {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  vertical-align: -1px;
+}
+.hero-heart-ic {
+  animation: bob 1.6s steps(3) infinite;
 }
 /* 坐标 / 状态 —— HUD 徽章 */
 .hero-tags {

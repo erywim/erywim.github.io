@@ -112,6 +112,10 @@ const favicon =
         <span class='meta'>
           <span class='g' data-stat='gold'>{goldStr}</span>
           <span class='lv hide-s' data-stat='level'>{levelStr}</span>
+          <a class='theme-btn' href={site.github} target='_blank' rel='noopener' aria-label='GitHub'>
+            <svg width='14' height='14' viewBox='0 0 16 16' shape-rendering='crispEdges' aria-hidden='true'><use href='#pix-octocat'/></svg>
+            GITHUB
+          </a>
           <button class='theme-btn' id='themeToggle' aria-label='潜入深海世界'>DIVE</button>
         </span>
       </div>
@@ -185,12 +189,14 @@ const favicon =
           <rect x='1' y='5' width='4' height='1' fill='#c8861f'/>
         </symbol>
         <symbol id='pixel-heart' viewBox='0 0 7 6'>
-          <rect x='1' y='0' width='1' height='1' fill='#d63a45'/>
-          <rect x='5' y='0' width='1' height='1' fill='#d63a45'/>
-          <rect x='1' y='1' width='5' height='1' fill='#d63a45'/>
-          <rect x='0' y='2' width='7' height='2' fill='#d63a45'/>
-          <rect x='1' y='4' width='5' height='1' fill='#d63a45'/>
-          <rect x='2' y='5' width='3' height='1' fill='#b22a33'/>
+          <rect x='1' y='0' width='2' height='1' fill='#d63a45'/>
+          <rect x='4' y='0' width='2' height='1' fill='#d63a45'/>
+          <rect x='0' y='1' width='7' height='1' fill='#d63a45'/>
+          <rect x='1' y='1' width='1' height='1' fill='#e05560'/>
+          <rect x='0' y='2' width='7' height='1' fill='#d63a45'/>
+          <rect x='1' y='3' width='5' height='1' fill='#d63a45'/>
+          <rect x='2' y='4' width='3' height='1' fill='#d63a45'/>
+          <rect x='3' y='5' width='1' height='1' fill='#b22a33'/>
         </symbol>
         <symbol id='pixel-fish' viewBox='0 0 10 6'>
           <rect x='2' y='0' width='3' height='1' fill='var(--fish)'/>
@@ -543,6 +549,33 @@ const favicon =
         <symbol id='pix-contact-github' viewBox='0 0 10 10'>
           <rect x='1' y='0' width='2' height='2' fill='#b8b8c8'/><rect x='7' y='0' width='2' height='2' fill='#b8b8c8'/><rect x='4' y='8' width='2' height='2' fill='#b8b8c8'/>
           <rect x='2' y='2' width='1' height='2' fill='#b8b8c8'/><rect x='7' y='2' width='1' height='2' fill='#b8b8c8'/><rect x='2' y='4' width='6' height='1' fill='#b8b8c8'/><rect x='4' y='5' width='2' height='3' fill='#b8b8c8'/>
+        </symbol>
+        <symbol id='pix-contact-mail' viewBox='0 0 10 10'>
+          <rect x='0' y='0' width='1' height='10' fill='#b8b8c8'/><rect x='9' y='0' width='1' height='10' fill='#b8b8c8'/>
+          <rect x='1' y='0' width='8' height='1' fill='#b8b8c8'/><rect x='1' y='9' width='8' height='1' fill='#b8b8c8'/>
+          <rect x='1' y='1' width='8' height='8' fill='#ffffff'/>
+          <rect x='1' y='1' width='1' height='1' fill='#b8b8c8'/><rect x='8' y='1' width='1' height='1' fill='#b8b8c8'/>
+          <rect x='2' y='2' width='1' height='1' fill='#b8b8c8'/><rect x='7' y='2' width='1' height='1' fill='#b8b8c8'/>
+          <rect x='3' y='3' width='1' height='1' fill='#b8b8c8'/><rect x='6' y='3' width='1' height='1' fill='#b8b8c8'/>
+          <rect x='4' y='4' width='2' height='1' fill='#b8b8c8'/>
+        </symbol>
+        <symbol id='pix-octocat' viewBox='0 0 16 16'>
+          <!-- 耳朵 -->
+          <rect x='5' y='1' width='1' height='1' fill='currentColor'/><rect x='10' y='1' width='1' height='1' fill='currentColor'/>
+          <rect x='4' y='2' width='3' height='1' fill='currentColor'/><rect x='9' y='2' width='3' height='1' fill='currentColor'/>
+          <rect x='3' y='3' width='4' height='1' fill='currentColor'/><rect x='9' y='3' width='4' height='1' fill='currentColor'/>
+          <!-- 头部 -->
+          <rect x='3' y='4' width='10' height='1' fill='currentColor'/><rect x='2' y='5' width='12' height='1' fill='currentColor'/>
+          <rect x='1' y='6' width='14' height='1' fill='currentColor'/><rect x='1' y='7' width='14' height='1' fill='currentColor'/>
+          <rect x='1' y='8' width='14' height='1' fill='currentColor'/><rect x='1' y='9' width='14' height='1' fill='currentColor'/>
+          <rect x='2' y='10' width='12' height='1' fill='currentColor'/><rect x='3' y='11' width='10' height='1' fill='currentColor'/>
+          <rect x='4' y='12' width='8' height='1' fill='currentColor'/><rect x='6' y='13' width='4' height='1' fill='currentColor'/>
+          <!-- 胡须 -->
+          <rect x='0' y='6' width='1' height='1' fill='currentColor'/><rect x='0' y='9' width='1' height='1' fill='currentColor'/>
+          <rect x='15' y='6' width='1' height='1' fill='currentColor'/><rect x='15' y='9' width='1' height='1' fill='currentColor'/>
+          <!-- 眼睛（挖空为面板底色） -->
+          <rect x='4' y='7' width='2' height='2' fill='var(--panel)'/>
+          <rect x='10' y='7' width='2' height='2' fill='var(--panel)'/>
         </symbol>
         <symbol id='pix-contact-rss' viewBox='0 0 10 10'>
           <rect x='1' y='7' width='2' height='2' fill='#e0881a'/><rect x='1' y='4' width='1' height='1' fill='#e0881a'/><rect x='3' y='4' width='1' height='1' fill='#e0881a'/>
@@ -1170,22 +1203,20 @@ const favicon =
   }
 
   if (hpEls.length || mpEls.length) {
-    let firstTick = true
     function updateVitals() {
       const hp = staminaNow(new Date(), 10)
       const mp = staminaNow(new Date(), 30) // MP 更耐久，曲线与 HP 不同
       hpEls.forEach((el) => rollNum(el, hp))
       mpEls.forEach((el) => rollNum(el, mp))
-      // 首次不直接改条宽，保留面板 reveal 时的填充动画；之后平滑递减
-      if (!firstTick) {
-        hpBars.forEach((el) => {
-          el.style.width = hp + '%'
-        })
-        mpBars.forEach((el) => {
-          el.style.width = mp + '%'
-        })
-      }
-      firstTick = false
+      // 条宽统一改 --w（条读 .in .stat-bar i 的 width: var(--w)）：
+      // 首绘即用真实值覆盖构建期兜底值，避免构建时间在夜间时血条先显示成一截短条；
+      // 同时保留面板 reveal 时的填充动画，之后随体力下降平滑过渡
+      hpBars.forEach((el) => {
+        el.style.setProperty('--w', hp + '%')
+      })
+      mpBars.forEach((el) => {
+        el.style.setProperty('--w', mp + '%')
+      })
     }
     updateVitals()
     setInterval(updateVitals, 30000)

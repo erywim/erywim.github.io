@@ -40,7 +40,21 @@ const expBar = exp % 100
         <div class='stat-row'><span class='k'>HP</span><span class='v' data-live-hp>{hpNow}</span><span class='stat-bar hp'><i data-live-hp-bar style={`--w:${hpNow}%`}></i></span></div>
         <div class='stat-row'><span class='k'>MP</span><span class='v' data-live-mp>{mpNow}</span><span class='stat-bar mp'><i data-live-mp-bar style={`--w:${mpNow}%`}></i></span></div>
         <div class='stat-row'><span class='k'>EXP</span><span class='v' data-stat='exp'>{exp}</span><span class='stat-bar exp'><i style={`--w:${expBar}%`}></i></span></div>
-        <div class='hero-bio'>{hero.bio}</div>
+        <div class='hero-bio'>
+          {hero.bio}
+          <span class='hero-heart' aria-hidden='true'>
+            <svg class='hero-heart-ic' width='14' height='12' viewBox='0 0 7 6' shape-rendering='crispEdges'>
+              <rect x='1' y='0' width='2' height='1' fill='var(--red)'/>
+              <rect x='4' y='0' width='2' height='1' fill='var(--red)'/>
+              <rect x='0' y='1' width='7' height='1' fill='var(--red)'/>
+              <rect x='1' y='1' width='1' height='1' fill='var(--red-hi)'/>
+              <rect x='0' y='2' width='7' height='1' fill='var(--red)'/>
+              <rect x='1' y='3' width='5' height='1' fill='var(--red)'/>
+              <rect x='2' y='4' width='3' height='1' fill='var(--red)'/>
+              <rect x='3' y='5' width='1' height='1' fill='var(--red)'/>
+            </svg>
+          </span>
+        </div>
         <div class='hero-tags'>
           <span class='tag-chip loc'>
             <span class='tag-label'>

@@ -20,7 +20,7 @@ export interface HeroBuff {
 }
 
 export interface HeroContact {
-  icon: 'github' | 'rss' | 'mug'
+  icon: 'github' | 'mail' | 'rss' | 'mug'
   label: string
   value: string
   href: string
@@ -49,21 +49,21 @@ export const hero: {
     mp: { value: 95, max: 100 },
     exp: { value: 46, max: 100 }
   },
-  bio: '喜欢动漫；喜欢摄影；喜欢技术探讨互相学习；还喜欢写点代码，把自己天马行空想象的内容做出来是一件非常有意思的事情～',
+  bio: '喜欢动漫；喜欢摄影；喜欢交朋友；喜欢技术探讨互相学习；喜欢写点代码，把自己天马行空想象的内容做出来是一件非常有意思的事情；还喜欢你来看我的博客～',
   location: '中国/北京',
   status: '跳槽中',
   skills: [
-    { title: 'Agent 应用框架', chips: ['Spring AI', 'LangChain4j', 'LangChain', 'LangGraph', 'SSE', 'Function Calling', 'MCP'] },
+    { title: 'Agent 应用框架', chips: ['Spring AI', 'LangChain4j', 'LangChain', 'LangGraph', 'SSE', 'Function Calling', 'MCP','Skill / SOP 提炼','Dify','Claude Code'] },
     { title: 'Agent 编排范式', chips: ['ReAct', 'Plan-and-Execute', 'Self-Reflection', 'Multi-Agent', 'A2A 协议', '长任务状态管理'] },
     { title: 'RAG 与检索', chips: ['Milvus', 'BM25 + 向量混合召回', 'Rerank', '语义缓存', 'MinerU 文档解析', '上下文压缩'] },
-    { title: '后端与中间件', chips: ['Java / Spring Boot', 'MySQL', 'Redis', 'Dubbo / Nacos', 'RabbitMQ', 'Netty', '高并发治理'] },
-    { title: '全栈与工程化', chips: ['Python / FastAPI', 'TypeScript / Vue', 'Dify 二开', 'Skill / SOP 提炼', 'Claude Code'] },
-    { title: '模型与理论', chips: ['Prompt / Context / Harness Engineering', 'Transformer', 'KV-Cache / Prompt-Cache', 'MoE'] }
+    { title: '中间件', chips: ['MySQL', 'PostgreSQL','Redis', 'Dubbo','Nacos','OpenFeign', 'Kafka','RabbitMQ', '高并发治理'] },
+    { title: '全栈与工程化', chips: ['Java','Python','TypeScript','Spring','MyBatis','Netty', 'FastAPI','SqlModel','Vue'] },
+    { title: '模型与理论', chips: ['Prompt / Context / Harness Engineering','Memory管理','Transformer', 'KV-Cache / Prompt-Cache', 'MoE'] }
   ],
   timeline: [
-    { date: '2025.09 - 至今', title: '某 AI 科技公司 · AI 全栈（Agent 方向）', desc: '志愿填报Agent、LLM网关' },
-    { date: '2023.03 - 2025.08', title: '某通信行业软件公司 · Java 开发 → 项目经理', desc: '哑资源管理、DAS防外破、带领6人Team' },
-    { date: '2019.09 - 2023.07', title: '某红色主义大学 · 软件工程', desc: 'GPA 3.3（专业前 5%）' }
+    { date: '2025.09 - NOW', title: '某 AI 科技公司 · AI 全栈（Agent 方向）', desc: '第二章：勇者习得魔法（志愿填报Agent、LLM网关）' },
+    { date: '2023.03 - 2025.08', title: '某通信行业软件公司 · Java 开发 → 项目经理', desc: '第一章：勇者组建了自己的小队' },
+    { date: '2019.09 - 2023.07', title: '某红色大学 · 软件工程', desc: '冒险启程！' }
   ],
   buffs: [
     { icon: 'coffee', name: '咖啡因', kind: 'good', width: 72, val: '+30%' },
@@ -72,6 +72,7 @@ export const hero: {
   ],
   contacts: [
     { icon: 'github', label: 'GITHUB', value: 'github.com/erywim', href: 'https://github.com/erywim' },
+    { icon: 'mail', label: 'EMAIL', value: 'erywim@163.com', href: 'mailto:erywim@163.com' },
     { icon: 'mug', label: '伙伴酒馆', value: '友链 · 留言', href: '/links' }
   ]
 }
