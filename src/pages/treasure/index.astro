@@ -1,0 +1,430 @@
+---
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Panel from '@/components/famicom/Panel.astro'
+import TreasureData from '@/components/famicom/TreasureData.astro'
+import { site } from '@/data/site'
+---
+
+<FamicomLayout title='道具宝箱'>
+  <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '道具宝箱' }]} />
+
+  <CmdMenu active='treasure' />
+
+  <header class='vault-hero' data-od-id='vault-hero'>
+    <div class='stars'>★ ★ ★</div>
+    <div class='kicker'>ITEM VAULT</div>
+    <h1>道具<b>宝箱</b></h1>
+    <p class='sub'>把散落星海的好文章、素材、视频，收进一个个<b>主题宝箱</b>里。</p>
+    <div class='chest-stage' id='chestStage' role='button' tabindex='0' aria-label='开启宝箱' title='点击开启宝箱'>
+      <div class='burst' id='chestBurst' aria-hidden='true'></div>
+      <div class='spit' id='chestSpit' aria-hidden='true'><svg viewBox='0 0 16 16' shape-rendering='crispEdges'><use href='#it-box'/></svg></div>
+      <span class='pow' id='chestPow' aria-hidden='true'>POW!</span>
+      <div class='hammer' id='chestHammer' aria-hidden='true'>
+        <svg viewBox='0 0 20 20' shape-rendering='crispEdges'>
+          <rect x='3' y='0' width='14' height='6' fill='var(--fg)'/>
+          <rect x='4' y='0' width='12' height='1' fill='var(--panel3)'/>
+          <rect x='9' y='6' width='2' height='12' fill='var(--orange)'/>
+          <rect x='10' y='6' width='1' height='12' fill='var(--gold-hi)'/>
+        </svg>
+      </div>
+      <svg class='chest-svg' id='chestSvg' width='176' height='128' viewBox='0 0 44 32' shape-rendering='crispEdges' aria-hidden='true'>
+        <g class='chest-base'>
+          <rect x='3' y='8' width='38' height='20' fill='var(--orange)'/>
+          <rect x='5' y='9' width='34' height='4' fill='var(--black)'/>
+          <rect x='3' y='8' width='38' height='1' fill='var(--gold)'/>
+          <rect x='3' y='19' width='38' height='3' fill='var(--gold-hi)'/>
+          <rect x='3' y='22' width='38' height='2' fill='var(--gold)'/>
+          <rect x='19' y='13' width='6' height='6' fill='var(--red)'/>
+          <rect x='21' y='15' width='2' height='2' fill='var(--gold-hi)'/>
+          <rect x='2' y='28' width='40' height='2' fill='var(--black)'/>
+        </g>
+        <g class='chest-hinge'>
+          <rect x='4' y='6' width='2' height='2' fill='var(--fg)'/>
+          <rect x='38' y='6' width='2' height='2' fill='var(--fg)'/>
+          <rect x='4' y='7' width='1' height='1' fill='var(--gold-hi)'/>
+          <rect x='39' y='7' width='1' height='1' fill='var(--gold-hi)'/>
+        </g>
+        <g class='chest-inside'>
+          <rect class='gem' x='9' y='10' width='3' height='2' fill='var(--gold)'/>
+          <rect class='gem' x='13' y='9' width='2' height='2' fill='var(--cyan)'/>
+          <rect class='gem' x='16' y='10' width='3' height='2' fill='var(--red)'/>
+          <rect class='gem' x='20' y='9' width='2' height='2' fill='var(--spark)'/>
+          <rect class='gem' x='23' y='10' width='3' height='2' fill='var(--green)'/>
+          <rect class='gem' x='27' y='9' width='2' height='2' fill='var(--gold-hi)'/>
+          <rect class='gem' x='30' y='10' width='3' height='2' fill='var(--cyan-hi)'/>
+        </g>
+        <g class='mimic'>
+          <rect class='mimic-eye' x='14' y='9' width='4' height='2' fill='var(--panel)'/>
+          <rect x='16' y='9' width='1' height='2' fill='var(--red)'/>
+          <rect class='mimic-eye' x='26' y='9' width='4' height='2' fill='var(--panel)'/>
+          <rect x='28' y='9' width='1' height='2' fill='var(--red)'/>
+          <rect x='9' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='13' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='17' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='21' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='25' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='29' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='33' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect x='19' y='12' width='5' height='1' fill='var(--red)'/>
+        </g>
+        <g class='chest-lid'>
+          <rect x='4' y='1' width='36' height='2' fill='var(--gold-hi)'/>
+          <rect x='3' y='3' width='38' height='3' fill='var(--gold)'/>
+          <rect x='3' y='6' width='38' height='3' fill='var(--gold)'/>
+          <rect x='3' y='9' width='38' height='4' fill='var(--orange)'/>
+          <rect x='19' y='3' width='6' height='5' fill='var(--red)'/>
+          <rect x='21' y='5' width='2' height='2' fill='var(--gold)'/>
+          <rect x='4' y='1' width='1' height='12' fill='var(--gold-hi)'/>
+          <rect class='mimic-tooth' x='11' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect class='mimic-tooth' x='15' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect class='mimic-tooth' x='19' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect class='mimic-tooth' x='23' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect class='mimic-tooth' x='27' y='11' width='2' height='2' fill='var(--panel)'/>
+          <rect class='mimic-tooth' x='31' y='11' width='2' height='2' fill='var(--panel)'/>
+        </g>
+      </svg>
+    </div>
+    <div class='chest-msg' id='chestMsg'>点击宝箱，随机收获一件道具</div>
+  </header>
+
+  <Panel title='主题宝箱' en='CHESTS' metaId='chestCount' class='reveal'>
+    <div class='chest-tabs' id='chestTabs' role='tablist' aria-label='主题宝箱'></div>
+  </Panel>
+
+  <Panel title='道具' en='ITEMS' metaId='itemCount' class='reveal'>
+    <div class='filter-bar' data-od-id='tag-filter'>
+      <div class='fb-head'>
+        <span class='fl'>筛选</span>
+        <button class='filter-clear' id='filterClear' type='button' hidden>清除 ✕</button>
+      </div>
+      <div class='fb-tags' id='filterTags'></div>
+    </div>
+    <div class='item-grid' id='itemGrid'></div>
+    <div class='empty' id='itemEmpty' hidden>
+      <b>EMPTY CHEST</b>这个宝箱里还没有对应的道具，试试切换主题或清除标签筛选。
+    </div>
+    <div class='item-pager' id='itemPager' hidden>
+      <button class='pg-btn' id='pgPrev' type='button'>◀ 上一页</button>
+      <span class='pg-info' id='pgInfo'>1 / 1</span>
+      <button class='pg-btn' id='pgNext' type='button'>下一页 ▶</button>
+    </div>
+  </Panel>
+
+  <Dialogue
+    speaker={site.heroName}
+    avatar
+    class='reveal'
+    typewriter='这些都是我一路冒险捡回来的宝贝——好文章、好素材，还有些有意思的视频。想找什么就翻翻主题宝箱、点点标签；拿不定主意的话，敲一下上面那个宝箱，说不定能开出惊喜。'
+  />
+
+  <TreasureData />
+
+  <!-- 获得道具弹窗 -->
+  <div class='iv-overlay' id='ivOverlay' aria-hidden='true'>
+    <div class='iv-panel' role='dialog' aria-modal='true' aria-label='获得道具'>
+      <div class='iv-title'>
+        ◆ 获得道具 <span class='en'>ITEM GET</span>
+        <button class='iv-close' id='ivClose' type='button' aria-label='关闭'>✕</button>
+      </div>
+      <div class='iv-body'>
+        <div class='iv-icon' id='ivIcon'></div>
+        <div class='iv-main' id='ivMain'></div>
+      </div>
+    </div>
+  </div>
+</FamicomLayout>
+
+<script>
+  // —— 道具宝箱：主题 tab / 标签筛选 / 图鉴 / 开箱（含宝箱怪）/ 获得道具弹窗 ——
+  const td = document.getElementById('treasure-data')
+  if (td && td.textContent) {
+    type Tag = { id: string; name: string; en: string; cat: string }
+    type Chest = { id: string; name: string; en: string; icon: string }
+    type Item = {
+      id: string
+      icon: string
+      rarity: string
+      chest: string
+      from: string
+      title: string
+      desc: string
+      tags: string[]
+      href: string
+    }
+
+    let data: { categories: Record<string, { name: string; en: string }>; tags: Tag[]; chests: Chest[]; items: Item[] } | null = null
+    try {
+      data = JSON.parse(td.textContent)
+    } catch {}
+
+    if (data && data.items.length) {
+      const CATS = data.categories
+      const TAGS = data.tags
+      const CHESTS = data.chests
+      const ITEMS = data.items
+      const tagMap: Record<string, Tag> = Object.fromEntries(TAGS.map((t) => [t.id, t]))
+
+      const $ = (s: string) => document.querySelector(s) as HTMLElement
+
+      let activeChest = localStorage.getItem('erywim-vault-chest') || 'all'
+      if (!CHESTS.some((c) => c.id === activeChest)) activeChest = 'all'
+      const activeTags = new Set<string>()
+      const PAGE_SIZE = 10
+      let page = 1
+
+      const esc = (s: string) =>
+        String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+
+      const tagChip = (tag: Tag, withEn: boolean) => {
+        const en = withEn ? `<span class="en">${esc(tag.en)}</span>` : ''
+        return `<span class="vtag cat-${tag.cat}" data-tag="${esc(tag.id)}" title="${esc(tag.name)} · ${esc(CATS[tag.cat].en)}">${esc(tag.name)}${en}</span>`
+      }
+
+      function renderChests() {
+        const el = $('#chestTabs')
+        el.innerHTML = CHESTS.map((c) => {
+          const n = ITEMS.filter((i) => c.id === 'all' || i.chest === c.id).length
+          return `<button class="chest-tab${c.id === activeChest ? ' active' : ''}" data-chest="${esc(c.id)}" role="tab" aria-selected="${c.id === activeChest}">
+            <svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${c.icon}"/></svg>
+            <span class="t-n">${esc(c.name)}</span><span class="t-en">${esc(c.en)} · ${n}</span>
+          </button>`
+        }).join('')
+        $('#chestCount').textContent = `共 ${ITEMS.length} 件`
+      }
+
+      function renderFilterTags() {
+        $('#filterTags').innerHTML = TAGS.map((t) => {
+          const on = activeTags.has(t.id)
+          return `<span class="vtag cat-${t.cat}${on ? ' on' : ''}" data-tag="${esc(t.id)}">${esc(t.name)}</span>`
+        }).join('')
+      }
+
+      function filteredItems() {
+        return ITEMS.filter((i) => {
+          if (activeChest !== 'all' && i.chest !== activeChest) return false
+          if (activeTags.size > 0) {
+            for (const t of activeTags) if (!i.tags.includes(t)) return false
+          }
+          return true
+        })
+      }
+
+      function renderItems() {
+        const grid = $('#itemGrid')
+        const empty = $('#itemEmpty')
+        const list = filteredItems()
+        const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
+        if (page > totalPages) page = totalPages
+        const start = (page - 1) * PAGE_SIZE
+        const slice = list.slice(start, start + PAGE_SIZE)
+        grid.innerHTML = slice
+          .map((i) => {
+            const rarity = i.rarity || 'B'
+            const tags = i.tags.filter((t) => tagMap[t]).map((t) => tagChip(tagMap[t], false)).join('')
+            const open = i.href
+              ? `<a class="it-open" href="${esc(i.href)}" target="_blank" rel="noopener">打开 ↩</a>`
+              : `<span class="it-open off">待读</span>`
+            return `<div class="it-card" data-od-id="item-${esc(i.id)}">
+              <div class="it-head">
+                <span class="it-icon"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${i.icon}"/></svg></span>
+                <span class="it-rarity ${rarity}">${rarity}</span>
+                <span class="it-from">${esc(i.from)}</span>
+              </div>
+              <h3>${i.href ? `<a href="${esc(i.href)}" target="_blank" rel="noopener">${esc(i.title)}</a>` : `<span class="plain">${esc(i.title)}</span>`}</h3>
+              <p class="it-desc">${esc(i.desc)}</p>
+              <div class="it-tags">${tags}</div>
+              <div class="it-foot">${open}</div>
+            </div>`
+          })
+          .join('')
+        ;(empty as HTMLElement).hidden = list.length > 0
+        $('#itemCount').textContent = `共 ${list.length} 件`
+        renderPager(totalPages)
+      }
+
+      function renderPager(totalPages: number) {
+        const pager = $('#itemPager')
+        const info = $('#pgInfo')
+        const prev = $('#pgPrev') as HTMLButtonElement
+        const next = $('#pgNext') as HTMLButtonElement
+        pager.hidden = totalPages <= 1
+        info.textContent = `${page} / ${totalPages}`
+        prev.disabled = page <= 1
+        next.disabled = page >= totalPages
+      }
+
+      function goPage(delta: number) {
+        const total = Math.max(1, Math.ceil(filteredItems().length / PAGE_SIZE))
+        const next = page + delta
+        if (next < 1 || next > total) return
+        page = next
+        renderItems()
+      }
+
+      function renderAll() {
+        page = 1
+        renderChests()
+        renderFilterTags()
+        renderItems()
+        ;($('#filterClear') as HTMLElement).hidden = activeTags.size === 0
+      }
+
+      $('#chestTabs').addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.chest-tab') as HTMLElement | null
+        if (!btn) return
+        activeChest = btn.dataset.chest || 'all'
+        localStorage.setItem('erywim-vault-chest', activeChest)
+        renderAll()
+      })
+
+      $('#filterTags').addEventListener('click', (e) => {
+        const chip = (e.target as HTMLElement).closest('.vtag') as HTMLElement | null
+        if (!chip || !chip.dataset.tag) return
+        const id = chip.dataset.tag
+        if (activeTags.has(id)) activeTags.delete(id)
+        else activeTags.add(id)
+        renderAll()
+      })
+
+      $('#filterClear').addEventListener('click', () => {
+        activeTags.clear()
+        renderAll()
+      })
+
+      $('#pgPrev').addEventListener('click', () => goPage(-1))
+      $('#pgNext').addEventListener('click', () => goPage(1))
+
+      // —— 宝箱开箱 / 宝箱怪 ——
+      const stage = $('#chestStage')
+      const svg = $('#chestSvg')
+      const msg = $('#chestMsg')
+      const overlay = $('#ivOverlay')
+      const MIMIC_RATE = 0.25
+      let busy = false
+
+      function sparkle(count: number, color?: string) {
+        const b = $('#chestBurst')
+        b.innerHTML = ''
+        for (let i = 0; i < count; i++) {
+          const s = document.createElement('i')
+          const ang = Math.random() * Math.PI * 2
+          const dist = 34 + Math.random() * 46
+          s.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(0) + 'px')
+          s.style.setProperty('--dy', (Math.sin(ang) * dist - 30).toFixed(0) + 'px')
+          if (color) s.style.background = color
+          b.appendChild(s)
+        }
+        setTimeout(() => (b.innerHTML = ''), 760)
+      }
+
+      function pickItem() {
+        const pool = ITEMS.filter((i) => i.href)
+        return pool[Math.floor(Math.random() * pool.length)]
+      }
+
+      function showItemModal(item: Item) {
+        const rarity = item.rarity || 'B'
+        const tags = item.tags.filter((t) => tagMap[t]).map((t) => tagChip(tagMap[t], false)).join('')
+        const go = item.href
+          ? `<a class="iv-go" href="${esc(item.href)}" target="_blank" rel="noopener">前往打开 ↩</a>`
+          : `<span class="iv-go off">待读 · 暂无链接</span>`
+        $('#ivIcon').innerHTML = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${item.icon}"/></svg>`
+        $('#ivMain').innerHTML = `
+          <h3>${esc(item.title)}</h3>
+          <div class="iv-meta"><span class="it-rarity ${rarity}">${rarity}</span><span class="iv-from">${esc(item.from)}</span></div>
+          <p class="iv-desc">${esc(item.desc)}</p>
+          <div class="iv-tags">${tags}</div>
+          <div class="iv-foot">${go}<button class="iv-cancel" id="ivCancel" type="button">关闭 ✕</button></div>`
+        overlay.classList.add('show')
+        overlay.setAttribute('aria-hidden', 'false')
+      }
+
+      function closeModal() {
+        overlay.classList.remove('show')
+        overlay.setAttribute('aria-hidden', 'true')
+      }
+
+      function resetChest() {
+        svg.classList.remove('open', 'mimic')
+        stage.classList.remove('hit', 'chest-busy')
+        msg.textContent = '点击宝箱，随机收获一件道具'
+        msg.classList.remove('warn')
+        busy = false
+      }
+
+      function openChest() {
+        if (busy) return
+        busy = true
+        stage.classList.add('chest-busy')
+        msg.classList.remove('warn')
+
+        if (Math.random() < MIMIC_RATE) {
+          svg.classList.add('mimic')
+          msg.textContent = '是宝箱怪！它张开了獠牙……'
+          msg.classList.add('warn')
+          setTimeout(() => {
+            stage.classList.add('hit')
+            msg.textContent = 'POW！锤子砸下来了……'
+            setTimeout(() => sparkle(12, 'var(--red)'), 160)
+          }, 900)
+          setTimeout(() => {
+            svg.classList.remove('mimic')
+            stage.classList.remove('hit')
+            sparkle(8, 'var(--spark)')
+            msg.textContent = '宝箱怪被砸闭嘴，变回原样。再点一次试试？'
+            setTimeout(resetChest, 1500)
+          }, 1260)
+        } else {
+          svg.classList.add('open')
+          sparkle(14, 'var(--gold)')
+          msg.textContent = '宝箱开启，一件道具正在弹出……'
+          const item = pickItem()
+          const spit = $('#chestSpit')
+          spit.querySelector('use')?.setAttribute('href', '#' + item.icon)
+          setTimeout(() => spit.classList.add('go'), 300)
+          setTimeout(() => {
+            spit.classList.remove('go')
+            showItemModal(item)
+            msg.textContent = '获得一件道具！决定跳转或关闭。'
+          }, 920)
+        }
+      }
+
+      stage.addEventListener('click', openChest)
+      stage.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          openChest()
+        }
+      })
+
+      function onModalClose() {
+        closeModal()
+        resetChest()
+      }
+      overlay.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement
+        if (t === overlay) {
+          onModalClose()
+          return
+        }
+        if (t.closest('.iv-cancel') || t.closest('.iv-close')) {
+          onModalClose()
+          return
+        }
+        if (t.closest('.iv-go')) {
+          closeModal()
+          resetChest()
+        }
+      })
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('show')) onModalClose()
+      })
+
+      renderAll()
+    }
+  }
+</script>

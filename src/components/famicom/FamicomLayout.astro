@@ -279,6 +279,7 @@ const favicon =
         <a href='/blog'>冒险记录</a>
         <a href='/about'>勇者档案</a>
         <a href='/logs'>旅行日志</a>
+        <a href='/treasure'>道具宝箱</a>
         <a href='/links'>伙伴酒馆</a>
         <a href={site.github} target='_blank' rel='noopener'>GitHub</a>
         <a href={site.poweredBy} target='_blank' rel='noopener'>Powered by Astro</a>
@@ -743,6 +744,69 @@ const favicon =
         <symbol id='pix-chip-fry' viewBox='0 0 6 9'>
           <rect x='0' y='0' width='2' height='7' fill='#f2a620'/><rect x='2' y='1' width='2' height='8' fill='#e0881a'/>
           <rect x='4' y='0' width='2' height='6' fill='#f2a620'/><rect x='1' y='7' width='4' height='2' fill='#d63a45'/><rect x='0' y='7' width='6' height='1' fill='#b22a33'/>
+        </symbol>
+
+        <!-- 道具宝箱像素图标（道具袋 / 宝箱页共用） -->
+        <symbol id='it-scroll' viewBox='0 0 16 16'>
+          <rect x='2' y='0' width='12' height='2' fill='var(--gold)'/><rect x='2' y='0' width='2' height='2' fill='var(--gold-hi)'/><rect x='12' y='0' width='2' height='2' fill='var(--orange)'/>
+          <rect x='3' y='2' width='10' height='12' fill='var(--panel2)'/>
+          <rect x='2' y='14' width='12' height='2' fill='var(--gold)'/><rect x='2' y='14' width='2' height='2' fill='var(--gold-hi)'/><rect x='12' y='14' width='2' height='2' fill='var(--orange)'/>
+          <rect x='5' y='4' width='6' height='1' fill='var(--dim)'/><rect x='5' y='6' width='6' height='1' fill='var(--dim)'/><rect x='5' y='8' width='5' height='1' fill='var(--dim)'/><rect x='5' y='10' width='4' height='1' fill='var(--cyan)'/>
+        </symbol>
+        <symbol id='it-book' viewBox='0 0 16 16'>
+          <rect x='1' y='3' width='7' height='10' fill='var(--panel)'/><rect x='8' y='3' width='7' height='10' fill='var(--panel2)'/>
+          <rect x='1' y='3' width='7' height='1' fill='var(--panel3)'/><rect x='8' y='3' width='7' height='1' fill='var(--panel3)'/>
+          <rect x='7' y='2' width='2' height='12' fill='var(--line)'/>
+          <rect x='0' y='3' width='1' height='10' fill='var(--gold)'/><rect x='15' y='3' width='1' height='10' fill='var(--gold)'/>
+          <rect x='1' y='2' width='14' height='1' fill='var(--gold)'/><rect x='1' y='13' width='14' height='1' fill='var(--gold)'/>
+          <rect x='2' y='6' width='5' height='1' fill='var(--dim)'/><rect x='2' y='8' width='4' height='1' fill='var(--dim)'/>
+          <rect x='9' y='6' width='5' height='1' fill='var(--dim)'/><rect x='9' y='8' width='4' height='1' fill='var(--dim)'/>
+        </symbol>
+        <symbol id='it-paper' viewBox='0 0 16 16'>
+          <rect x='3' y='1' width='10' height='14' fill='var(--panel)'/>
+          <rect x='3' y='1' width='10' height='2' fill='var(--cyan)'/><rect x='3' y='1' width='1' height='2' fill='var(--cyan-hi)'/>
+          <rect x='5' y='5' width='6' height='1' fill='var(--dim)'/><rect x='5' y='7' width='6' height='1' fill='var(--dim)'/><rect x='5' y='9' width='4' height='1' fill='var(--dim)'/><rect x='5' y='11' width='5' height='1' fill='var(--panel3)'/>
+        </symbol>
+        <symbol id='it-video' viewBox='0 0 16 16'>
+          <rect x='3' y='1' width='1' height='2' fill='var(--line)'/><rect x='12' y='1' width='1' height='2' fill='var(--line)'/>
+          <rect x='2' y='3' width='12' height='9' fill='var(--line)'/><rect x='3' y='4' width='10' height='7' fill='var(--cyan-hi)'/>
+          <rect x='6' y='6' width='1' height='3' fill='var(--panel)'/><rect x='7' y='5' width='1' height='5' fill='var(--panel)'/><rect x='8' y='6' width='1' height='3' fill='var(--panel)'/>
+          <rect x='6' y='12' width='4' height='1' fill='var(--line)'/><rect x='7' y='13' width='2' height='1' fill='var(--line)'/>
+        </symbol>
+        <symbol id='it-gear' viewBox='0 0 16 16'>
+          <rect x='6' y='6' width='4' height='4' fill='var(--gold)'/><rect x='7' y='7' width='2' height='2' fill='var(--black)'/>
+          <rect x='6' y='1' width='4' height='2' fill='var(--gold-hi)'/><rect x='6' y='13' width='4' height='2' fill='var(--gold)'/>
+          <rect x='1' y='6' width='2' height='4' fill='var(--gold-hi)'/><rect x='13' y='6' width='2' height='4' fill='var(--gold)'/>
+          <rect x='2' y='2' width='3' height='3' fill='var(--orange)'/><rect x='11' y='2' width='3' height='3' fill='var(--orange)'/>
+          <rect x='2' y='11' width='3' height='3' fill='var(--orange)'/><rect x='11' y='11' width='3' height='3' fill='var(--orange)'/>
+        </symbol>
+        <symbol id='it-crystal' viewBox='0 0 16 16'>
+          <rect x='7' y='1' width='2' height='1' fill='var(--cyan-hi)'/><rect x='6' y='2' width='4' height='1' fill='var(--cyan-hi)'/>
+          <rect x='5' y='3' width='6' height='1' fill='var(--cyan)'/><rect x='4' y='4' width='8' height='1' fill='var(--cyan)'/>
+          <rect x='4' y='5' width='8' height='1' fill='var(--cyan-hi)'/><rect x='3' y='6' width='10' height='1' fill='var(--cyan)'/>
+          <rect x='3' y='7' width='10' height='1' fill='var(--cyan)'/><rect x='3' y='8' width='10' height='1' fill='var(--cyan-hi)'/>
+          <rect x='4' y='9' width='8' height='1' fill='var(--cyan)'/><rect x='4' y='10' width='8' height='1' fill='var(--cyan-hi)'/>
+          <rect x='5' y='11' width='6' height='1' fill='var(--cyan)'/><rect x='6' y='12' width='4' height='1' fill='var(--cyan-hi)'/><rect x='7' y='13' width='2' height='1' fill='var(--cyan-hi)'/>
+          <rect x='6' y='5' width='1' height='3' fill='var(--panel)'/><rect x='9' y='5' width='1' height='3' fill='var(--panel)'/>
+        </symbol>
+        <symbol id='it-chip' viewBox='0 0 16 16'>
+          <rect x='4' y='4' width='8' height='8' fill='var(--fg)'/><rect x='6' y='6' width='4' height='4' fill='var(--gold-hi)'/>
+          <rect x='5' y='2' width='1' height='2' fill='var(--line)'/><rect x='7' y='2' width='1' height='2' fill='var(--line)'/><rect x='9' y='2' width='1' height='2' fill='var(--line)'/>
+          <rect x='5' y='12' width='1' height='2' fill='var(--line)'/><rect x='7' y='12' width='1' height='2' fill='var(--line)'/><rect x='9' y='12' width='1' height='2' fill='var(--line)'/>
+          <rect x='2' y='5' width='2' height='1' fill='var(--line)'/><rect x='2' y='7' width='2' height='1' fill='var(--line)'/><rect x='2' y='9' width='2' height='1' fill='var(--line)'/>
+          <rect x='12' y='5' width='2' height='1' fill='var(--line)'/><rect x='12' y='7' width='2' height='1' fill='var(--line)'/><rect x='12' y='9' width='2' height='1' fill='var(--line)'/>
+          <rect x='5' y='4' width='1' height='1' fill='var(--panel3)'/>
+        </symbol>
+        <symbol id='it-graph' viewBox='0 0 16 16'>
+          <rect x='3' y='7' width='10' height='1' fill='var(--cyan)'/>
+          <rect x='7' y='3' width='1' height='4' fill='var(--cyan)'/><rect x='7' y='9' width='1' height='4' fill='var(--cyan)'/>
+          <rect x='6' y='2' width='3' height='3' fill='var(--gold)'/><rect x='2' y='6' width='3' height='3' fill='var(--red)'/>
+          <rect x='11' y='6' width='3' height='3' fill='var(--cyan-hi)'/><rect x='6' y='11' width='3' height='3' fill='var(--green)'/>
+        </symbol>
+        <symbol id='it-box' viewBox='0 0 16 16'>
+          <rect x='2' y='5' width='12' height='1' fill='var(--gold-hi)'/><rect x='2' y='6' width='12' height='2' fill='var(--gold)'/>
+          <rect x='3' y='8' width='10' height='6' fill='var(--orange)'/><rect x='3' y='8' width='10' height='1' fill='var(--gold)'/>
+          <rect x='7' y='6' width='2' height='3' fill='var(--red)'/><rect x='2' y='14' width='12' height='1' fill='var(--black)'/>
         </symbol>
       </defs>
     </svg>

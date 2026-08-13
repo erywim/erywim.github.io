@@ -1,24 +1,30 @@
-import { type CollectionEntry, type CollectionKey, getCollection } from 'astro:content'
+import { type CollectionEntry, getCollection } from 'astro:content'
 
-type Collections = CollectionEntry<CollectionKey>[]
+/**
+ * 这些工具函数只作用于「带日期 + draft」的内容集合（blog、logs）。
+ * treasure 集合没有 publishDate/updatedDate/draft 字段，不应被这里的日期/tag 统计消费，
+ * 故显式收窄类型，避免新增集合后类型不匹配。
+ */
+type DatedCollectionKey = 'blog' | 'logs'
+type Collections = CollectionEntry<DatedCollectionKey>[]
 
 export const prod = import.meta.env.PROD
 
 /** Note: this function filters out draft posts based on the environment */
-export async function getBlogCollection(contentType: CollectionKey = 'blog') {
+export async function getBlogCollection(contentType: DatedCollectionKey = 'blog') {
   return await getCollection(contentType, ({ data }: CollectionEntry<typeof contentType>) => {
     // Not in production & draft is not false
     return prod ? !data.draft : true
   })
 }
 
-function getYearFromCollection<T extends CollectionKey>(
+function getYearFromCollection<T extends DatedCollectionKey>(
   collection: CollectionEntry<T>
 ): number | undefined {
   const dateStr = collection.data.updatedDate ?? collection.data.publishDate
   return dateStr ? new Date(dateStr).getFullYear() : undefined
 }
-export function groupCollectionsByYear<T extends CollectionKey>(
+export function groupCollectionsByYear<T extends DatedCollectionKey>(
   collections: Collections
 ): [number, CollectionEntry<T>[]][] {
   const collectionsByYear = collections.reduce((acc, collection) => {

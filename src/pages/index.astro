@@ -1,16 +1,20 @@
 ---
+import { getCollection } from 'astro:content'
+
 import CmdMenu from '@/components/famicom/CmdMenu.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import QuestItem from '@/components/famicom/QuestItem.astro'
-import { items, party } from '@/data/home'
+import TreasureData from '@/components/famicom/TreasureData.astro'
+import { party } from '@/data/home'
 import { hero } from '@/data/hero'
 import { site } from '@/data/site'
+import { getTitleForLevel } from '@/data/titles'
+import { tagById } from '@/data/treasure'
 import { getPublishedBlog } from '@/utils/collections'
 import { getMetrics } from '@/utils/metrics'
-import { getTitleForLevel } from '@/data/titles'
 import { getRpgStats } from '@/utils/rpg'
 import { hpAt, mpAt } from '@/utils/vitals'
 
@@ -31,6 +35,10 @@ const noteTag = [...catCounts.entries()].find(([c]) => c === '笔记')
 const hpNow = hpAt(new Date())
 const mpNow = mpAt(new Date())
 const expBar = exp % 100
+
+// 道具袋：从全部收藏里随机取两件（客户端「换一批」重新抽取）
+const allTreasure = await getCollection('treasure')
+const bagItems = [...allTreasure].sort(() => Math.random() - 0.5).slice(0, 2)
 ---
 
 <FamicomLayout>
@@ -101,42 +109,49 @@ const expBar = exp % 100
 
   <div class='grid-2'>
     <Panel title='道具袋' en='ITEMS' id='items' class='reveal'>
-      <div class='item-grid'>
+      <div slot='actions' class='px-actions'>
+        <button class='px-refresh' id='bagReroll' type='button'>换一批 ↻</button>
+        <a class='px-link' href='/treasure'>打开宝箱 →</a>
+      </div>
+      <div class='bag-list' id='bagList'>
         {
-          items.map((item) => (
-            <div class='item-card'>
-              <div class='item-icon'>{item.icon}</div>
-              <div>
-                <div class='it'>{item.rarity}</div>
-                <h3>
-                  {
-                    item.repo.href.startsWith('http') ? (
-                      <a href={item.repo.href} target='_blank' rel='noopener'>{item.title}</a>
-                    ) : (
-                      item.title
-                    )
-                  }
-                </h3>
-                <p>{item.desc}</p>
-                <div class='btns'>
-                  {
-                    item.repo.href.startsWith('http') ? (
-                      <a class='primary' href={item.repo.href} target='_blank' rel='noopener'>{item.repo.label}</a>
-                    ) : (
-                      <span class='primary'>{item.repo.label}</span>
-                    )
-                  }
-                  {
-                    item.demo.href.startsWith('http') ? (
-                      <a href={item.demo.href} target='_blank' rel='noopener'>{item.demo.label}</a>
-                    ) : (
-                      <span>{item.demo.label}</span>
-                    )
-                  }
+          bagItems.length > 0 ? (
+            bagItems.map((item) => (
+              <div class='item-card' data-od-id={`bag-${item.id}`}>
+                <div class='item-icon'>
+                  <svg viewBox='0 0 16 16' shape-rendering='crispEdges' aria-hidden='true'><use href={`#${item.data.icon}`}/></svg>
+                </div>
+                <div style='min-width:0'>
+                  <div class='it'>稀有度 {item.data.rarity}{item.data.from ? ` · ${item.data.from}` : ''}</div>
+                  <h3>
+                    {
+                      item.data.href ? (
+                        <a href={item.data.href} target='_blank' rel='noopener'>{item.data.title}</a>
+                      ) : (
+                        item.data.title
+                      )
+                    }
+                  </h3>
+                  <p>{item.data.desc}</p>
+                  <div class='tags'>
+                    {item.data.tags.map((t) => <span class={`vtag cat-${tagById[t].cat}`}>{tagById[t].name}</span>)}
+                  </div>
+                  <div class='btns'>
+                    {
+                      item.data.href ? (
+                        <a class='primary' href={item.data.href} target='_blank' rel='noopener'>打开 ↩</a>
+                      ) : (
+                        <span class='primary'>待读</span>
+                      )
+                    }
+                    <a href='/treasure'>宝箱库 →</a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
+          ) : (
+            <p style='padding:14px 16px;color:var(--dim)'>还没有收集任何道具。</p>
+          )
         }
       </div>
     </Panel>
@@ -159,11 +174,14 @@ const expBar = exp % 100
                   )
                 }
               </div>
-              <div>
+              <div class='party-main'>
                 <h3>{member.title}</h3>
                 <div class='cls'>{member.class}</div>
                 <p>{member.desc}</p>
                 <div class='period'>{member.period}</div>
+                <div class='tags'>
+                  {member.chips.map((chip) => <span class='vtag cat-domain'>{chip}</span>)}
+                </div>
               </div>
             </div>
           ))
@@ -488,6 +506,8 @@ const expBar = exp % 100
       <div class='fm-foot'>连点金鱼 5 次可再次开启 · 点遮罩或 ✕ 关闭</div>
     </div>
   </div>
+
+  <TreasureData />
 </FamicomLayout>
 
 <script>
@@ -753,4 +773,69 @@ const expBar = exp % 100
       go()
     }
   })
+</script>
+
+<script>
+  // —— 道具袋：随机两件收藏 + 「换一批」重掷 ——
+  const td = document.getElementById('treasure-data')
+  const bagList = document.getElementById('bagList')
+  const bagReroll = document.getElementById('bagReroll')
+  if (td && td.textContent && bagList && bagReroll) {
+    type BagTag = { id: string; name: string; cat: string }
+    type BagItem = {
+      id: string
+      icon: string
+      rarity: string
+      from: string
+      title: string
+      desc: string
+      tags: string[]
+      href: string
+    }
+    let data: { tags: BagTag[]; items: BagItem[] } | null = null
+    try {
+      data = JSON.parse(td.textContent)
+    } catch {}
+
+    if (data && data.items.length) {
+      const tagMap: Record<string, BagTag> = Object.fromEntries(data.tags.map((t) => [t.id, t]))
+      const esc = (s: string) =>
+        String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+
+      const card = (it: BagItem) => {
+        const tags = it.tags
+          .map((t) => (tagMap[t] ? `<span class="vtag cat-${tagMap[t].cat}">${esc(tagMap[t].name)}</span>` : ''))
+          .join('')
+        const meta = `稀有度 ${it.rarity}${it.from ? ' · ' + esc(it.from) : ''}`
+        const title = it.href
+          ? `<a href="${esc(it.href)}" target="_blank" rel="noopener">${esc(it.title)}</a>`
+          : esc(it.title)
+        const btn = it.href
+          ? `<a class="primary" href="${esc(it.href)}" target="_blank" rel="noopener">打开 ↩</a>`
+          : `<span class="primary">待读</span>`
+        return `<div class="item-card" data-od-id="bag-${esc(it.id)}">
+          <div class="item-icon"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${it.icon}"/></svg></div>
+          <div style="min-width:0">
+            <div class="it">${meta}</div>
+            <h3>${title}</h3>
+            <p>${esc(it.desc)}</p>
+            <div class="tags">${tags}</div>
+            <div class="btns">${btn}<a href="/treasure">宝箱库 →</a></div>
+          </div>
+        </div>`
+      }
+
+      const draw = () => {
+        const list = data!.items
+        const a = list[Math.floor(Math.random() * list.length)]
+        let b = list[Math.floor(Math.random() * list.length)]
+        if (list.length > 1 && b.id === a.id) {
+          b = list[(list.indexOf(a) + 1 + Math.floor(Math.random() * (list.length - 1))) % list.length]
+        }
+        bagList.innerHTML = card(a) + (b.id !== a.id ? card(b) : '')
+      }
+
+      bagReroll.addEventListener('click', draw)
+    }
+  }
 </script>

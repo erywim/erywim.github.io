@@ -2,6 +2,8 @@ import { defineCollection } from 'astro:content'
 import { glob } from 'astro/loaders'
 import { z } from 'astro/zod'
 
+import { CHEST_IDS, ICONS, RARITIES, TAG_IDS } from '@/data/treasure'
+
 function removeDupsAndLowerCase(array: string[]) {
   if (!array.length) return array
   const lowercaseItems = array.map((str) => str.toLowerCase())
@@ -66,4 +68,27 @@ const logs = defineCollection({
     })
 })
 
-export const collections = { blog, logs }
+// Define treasure collection (collected materials / 道具宝箱)
+const treasure = defineCollection({
+  loader: glob({ base: './src/content/treasure', pattern: '**/*.{md,mdx}' }),
+  schema: () =>
+    z.object({
+      /** 像素图标（可选值见 src/data/treasure.ts 的 ICONS） */
+      icon: z.enum(ICONS),
+      /** 稀有度 S / A / B，缺省 B */
+      rarity: z.enum(RARITIES).default('B'),
+      /** 主题宝箱 id（可选值见 CHEST_IDS，不含「全部 all」） */
+      chest: z.enum(CHEST_IDS),
+      /** 来源，如 spring.io / 待读；留空则不显示 */
+      from: z.string().default(''),
+      title: z.string().max(120),
+      /** 一句话简介 */
+      desc: z.string().default(''),
+      /** 标签 id（可选值见 TAG_IDS，可跨主题多个） */
+      tags: z.array(z.enum(TAG_IDS)).default([]),
+      /** 跳转链接；留空则渲染为「待读」不可点 */
+      href: z.string().default('')
+    })
+})
+
+export const collections = { blog, logs, treasure }

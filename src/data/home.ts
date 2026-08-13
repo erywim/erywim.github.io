@@ -1,35 +1,7 @@
 /**
- * 首页数据：道具袋（项目）、存档（每个阶段的角色）—— 请替换为你的项目与经历
- * repo/demo 的 href 填 '#' 时首页会渲染为不可点击的按钮。
+ * 首页数据：存档（每个阶段的角色）—— 请替换为你的经历
+ * （首页「道具袋」已改为展示 src/content/treasure 里的收藏，见 treasure.ts / 宝箱页）
  */
-
-export interface HomeItem {
-  icon: string
-  rarity: string
-  title: string
-  desc: string
-  repo: { label: string; href: string }
-  demo: { label: string; href: string }
-}
-
-export const items: HomeItem[] = [
-  {
-    icon: '？',
-    rarity: '……',
-    title: '……',
-    desc: '……',
-    repo: { label: 'Repo 📦', href: '#' },
-    demo: { label: 'Demo 🌐', href: '#' }
-  },
-  {
-    icon: '？',
-    rarity: '……',
-    title: '……',
-    desc: '……',
-    repo: { label: 'Repo 📦', href: '#' },
-    demo: { label: 'Demo 🌐', href: '#' }
-  }
-]
 
 export interface PartyMember {
   title: string
@@ -38,21 +10,25 @@ export interface PartyMember {
   period: string
   /** warrior | mage —— 对应组件里内置的像素头像 */
   avatar: 'warrior' | 'mage'
+  /** 关键技能 / 标签（存档卡片上与道具袋的标签对齐） */
+  chips: string[]
 }
 
 export const party: PartyMember[] = [
+  {
+    title: 'AI 全栈',
+    class: '法师 MAGE',
+    desc: '快速落地想法的感觉真不戳～',
+    period: '2025 - NOW',
+    avatar: 'mage',
+    chips: ['Agent', 'LLM', 'RAG', '全栈']
+  },
   {
     title: 'Javaer',
     class: '战士 WARRIOR',
     desc: '重铸java荣光，吾辈义不容辞',
     period: '2019 - 2025',
-    avatar: 'warrior'
-  },
-  {
-    title: 'AI 全栈',
-    class: '法师 MAGE',
-    desc: '快速落地想法的感觉真不戳～',
-    period: '2025 - ∞',
-    avatar: 'mage'
+    avatar: 'warrior',
+    chips: ['Java', 'Spring', 'Netty', '项目管理']
   }
 ]

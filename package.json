@@ -17,7 +17,8 @@
     "clean": "rm -rf .astro .vercel dist",
     "cache:avatars": "tsx preset/scripts/cacheAvatars.ts",
     "post": "bun scripts/new-post.ts",
-    "log": "bun scripts/new-log.ts"
+    "log": "bun scripts/new-log.ts",
+    "item": "bun scripts/new-item.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.9",

@@ -7,9 +7,11 @@ interface Props {
   /** 右上角跳转链接（如「勇者档案 →」） */
   link?: string
   linkLabel?: string
+  /** 标题右侧计数占位（客户端回显「共 N 件」等），给元素 id */
+  metaId?: string
 }
 
-const { title, en, id, class: className, link, linkLabel } = Astro.props
+const { title, en, id, class: className, link, linkLabel, metaId } = Astro.props
 const panelClass = `px${className ? ` ${className}` : ''}`
 ---
 
@@ -18,6 +20,8 @@ const panelClass = `px${className ? ` ${className}` : ''}`
     <span class='bar-l'></span>
     {title}
     {en && <span class='en'>{en}</span>}
+    {metaId && <span class='cnt' id={metaId}></span>}
+    <slot name='actions' />
     {link && <a class='px-link' href={link}>{linkLabel}</a>}
   </div>
   <slot />
