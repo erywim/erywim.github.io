@@ -2482,6 +2482,13 @@ details:not([open]) > .list-rule .ba-arrow::before {
   border: 2px solid var(--line);
   padding: 12px 14px;
   box-shadow: 3px 3px 0 var(--black);
+  transition:
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3);
+}
+.achieve-row:hover {
+  transform: translateY(-3px);
+  box-shadow: 6px 6px 0 var(--black);
 }
 .ar-title {
   display: flex;
@@ -2718,6 +2725,13 @@ details:not([open]) > .list-rule .ba-arrow::before {
   background: var(--panel2);
   box-shadow: 3px 3px 0 var(--black);
   padding: 10px 12px;
+  transition:
+    transform 0.16s steps(3),
+    box-shadow 0.16s steps(3);
+}
+.tl-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 6px 6px 0 var(--black);
 }
 .tl-body .tl-date {
   display: block;
