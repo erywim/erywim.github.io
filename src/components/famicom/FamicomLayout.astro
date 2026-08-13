@@ -102,6 +102,24 @@ const favicon =
       <div class='floaters' id='floaters' aria-hidden='true'></div>
     </div>
     <div id='divefx' aria-hidden='true'></div>
+    <script is:inline>
+      // 所有背景动画元素（云/鸽/飞鱼/岛/星尘/气泡/水草/图层）统一按「墙钟时间 + 各自相位」
+      // 设负 animation-delay：切页（整页重载）后从对应进度继续，而不是每次都回到动画起点
+      // （横向漂移类会集体退到最左、上升类会集体退到最底）。读计算样式拿时长与方向，天空/深海一致。
+      ;(function () {
+        var epoch = Date.now() / 1000
+        document.querySelectorAll(
+          '#skyfx .layer, #skyfx .cl, #skyfx .spark, #skyfx .isle, #skyfx .dove, #skyfx .ffish, #skyfx .bubble, #skyfx .kelp'
+        ).forEach(function (el, i) {
+          var cs = getComputedStyle(el)
+          var dur = parseFloat(cs.animationDuration) || 10
+          var dir = cs.animationDirection
+          var cycle = dir === 'alternate' || dir === 'alternate-reverse' ? dur * 2 : dur
+          var phase = (i * 17 + 7) % cycle
+          el.style.animationDelay = (-((phase + epoch) % cycle)).toFixed(2) + 's'
+        })
+      })()
+    </script>
 
     <div class='wrap'>
       <div class='hud-bar'>
@@ -129,6 +147,7 @@ const favicon =
         <a href='/logs'>旅行日志</a>
         <a href='/links'>伙伴酒馆</a>
         <a href={site.github} target='_blank' rel='noopener'>GitHub</a>
+        <a href={site.poweredBy} target='_blank' rel='noopener'>Powered by Astro</a>
         <span>{site.copyright}</span>
       </footer>
     </div>
@@ -628,6 +647,13 @@ const favicon =
   const RM =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  // 后台标签页：给 <html> 打 data-hidden 标记，配合 CSS 冻结所有动画，
+  // 避免切换回来时 steps()/长动画时间轴跳帧导致组件局部闪屏
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) root.setAttribute('data-hidden', '')
+    else root.removeAttribute('data-hidden')
+  })
+
   function setTheme(night: boolean) {
     if (night) root.setAttribute('data-theme', 'night')
     else root.removeAttribute('data-theme')
@@ -748,26 +774,72 @@ const favicon =
       }
       return a
     }
+    // 跨页持久化：把每个漂浮物“飞行起点墙钟时间 startAt”写进 sessionStorage，
+    // 切页（MPA 整页重载）后按墙钟时间续飞到对应进度（负 animation-delay 续播），避免“重置”。
+    const FLOAT_KEY = 'erywim-floaters'
+    interface SavedFloater { id: string; dir: string; top: number; dur: number; size: number; startAt: number }
+    function onFloaterEnd(el: HTMLElement) {
+      return () => {
+        if (el.parentNode) el.parentNode.removeChild(el)
+        const i = pool.indexOf(el)
+        if (i >= 0) pool.splice(i, 1)
+        saveState()
+      }
+    }
+    function saveState() {
+      try {
+        const list: SavedFloater[] = pool.map((el) => ({
+          id: el.dataset.id || '',
+          dir: el.classList.contains('rtl') ? 'rtl' : 'ltr',
+          top: parseFloat(el.style.top),
+          dur: parseFloat(el.style.getPropertyValue('--dur')) || 36,
+          size: parseFloat(el.dataset.size || '24'),
+          startAt: Number(el.dataset.startAt) || Date.now()
+        }))
+        sessionStorage.setItem(FLOAT_KEY, JSON.stringify(list))
+      } catch (e) {}
+    }
+    function build(it: { id: string; w: number; h: number }, dir: string, top: number, dur: number, size: number, delay: number, startAt: number) {
+      const el = document.createElement('div')
+      el.className = 'floater ' + dir
+      el.dataset.id = it.id
+      el.dataset.size = String(size)
+      el.dataset.startAt = String(startAt)
+      el.style.top = top.toFixed(1) + '%'
+      el.style.setProperty('--dur', dur.toFixed(1) + 's')
+      el.style.setProperty('--delay', delay.toFixed(1) + 's')
+      const h = Math.round((size * it.h) / it.w)
+      el.innerHTML = `<svg width="${size}" height="${h}" viewBox="0 0 ${it.w} ${it.h}" shape-rendering="crispEdges" aria-hidden="true"><use href="#${it.id}"/></svg>`
+      fbox.appendChild(el)
+      pool.push(el)
+      el.addEventListener('animationend', onFloaterEnd(el))
+    }
     function spawnOne(it: { id: string; w: number; h: number }) {
       const dir = Math.random() < 0.5 ? 'ltr' : 'rtl'
       const top = world() === 'sea' ? 8 + Math.random() * 52 : 5 + Math.random() * 48
       const dur = 24 + Math.random() * 28
       const size = 24 + Math.random() * 30
-      const el = document.createElement('div')
-      el.className = 'floater ' + dir
-      el.dataset.id = it.id
-      el.style.top = top.toFixed(1) + '%'
-      el.style.setProperty('--dur', dur.toFixed(1) + 's')
-      el.style.setProperty('--delay', (Math.random() * 4).toFixed(1) + 's')
-      const h = Math.round((size * it.h) / it.w)
-      el.innerHTML = `<svg width="${size}" height="${h}" viewBox="0 0 ${it.w} ${it.h}" shape-rendering="crispEdges" aria-hidden="true"><use href="#${it.id}"/></svg>`
-      fbox.appendChild(el)
-      pool.push(el)
-      el.addEventListener('animationend', () => {
-        if (el.parentNode) el.parentNode.removeChild(el)
-        const i = pool.indexOf(el)
-        if (i >= 0) pool.splice(i, 1)
-      })
+      const delay = Math.random() * 4
+      build(it, dir, top, dur, size, delay, Date.now() + delay * 1000)
+      saveState()
+    }
+    function restoreState() {
+      let list: SavedFloater[] = []
+      try {
+        list = JSON.parse(sessionStorage.getItem(FLOAT_KEY) || '[]')
+      } catch (e) {}
+      if (!list.length) return
+      const now = Date.now()
+      const lib = LIB[world() as 'sky' | 'sea']
+      for (const s of list) {
+        if (!s || !s.id || !Number.isFinite(s.startAt) || !Number.isFinite(s.dur)) continue
+        const it = lib.find((x) => x.id === s.id)
+        if (!it) continue
+        const elapsed = (now - s.startAt) / 1000
+        if (elapsed >= s.dur) continue // 已飞完全程，不再恢复
+        build(it, s.dir, s.top, s.dur, s.size, (s.startAt - now) / 1000, s.startAt)
+      }
+      saveState() // 清掉已飞完的项
     }
     function topUp() {
       if (pool.length >= 3) return
@@ -783,6 +855,7 @@ const favicon =
         if (p.parentNode) p.parentNode.removeChild(p)
       }
       pool.length = 0
+      saveState()
     }
     new MutationObserver((muts) => {
       muts.forEach((m) => {
@@ -792,8 +865,20 @@ const favicon =
         }
       })
     }).observe(root, { attributes: true })
+    restoreState()
     topUp()
     setInterval(topUp, 9000)
+    // 标签页切走时直接冻结漂浮物动画：内联 animationPlayState 优先级最高，
+    // 避免 floatL/floatR 一次性动画在后台推进到终点被 animationend 回收（表现为“重置”），
+    // 回前台再从冻结点续播。这里同时冻结外层飞行动画与 svg 的 bob 摆动。
+    document.addEventListener('visibilitychange', () => {
+      const state = document.hidden ? 'paused' : 'running'
+      pool.forEach((el) => {
+        el.style.animationPlayState = state
+        const svg = el.firstElementChild as HTMLElement | null
+        if (svg) svg.style.animationPlayState = state
+      })
+    })
   }
 
   // —— 背景点击反馈：深海泡泡上飘 / 天空云絮星尘 ——

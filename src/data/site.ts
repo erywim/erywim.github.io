@@ -19,6 +19,8 @@ export const site = {
   github: 'https://github.com/erywim',
   /** 页脚署名 */
   copyright: `© ${new Date().getFullYear()} Erywim`,
+  /** 构建框架署名（Powered by Astro，MIT 协议礼貌性致谢） */
+  poweredBy: 'https://astro.build',
   /** 今日天气：IP 定位全部失败时兜底显示的城市（open-meteo 地理编码用） */
   weatherCity: '北京'
 }

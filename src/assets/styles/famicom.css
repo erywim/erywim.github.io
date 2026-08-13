@@ -109,6 +109,9 @@ html[data-theme='night'] {
 html {
   scroll-behavior: smooth;
   color-scheme: light;
+  /* 长页有纵向滚动条、短页没有，会让居中内容横向位移，切页时顶栏“闪一下”；
+     始终预留滚动条槽位，保证各页面顶栏/内容位置一致 */
+  scrollbar-gutter: stable;
 }
 html[data-theme='night'] {
   color-scheme: dark;
@@ -128,6 +131,13 @@ body::before {
   z-index: 9000;
   pointer-events: none;
   background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 2px, var(--scan) 2px 4px);
+}
+/* 后台标签页：暂停全部 CSS 动画，避免切换回来时 steps()/长动画时间轴跳帧，
+   导致天空频道、漂浮物、面板等组件“局部重绘”闪一下 */
+html[data-hidden] *,
+html[data-hidden] *::before,
+html[data-hidden] *::after {
+  animation-play-state: paused !important;
 }
 a {
   color: var(--cyan);
