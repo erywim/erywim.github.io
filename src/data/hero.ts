@@ -63,7 +63,7 @@ export const hero: {
   timeline: [
     { date: '2025.09 - NOW', title: '某 AI 科技公司 · AI 全栈（Agent 方向）', desc: '第二章：勇者习得魔法（志愿填报Agent、LLM网关）' },
     { date: '2023.03 - 2025.08', title: '某通信行业软件公司 · Java 开发 → 项目经理', desc: '第一章：勇者组建了自己的小队' },
-    { date: '2019.09 - 2023.07', title: '某红色大学 · 软件工程', desc: '冒险启程！' }
+    { date: '2019.09 - 2023.07', title: '某个听名字就很根正苗红的大学 · 软件工程', desc: '冒险启程！' }
   ],
   buffs: [
     { icon: 'coffee', name: '咖啡因', kind: 'good', width: 72, val: '+30%' },
