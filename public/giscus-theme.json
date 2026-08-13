@@ -1,0 +1,66 @@
+{
+  "colorScheme": "light",
+  "primaryColor": "#d63a45",
+  "primaryColorDark": "#d63a45",
+  "accentColor": "#c8861f",
+  "accentColorDark": "#c8861f",
+  "colors": {
+    "fg": {
+      "default": "#3b3a54",
+      "muted": "#6d6790",
+      "subtle": "#6d6790",
+      "onEmphasis": "#fff8ec"
+    },
+    "bg": {
+      "default": "#fff8ec",
+      "subtle": "#f6ecd6",
+      "inset": "#f6ecd6",
+      "overlay": "#fff8ec",
+      "emphasis": "#3b3a54"
+    },
+    "border": {
+      "default": "#e6d6b2",
+      "muted": "#f0e4c8",
+      "subtle": "#f6ecd6"
+    },
+    "btn": {
+      "primary": {
+        "bg": "#d63a45",
+        "fg": "#fff8ec",
+        "hoverBg": "#b22a33",
+        "hoverFg": "#fff8ec"
+      },
+      "outline": {
+        "fg": "#3b3a54",
+        "hoverBg": "#f6ecd6",
+        "hoverFg": "#3b3a54"
+      }
+    },
+    "code": {
+      "bg": "#f6ecd6",
+      "fg": "#3b3a54",
+      "border": "#e6d6b2"
+    },
+    "mention": {
+      "bg": "#f6ecd6",
+      "fg": "#c8861f"
+    },
+    "toc": {
+      "fg": "#c8861f",
+      "bg": "#fff8ec",
+      "border": "#e6d6b2"
+    },
+    "header": {
+      "fg": "#6d6790",
+      "bg": "#f6ecd6"
+    },
+    "footer": {
+      "bg": "#f6ecd6",
+      "fg": "#6d6790"
+    },
+    "icon": {
+      "fg": "#6d6790",
+      "muted": "#6d6790"
+    }
+  }
+}
