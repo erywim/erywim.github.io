@@ -4186,3 +4186,41 @@ footer a:hover {
     transition: none !important;
   }
 }
+
+/* —— 留言板 / giscus 加载过渡（像素宝剑充能） —— */
+.gb-stage {
+  position: relative;
+  min-height: 160px;
+}
+.gb-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--panel);
+  color: var(--dim);
+  font-family: var(--pix);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  transition: opacity 0.4s ease;
+}
+.gb-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.gb-sword {
+  width: 82px;
+  height: 24px;
+}
+.gb-sword .seg {
+  fill: #cfd9ec;
+  opacity: 0.14;
+  transition: opacity 0.1s linear;
+}
+.gb-sword .seg.on {
+  opacity: 1;
+}

@@ -21,23 +21,42 @@ const ready = Boolean(giscus.repoId && giscus.categoryId)
     </div>
     {
       ready ? (
-        <script
-          is:inline
-          src='https://giscus.app/client.js'
-          data-repo={giscus.repo}
-          data-repo-id={giscus.repoId}
-          data-category={giscus.category}
-          data-category-id={giscus.categoryId}
-          data-mapping='pathname'
-          data-strict='0'
-          data-reactions-enabled='0'
-          data-emit-metadata='0'
-          data-input-position='bottom'
-          data-theme='https://erywim.github.io/giscus-theme.json'
-          data-lang='zh-CN'
-          crossorigin='anonymous'
-          async
-        />
+        <div class='gb-stage' id='gbStage'>
+          <script
+            is:inline
+            src='https://giscus.app/client.js'
+            data-repo={giscus.repo}
+            data-repo-id={giscus.repoId}
+            data-category={giscus.category}
+            data-category-id={giscus.categoryId}
+            data-mapping='pathname'
+            data-strict='0'
+            data-reactions-enabled='0'
+            data-emit-metadata='0'
+            data-input-position='bottom'
+            data-theme='https://erywim.github.io/giscus-theme.json'
+            data-lang='zh-CN'
+            crossorigin='anonymous'
+            async
+          />
+          <div class='gb-loader' id='gbLoader' aria-hidden='true'>
+            <svg class='gb-sword' id='gbSword' viewBox='0 0 41 12' shape-rendering='crispEdges'>
+              <rect x='0' y='3' width='2' height='6' fill='var(--gold)' />
+              <rect x='2' y='4' width='3' height='4' fill='var(--orange)' />
+              <rect x='5' y='1' width='2' height='10' fill='var(--gold-hi)' />
+              <rect class='seg' x='7' y='4' width='4' height='4' />
+              <rect class='seg' x='11' y='4' width='4' height='4' />
+              <rect class='seg' x='15' y='4' width='4' height='4' />
+              <rect class='seg' x='19' y='4' width='4' height='4' />
+              <rect class='seg' x='23' y='4' width='4' height='4' />
+              <rect class='seg' x='27' y='4' width='4' height='4' />
+              <rect class='seg' x='31' y='4' width='4' height='4' />
+              <rect class='seg' x='35' y='4' width='4' height='4' />
+              <rect class='seg' x='39' y='5' width='2' height='2' />
+            </svg>
+            <span class='gb-loader-txt'>传送门开启中…</span>
+          </div>
+        </div>
       ) : (
         <div class='empty'>
           <b>GUESTBOOK · OFFLINE</b>
@@ -55,3 +74,40 @@ const ready = Boolean(giscus.repoId && giscus.categoryId)
     typewriter='远道而来的勇者，提笔写下你的见闻吧。愿你的足迹，能成为后来者的指引。'
   />
 </FamicomLayout>
+
+<script>
+  // —— 留言板加载过渡：像素宝剑充能，giscus 加载完成后淡出 ——
+  const gbSword = document.getElementById('gbSword')
+  if (gbSword) {
+    const gbSegs = Array.from(gbSword.querySelectorAll('.seg'))
+    const gbN = gbSegs.length
+    let gbFilled = 0
+    setInterval(() => {
+      gbFilled = (gbFilled + 1) % (gbN + 1)
+      gbSegs.forEach((seg, i) => seg.classList.toggle('on', i < gbFilled))
+    }, 110)
+  }
+
+  const gbStage = document.getElementById('gbStage')
+  const gbLoader = document.getElementById('gbLoader')
+  if (gbStage && gbLoader) {
+    let gbResize = 0
+    let gbDone = false
+    const gbHide = () => {
+      if (gbDone) return
+      gbDone = true
+      gbLoader.classList.add('hidden')
+      setTimeout(() => gbLoader.remove(), 450)
+    }
+
+    // giscus 通过 postMessage 发 { giscus: { resizeHeight: 高度 } } 告知内容高度变化：
+    // 第 1 次 = 挂载（猫头「正在加载评论」动画），第 2 次 = 评论已加载 → 此时再隐藏宝剑
+    window.addEventListener('message', (e) => {
+      const h = e.data?.giscus?.resizeHeight
+      if (typeof h === 'number' && h > 0 && ++gbResize >= 2) gbHide()
+    })
+
+    // 兜底：3s 后隐藏（覆盖加载很慢 / 只有一次 resize 的极端情况）
+    setTimeout(gbHide, 3000)
+  }
+</script>
