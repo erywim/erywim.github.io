@@ -43,14 +43,17 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 
 ## 内容与数据
 
-- **博客文章** `src/content/blog/<slug>/index.md`：frontmatter 含 title / description / publishDate / rank(S·A·B·C) / category(技术·产品·生活·笔记) / tags / draft。`draft: true` 不发布。用 `bun run post "标题"` 自动生成模板。
+- **博客文章** `src/content/blog/<slug>/index.md`：frontmatter 含 title / description / publishDate / gold(1~19) / exp(1~99) / rank(S·A·B·C) / category(技术·产品·生活·笔记) / tags / draft。`draft: true` 不发布。gold/exp 为必填，由 `bun run post "标题"` 自动随机生成；用 `bun run post` 自动生成模板。
 - **周报** `src/content/logs/`：title / description / publishDate / week。
 - **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
 - **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。
 - **首页道具/队伍** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
 - **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权、天气兜底城市（`weatherCity`）。改一处全局生效。
 - **频道语料** `src/data/sayings.ts`：天空/深海频道随机展示的像素游戏·动漫短句，每次加载随机抽 9 条，每 3 条语料重播一次天气，语料间以像素图标分隔。
-- **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志，HUD 金币等级、状态面板、冒险档案三处共用，实时计算保持一致。
+- **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志（构建期实时计算，冒险档案等共用）。
+- **RPG 掉落统计** `src/utils/rpg.ts`：每篇已发布文章的 gold/exp 合计与等级（每 100 经验升 1 级，上限 100）。`FamicomLayout` 构建期内嵌 `{quests, titles}` JSON，客户端异步求和、按日缓存（localStorage 键 `erywim-rpg-stats`）并滚动回显到 HUD/状态面板/天空频道（`[data-stat]` 标记）。新增文章后合计自动变化，无需手改。
+- **等级称号** `src/data/titles.ts`：每 5 级一个称号（Lv1 基础 + Lv5~100，共 21 个，RPG/动漫梗混搭），`getTitleForLevel(level)` 取当前等级最高称号。回显到首页状态面板、勇者档案 hero-card、文章正文奖励行（`[data-rpg-title]` 标记，客户端随经验统计更新并闪烁揭示）。文章页「任务奖励 EXP/G」直接用该文章 frontmatter 真实值。
+- **体力/经验实时值** `src/utils/vitals.ts`：首页状态面板与勇者档案的 HP/MP 随本地时间递减（6:00 满 100 → 24:00 线性降，HP 剩 10、MP 剩 30，凌晨 0-6 点维持各自底值），客户端每 30s + 回前台时刷新（`[data-live-hp]` / `[data-live-mp]` 标记，平滑滚动）。两处 EXP 显示改用真实经验合计（`data-stat='exp'` 滚动回显），EXP 条为距下一级进度（`exp % 100`）。`src/data/hero.ts` 的 stats 仅保留数据定义，不再直接展示。
 - **命令菜单** `src/components/famicom/CmdMenu.astro`：智能导航——首页点击平滑滚动到对应模块锚点，子页面点击跳转到对应页面。
 
 ## 注意事项

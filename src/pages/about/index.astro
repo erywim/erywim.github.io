@@ -7,10 +7,18 @@ import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
 import { hero } from '@/data/hero'
 import { site } from '@/data/site'
+import { getTitleForLevel } from '@/data/titles'
+import { getPublishedBlog } from '@/utils/collections'
+import { getRpgStats } from '@/utils/rpg'
+import { hpAt, mpAt } from '@/utils/vitals'
 
-const hpW = hero.stats.hp.max ? Math.round((hero.stats.hp.value / hero.stats.hp.max) * 100) : 0
-const mpW = hero.stats.mp.max ? Math.round((hero.stats.mp.value / hero.stats.mp.max) * 100) : 0
-const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.exp.max) * 100) : 0
+// 体力随时间递减（构建期静态兜底，客户端实时刷新）；HP/MP 曲线不同，EXP 条为距下一级进度
+const hpNow = hpAt(new Date())
+const mpNow = mpAt(new Date())
+// 等级称号与真实经验：由所有已发布文章的 gold/exp 合计换算
+const { exp, level } = getRpgStats(await getPublishedBlog())
+const title = getTitleForLevel(level)
+const expBar = exp % 100
 ---
 
 <FamicomLayout title='勇者档案'>
@@ -27,10 +35,11 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       </div>
       <div>
         <div class='hero-name'>{site.heroName}</div>
+        <div class='hero-title'>称号「<span data-rpg-title>{title}</span>」</div>
         <div class='hero-class'>{hero.class}</div>
-        <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
-        <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
-        <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>HP</span><span class='v' data-live-hp>{hpNow}</span><span class='stat-bar hp'><i data-live-hp-bar style={`--w:${hpNow}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>MP</span><span class='v' data-live-mp>{mpNow}</span><span class='stat-bar mp'><i data-live-mp-bar style={`--w:${mpNow}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>EXP</span><span class='v' data-stat='exp'>{exp}</span><span class='stat-bar exp'><i style={`--w:${expBar}%`}></i></span></div>
         <div class='hero-bio'>{hero.bio}</div>
         <div class='hero-tags'>
           <span class='tag-chip loc'>

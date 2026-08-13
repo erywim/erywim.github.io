@@ -10,9 +10,14 @@ import { hero } from '@/data/hero'
 import { site } from '@/data/site'
 import { getPublishedBlog } from '@/utils/collections'
 import { getMetrics } from '@/utils/metrics'
+import { getTitleForLevel } from '@/data/titles'
+import { getRpgStats } from '@/utils/rpg'
+import { hpAt, mpAt } from '@/utils/vitals'
 
 const posts = await getPublishedBlog()
-const { total, essays, notes, logs } = await getMetrics()
+const { essays, notes, logs } = await getMetrics()
+const { gold, exp, level } = getRpgStats(posts)
+const title = getTitleForLevel(level)
 
 // 探索地图统计（按文章 category）
 const catCounts = new Map<string, number>()
@@ -22,9 +27,10 @@ const exploreTags = [...catCounts.entries()]
   .map(([c, n]) => ({ name: c, n }))
 const noteTag = [...catCounts.entries()].find(([c]) => c === '笔记')
 
-const hpW = hero.stats.hp.max ? Math.round((hero.stats.hp.value / hero.stats.hp.max) * 100) : 0
-const mpW = hero.stats.mp.max ? Math.round((hero.stats.mp.value / hero.stats.mp.max) * 100) : 0
-const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.exp.max) * 100) : 0
+// 体力随时间递减（构建期静态兜底，客户端实时刷新）；HP/MP 曲线不同，EXP 条为距下一级进度
+const hpNow = hpAt(new Date())
+const mpNow = mpAt(new Date())
+const expBar = exp % 100
 ---
 
 <FamicomLayout>
@@ -49,12 +55,13 @@ const expW = hero.stats.exp.max ? Math.round((hero.stats.exp.value / hero.stats.
       </div>
       <div>
         <div class='status-name'>{site.heroName}</div>
+        <div class='status-title'>称号「<span data-rpg-title>{title}</span>」</div>
         <div class='status-class'>{hero.class}</div>
-        <div class='stat-row'><span class='k'>HP</span><span class='v'>{hero.stats.hp.value}</span><span class='stat-bar hp'><i style={`--w:${hpW}%`}></i></span></div>
-        <div class='stat-row'><span class='k'>MP</span><span class='v'>{hero.stats.mp.value}</span><span class='stat-bar mp'><i style={`--w:${mpW}%`}></i></span></div>
-        <div class='stat-row'><span class='k'>EXP</span><span class='v'>{hero.stats.exp.value}</span><span class='stat-bar exp'><i style={`--w:${expW}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>HP</span><span class='v' data-live-hp>{hpNow}</span><span class='stat-bar hp'><i data-live-hp-bar style={`--w:${hpNow}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>MP</span><span class='v' data-live-mp>{mpNow}</span><span class='stat-bar mp'><i data-live-mp-bar style={`--w:${mpNow}%`}></i></span></div>
+        <div class='stat-row'><span class='k'>EXP</span><span class='v' data-stat='exp'>{exp}</span><span class='stat-bar exp'><i style={`--w:${expBar}%`}></i></span></div>
         <div class='stat-meta'>
-          <span>攻击 <b>长文×{essays}</b></span><span>防御 <b>笔记×{notes}</b></span><span>金币 <b>G{total}</b></span>
+          <span>攻击 <b>长文×{essays}</b></span><span>防御 <b>笔记×{notes}</b></span><span>金币 <b data-stat='gold' data-lite>G{gold}</b></span>
         </div>
       </div>
       {

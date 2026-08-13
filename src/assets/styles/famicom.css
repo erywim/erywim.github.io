@@ -1205,6 +1205,47 @@ section.panel {
   font-size: 12px;
   margin-bottom: 10px;
 }
+/* 等级称号（首页状态面板 / 勇者档案 / 文章奖励行共用） */
+.status-title,
+.hero-title {
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.status-title {
+  margin-bottom: 2px;
+}
+.hero-title {
+  margin-bottom: 8px;
+}
+.status-title [data-rpg-title],
+.hero-title [data-rpg-title],
+.reward [data-rpg-title] {
+  color: var(--gold);
+  font-weight: 700;
+}
+@keyframes rpg-title-gain {
+  0% {
+    opacity: 0.15;
+    filter: brightness(0.5);
+  }
+  40% {
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+  70% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+[data-rpg-title].title-gain {
+  display: inline-block;
+  animation: rpg-title-gain 0.6s steps(5, end);
+}
 .stat-row {
   display: flex;
   align-items: center;

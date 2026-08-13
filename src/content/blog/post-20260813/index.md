@@ -2,6 +2,8 @@
 title: 'AI 应用开发名词解释'
 description: '或是新概念或是新瓶装旧酒'
 publishDate: 2026-03-10
+gold: 2
+exp: 14
 rank: B
 category: 笔记
 tags: [Agent,LLM,Workflow]

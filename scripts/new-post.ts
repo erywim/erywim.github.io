@@ -38,10 +38,16 @@ const dir = join('src', 'content', 'blog', slug)
 // YAML 单引号字符串内转义单引号
 const yamlTitle = title.replace(/'/g, "''")
 
+// RPG 掉落：金币 1~19、经验 1~99（<20 / <100），每篇文章随机生成，计入站点合计
+const gold = 1 + Math.floor(Math.random() * 19)
+const exp = 1 + Math.floor(Math.random() * 99)
+
 const frontmatter = `---
 title: '${yamlTitle}'
 description: '（在这里填写文章摘要，不超过 160 字）'
 publishDate: ${today.toISOString().slice(0, 10)}
+gold: ${gold}
+exp: ${exp}
 rank: B
 category: 技术
 tags: []

@@ -2,7 +2,9 @@
 import config from '@/site-config'
 import { site } from '@/data/site'
 import { sayings } from '@/data/sayings'
-import { getMetrics } from '@/utils/metrics'
+import { TITLES } from '@/data/titles'
+import { getPublishedBlog } from '@/utils/collections'
+import { getRpgStats } from '@/utils/rpg'
 import '@/assets/styles/famicom.css'
 
 interface Props {
@@ -14,9 +16,10 @@ const { title, description = config.description } = Astro.props
 const pageTitle =
   title && title !== config.title ? `${title} · ${site.gameTitle}` : site.gameTitle
 
-const { total } = await getMetrics()
-const gold = `G ${String(total).padStart(4, '0')}`
-const level = `LV.${Math.min(99, Math.max(1, total))}`
+// RPG 掉落合计（构建期兜底值，客户端异步统计后再滚动回显）
+const { gold, level, quests } = getRpgStats(await getPublishedBlog())
+const goldStr = `G ${String(gold).padStart(4, '0')}`
+const levelStr = `LV.${level}`
 
 const favicon =
   'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%237cc4f2%22/%3E%3Crect x=%223%22 y=%223%22 width=%2210%22 height=%2210%22 fill=%22%23d63a45%22/%3E%3Crect x=%225%22 y=%225%22 width=%226%22 height=%226%22 fill=%22%23fff8ec%22/%3E%3C/svg%3E'
@@ -107,8 +110,8 @@ const favicon =
           <span class='title'>FAMICOM<b> RPG</b> · {site.hudTitle}</span>
         </a>
         <span class='meta'>
-          <span class='g'>{gold}</span>
-          <span class='lv hide-s'>{level}</span>
+          <span class='g' data-stat='gold'>{goldStr}</span>
+          <span class='lv hide-s' data-stat='level'>{levelStr}</span>
           <button class='theme-btn' id='themeToggle' aria-label='潜入深海世界'>DIVE</button>
         </span>
       </div>
@@ -141,7 +144,7 @@ const favicon =
                 <span class='say-item'>{s}</span>
               ))
             }
-            <span>今日 <span class='weather-slot' data-city={site.weatherCity}><b>晴</b></span> · {level} · {gold}</span>
+            <span>今日 <span class='weather-slot' data-city={site.weatherCity}><b>晴</b></span> · <span data-stat='level'>{levelStr}</span> · <span data-stat='gold'>{goldStr}</span></span>
           </div>
         </div>
         <button class='ticker-close' id='tickerClose'>收起 ▲</button>
@@ -557,6 +560,28 @@ const favicon =
         </symbol>
       </defs>
     </svg>
+
+    <!-- RPG 掉落：构建期内嵌所有已发布文章的金币/经验 + 等级称号（客户端异步求和/取称号用） -->
+    <div id='rpg-quest-data' hidden>{JSON.stringify({ quests, titles: TITLES })}</div>
+
+    <script is:inline>
+      // RPG 掉落：首绘前把显示位归 0，为滚动动画做起点（无 JS / 无数据时保留服务端兜底值）
+      try {
+        const _n = document.getElementById('rpg-quest-data')
+        if (_n && _n.textContent) {
+          document.querySelectorAll('[data-stat]').forEach((el) => {
+            el.textContent =
+              el.dataset.stat === 'gold'
+                ? el.hasAttribute('data-lite')
+                  ? 'G0'
+                  : 'G 0000'
+                : el.dataset.stat === 'level'
+                  ? 'LV.1'
+                  : '0'
+          })
+        }
+      } catch (e) {}
+    </script>
   </body>
 </html>
 
@@ -1017,5 +1042,156 @@ const favicon =
         ;(document.activeElement as HTMLElement).click()
       }
     })
+  }
+
+  // —— RPG 掉落：异步求和 + 每日缓存 + 滚动回显 ——
+  const rpgNode = document.getElementById('rpg-quest-data')
+  if (rpgNode) {
+    let quests: { gold: number; exp: number }[] | null = null
+    let titles: { level: number; title: string }[] = []
+    try {
+      const data = JSON.parse(rpgNode.textContent || '')
+      quests = data.quests ?? null
+      titles = data.titles ?? []
+    } catch {}
+    if (quests && titles.length) {
+      const RPG_KEY = 'erywim-rpg-stats'
+      const rpgEls = Array.from(document.querySelectorAll<HTMLElement>('[data-stat]'))
+      const titleEls = Array.from(document.querySelectorAll<HTMLElement>('[data-rpg-title]'))
+      const RPG_RM =
+        window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      function fmtRpg(el: HTMLElement, v: number): string {
+        if (el.dataset.stat === 'gold') {
+          return el.hasAttribute('data-lite') ? `G${v}` : `G ${String(v).padStart(4, '0')}`
+        }
+        if (el.dataset.stat === 'exp') return String(v)
+        return `LV.${v}`
+      }
+
+      function statOf(el: HTMLElement, s: { gold: number; exp: number; level: number }): number {
+        if (el.dataset.stat === 'gold') return s.gold
+        if (el.dataset.stat === 'exp') return s.exp
+        return s.level
+      }
+
+      function getTitle(lv: number): string {
+        let t = titles[0].title
+        for (const it of titles) if (lv >= it.level) t = it.title
+        return t
+      }
+
+      function rollRpg(el: HTMLElement, to: number, dur = 1100) {
+        if (RPG_RM) {
+          el.textContent = fmtRpg(el, to)
+          return
+        }
+        const from = Number((el.textContent || '').replace(/\D/g, '')) || 0
+        const t0 = performance.now()
+        function step(ts: number) {
+          const p = Math.min((ts - t0) / dur, 1)
+          const v = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)))
+          el.textContent = fmtRpg(el, v)
+          if (p < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }
+
+      async function loadRpg() {
+        // 本地日期（不用 toISOString，避免 UTC 日期偏移）
+        const d = new Date()
+        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+          d.getDate()
+        ).padStart(2, '0')}`
+        let cached: { date?: string; gold?: number; exp?: number } | null = null
+        try {
+          cached = JSON.parse(localStorage.getItem(RPG_KEY) ?? 'null')
+        } catch {}
+        let target: { gold: number; exp: number }
+        if (
+          cached &&
+          cached.date === today &&
+          typeof cached.gold === 'number' &&
+          typeof cached.exp === 'number'
+        ) {
+          // 当天已统计过 → 直接用缓存
+          target = { gold: cached.gold, exp: cached.exp }
+        } else {
+          // 当天首次 → 才真正统计：让出主线程后逐篇求和（不阻塞渲染）
+          await new Promise((r) => setTimeout(r, 0))
+          let gold = 0
+          let exp = 0
+          for (const q of quests!) {
+            gold += q.gold
+            exp += q.exp
+          }
+          target = { gold, exp }
+          try {
+            localStorage.setItem(RPG_KEY, JSON.stringify({ date: today, ...target }))
+          } catch {}
+        }
+        const level = Math.min(100, Math.max(1, Math.floor(target.exp / 100) + 1))
+        for (const el of rpgEls) rollRpg(el, statOf(el, { ...target, level }))
+        // 称号随等级回显（与服务端兜底值一致，加一次像素闪烁揭示动画）
+        for (const el of titleEls) {
+          el.textContent = getTitle(level)
+          el.classList.add('title-gain')
+        }
+      }
+
+      loadRpg()
+    }
+  }
+
+  // —— HP/MP 体力随时间递减：6:00 满 100 → 24:00 线性降；HP 剩 10、MP 剩 30，曲线不同 ——
+  const hpEls = Array.from(document.querySelectorAll<HTMLElement>('[data-live-hp]'))
+  const mpEls = Array.from(document.querySelectorAll<HTMLElement>('[data-live-mp]'))
+  const hpBars = Array.from(document.querySelectorAll<HTMLElement>('[data-live-hp-bar]'))
+  const mpBars = Array.from(document.querySelectorAll<HTMLElement>('[data-live-mp-bar]'))
+
+  function staminaNow(d: Date, end = 10): number {
+    const mins = d.getHours() * 60 + d.getMinutes()
+    if (mins < 360) return end
+    const span = 1440 - 360 // 6:00 → 24:00 共 1080 分钟
+    const elapsed = mins - 360
+    return Math.round(100 - ((100 - end) * elapsed) / span)
+  }
+
+  function rollNum(el: HTMLElement, to: number, dur = 900) {
+    const from = Number((el.textContent || '').replace(/\D/g, '')) || 0
+    if (from === to) return
+    const t0 = performance.now()
+    function step(ts: number) {
+      const p = Math.min((ts - t0) / dur, 1)
+      el.textContent = String(Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))))
+      if (p < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }
+
+  if (hpEls.length || mpEls.length) {
+    let firstTick = true
+    function updateVitals() {
+      const hp = staminaNow(new Date(), 10)
+      const mp = staminaNow(new Date(), 30) // MP 更耐久，曲线与 HP 不同
+      hpEls.forEach((el) => rollNum(el, hp))
+      mpEls.forEach((el) => rollNum(el, mp))
+      // 首次不直接改条宽，保留面板 reveal 时的填充动画；之后平滑递减
+      if (!firstTick) {
+        hpBars.forEach((el) => {
+          el.style.width = hp + '%'
+        })
+        mpBars.forEach((el) => {
+          el.style.width = mp + '%'
+        })
+      }
+      firstTick = false
+    }
+    updateVitals()
+    setInterval(updateVitals, 30000)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateVitals()
+    })
+    window.addEventListener('focus', updateVitals)
   }
 </script>

@@ -42,7 +42,11 @@ const blog = defineCollection({
       /** 任务难度：S / A / B / C，缺省 B */
       rank: z.enum(['S', 'A', 'B', 'C']).default('B'),
       /** 地图「技术 / 产品 / 生活 / 笔记」，缺省 技术 */
-      category: z.string().default('技术')
+      category: z.string().default('技术'),
+      /** 每篇任务可获金币（1~19，创建时随机生成） */
+      gold: z.number().int().min(1).max(19),
+      /** 每篇任务可获经验（1~99，创建时随机生成） */
+      exp: z.number().int().min(1).max(99)
     })
 })
 

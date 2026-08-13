@@ -2,6 +2,8 @@
 title: 'ThreadLocal 、 实例变量、静态变量 以及 局部变量的区别'
 description: 'ThreadLocal 作用辨析'
 publishDate: 2024-04-16
+gold: 14
+exp: 13
 rank: B
 category: 技术
 tags: [Java]
