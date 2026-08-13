@@ -120,6 +120,140 @@ const favicon =
         })
       })()
     </script>
+    <script is:inline>
+      // 漂浮物提前到「首绘前」生成：从 sessionStorage 恢复上一次的漂浮物（按墙钟时间 startAt 续播），
+      // 不足 3 个再随机补。这样重页（如勇者档案）即使加载慢，漂浮物也不会“迟到”被误判为重置。
+      ;(function () {
+        var root = document.documentElement
+        var fbox = document.getElementById('floaters')
+        if (!fbox) return
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+        var LIB = {
+          sky: [
+            { id: 'pixel-plane', w: 16, h: 10 }, { id: 'pixel-balloon', w: 12, h: 16 }, { id: 'pixel-kite', w: 14, h: 14 },
+            { id: 'pixel-lantern', w: 10, h: 13 }, { id: 'pixel-soap', w: 10, h: 10 }, { id: 'pixel-leaf', w: 14, h: 10 },
+            { id: 'pixel-feather', w: 10, h: 16 }, { id: 'pixel-wisp', w: 14, h: 8 }, { id: 'pixel-blimp', w: 18, h: 8 },
+            { id: 'pixel-crane', w: 14, h: 10 }
+          ],
+          sea: [
+            { id: 'pixel-jelly', w: 12, h: 16 }, { id: 'pixel-fish2', w: 14, h: 9 }, { id: 'pixel-seahorse', w: 10, h: 16 },
+            { id: 'pixel-turtle', w: 14, h: 10 }, { id: 'pixel-starfish', w: 12, h: 12 }, { id: 'pixel-conch', w: 12, h: 12 },
+            { id: 'pixel-pearl', w: 10, h: 10 }, { id: 'pixel-bubble2', w: 16, h: 12 }, { id: 'pixel-octopus', w: 14, h: 14 },
+            { id: 'pixel-coral', w: 12, h: 14 }
+          ]
+        }
+        var pool = []
+        var FLOAT_KEY = 'erywim-floaters'
+        var world = function () { return root.getAttribute('data-theme') === 'night' ? 'sea' : 'sky' }
+        var activeIds = function () { return pool.map(function (p) { return p.dataset.id }) }
+        function shuffle(a) {
+          for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1))
+            var t = a[i]; a[i] = a[j]; a[j] = t
+          }
+          return a
+        }
+        function saveState() {
+          try {
+            var list = pool.map(function (el) {
+              return {
+                id: el.dataset.id || '',
+                dir: el.classList.contains('rtl') ? 'rtl' : 'ltr',
+                top: parseFloat(el.style.top),
+                dur: parseFloat(el.style.getPropertyValue('--dur')) || 36,
+                size: parseFloat(el.dataset.size || '24'),
+                startAt: Number(el.dataset.startAt) || Date.now()
+              }
+            })
+            sessionStorage.setItem(FLOAT_KEY, JSON.stringify(list))
+          } catch (e) {}
+        }
+        function onFloaterEnd(el) {
+          return function () {
+            if (el.parentNode) el.parentNode.removeChild(el)
+            var i = pool.indexOf(el)
+            if (i >= 0) pool.splice(i, 1)
+            saveState()
+          }
+        }
+        function build(it, dir, top, dur, size, delay, startAt) {
+          var el = document.createElement('div')
+          el.className = 'floater ' + dir
+          el.dataset.id = it.id
+          el.dataset.size = String(size)
+          el.dataset.startAt = String(startAt)
+          el.style.top = top.toFixed(1) + '%'
+          el.style.setProperty('--dur', dur.toFixed(1) + 's')
+          el.style.setProperty('--delay', delay.toFixed(1) + 's')
+          var h = Math.round((size * it.h) / it.w)
+          el.innerHTML = '<svg width="' + size + '" height="' + h + '" viewBox="0 0 ' + it.w + ' ' + it.h + '" shape-rendering="crispEdges" aria-hidden="true"><use href="#' + it.id + '"/></svg>'
+          fbox.appendChild(el)
+          pool.push(el)
+          el.addEventListener('animationend', onFloaterEnd(el))
+        }
+        function spawnOne(it) {
+          var dir = Math.random() < 0.5 ? 'ltr' : 'rtl'
+          var top = world() === 'sea' ? 8 + Math.random() * 52 : 5 + Math.random() * 48
+          var dur = 24 + Math.random() * 28
+          var size = 24 + Math.random() * 30
+          var delay = Math.random() * 4
+          build(it, dir, top, dur, size, delay, Date.now() + delay * 1000)
+          saveState()
+        }
+        function restoreState() {
+          var list = []
+          try { list = JSON.parse(sessionStorage.getItem(FLOAT_KEY) || '[]') } catch (e) {}
+          if (!list.length) return
+          var now = Date.now()
+          var lib = LIB[world()]
+          for (var i = 0; i < list.length; i++) {
+            var s = list[i]
+            if (!s || !s.id || !Number.isFinite(s.startAt) || !Number.isFinite(s.dur)) continue
+            var it = lib.find(function (x) { return x.id === s.id })
+            if (!it) continue
+            var elapsed = (now - s.startAt) / 1000
+            if (elapsed >= s.dur) continue
+            build(it, s.dir, s.top, s.dur, s.size, (s.startAt - now) / 1000, s.startAt)
+          }
+          saveState()
+        }
+        function topUp() {
+          if (pool.length >= 3) return
+          var list = LIB[world()]
+          var act = activeIds()
+          var avail = shuffle(list.filter(function (it) { return act.indexOf(it.id) === -1 }))
+          var n = Math.min(3 - pool.length, avail.length)
+          for (var i = 0; i < n; i++) spawnOne(avail[i])
+        }
+        function clearAll() {
+          for (var i = pool.length - 1; i >= 0; i--) {
+            var p = pool[i]
+            if (p.parentNode) p.parentNode.removeChild(p)
+          }
+          pool.length = 0
+          saveState()
+        }
+        new MutationObserver(function (muts) {
+          muts.forEach(function (m) {
+            if (m.type === 'attributes' && m.attributeName === 'data-theme') {
+              clearAll()
+              setTimeout(topUp, 320)
+            }
+          })
+        }).observe(root, { attributes: true })
+        restoreState()
+        topUp()
+        setInterval(topUp, 9000)
+        document.addEventListener('visibilitychange', function () {
+          var state = document.hidden ? 'paused' : 'running'
+          pool.forEach(function (el) {
+            el.style.animationPlayState = state
+            var svg = el.firstElementChild
+            if (svg) svg.style.animationPlayState = state
+          })
+        })
+      })()
+    </script>
 
     <div class='wrap'>
       <div class='hud-bar'>
@@ -745,141 +879,7 @@ const favicon =
     })
   }
 
-  // —— 漂浮物：像素小物随机飘过天空 / 深海（同屏≤3，切换主题即清空） ——
-  const fbox = document.getElementById('floaters')!
-  if (fbox && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-    const LIB = {
-      sky: [
-        { id: 'pixel-plane', w: 16, h: 10 }, { id: 'pixel-balloon', w: 12, h: 16 }, { id: 'pixel-kite', w: 14, h: 14 },
-        { id: 'pixel-lantern', w: 10, h: 13 }, { id: 'pixel-soap', w: 10, h: 10 }, { id: 'pixel-leaf', w: 14, h: 10 },
-        { id: 'pixel-feather', w: 10, h: 16 }, { id: 'pixel-wisp', w: 14, h: 8 }, { id: 'pixel-blimp', w: 18, h: 8 },
-        { id: 'pixel-crane', w: 14, h: 10 }
-      ],
-      sea: [
-        { id: 'pixel-jelly', w: 12, h: 16 }, { id: 'pixel-fish2', w: 14, h: 9 }, { id: 'pixel-seahorse', w: 10, h: 16 },
-        { id: 'pixel-turtle', w: 14, h: 10 }, { id: 'pixel-starfish', w: 12, h: 12 }, { id: 'pixel-conch', w: 12, h: 12 },
-        { id: 'pixel-pearl', w: 10, h: 10 }, { id: 'pixel-bubble2', w: 16, h: 12 }, { id: 'pixel-octopus', w: 14, h: 14 },
-        { id: 'pixel-coral', w: 12, h: 14 }
-      ]
-    }
-    const pool: HTMLElement[] = []
-    const world = () => (root.getAttribute('data-theme') === 'night' ? 'sea' : 'sky')
-    const activeIds = () => pool.map((p) => p.dataset.id)
-    function shuffle<T>(a: T[]): T[] {
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        const t = a[i]
-        a[i] = a[j]
-        a[j] = t
-      }
-      return a
-    }
-    // 跨页持久化：把每个漂浮物“飞行起点墙钟时间 startAt”写进 sessionStorage，
-    // 切页（MPA 整页重载）后按墙钟时间续飞到对应进度（负 animation-delay 续播），避免“重置”。
-    const FLOAT_KEY = 'erywim-floaters'
-    interface SavedFloater { id: string; dir: string; top: number; dur: number; size: number; startAt: number }
-    function onFloaterEnd(el: HTMLElement) {
-      return () => {
-        if (el.parentNode) el.parentNode.removeChild(el)
-        const i = pool.indexOf(el)
-        if (i >= 0) pool.splice(i, 1)
-        saveState()
-      }
-    }
-    function saveState() {
-      try {
-        const list: SavedFloater[] = pool.map((el) => ({
-          id: el.dataset.id || '',
-          dir: el.classList.contains('rtl') ? 'rtl' : 'ltr',
-          top: parseFloat(el.style.top),
-          dur: parseFloat(el.style.getPropertyValue('--dur')) || 36,
-          size: parseFloat(el.dataset.size || '24'),
-          startAt: Number(el.dataset.startAt) || Date.now()
-        }))
-        sessionStorage.setItem(FLOAT_KEY, JSON.stringify(list))
-      } catch (e) {}
-    }
-    function build(it: { id: string; w: number; h: number }, dir: string, top: number, dur: number, size: number, delay: number, startAt: number) {
-      const el = document.createElement('div')
-      el.className = 'floater ' + dir
-      el.dataset.id = it.id
-      el.dataset.size = String(size)
-      el.dataset.startAt = String(startAt)
-      el.style.top = top.toFixed(1) + '%'
-      el.style.setProperty('--dur', dur.toFixed(1) + 's')
-      el.style.setProperty('--delay', delay.toFixed(1) + 's')
-      const h = Math.round((size * it.h) / it.w)
-      el.innerHTML = `<svg width="${size}" height="${h}" viewBox="0 0 ${it.w} ${it.h}" shape-rendering="crispEdges" aria-hidden="true"><use href="#${it.id}"/></svg>`
-      fbox.appendChild(el)
-      pool.push(el)
-      el.addEventListener('animationend', onFloaterEnd(el))
-    }
-    function spawnOne(it: { id: string; w: number; h: number }) {
-      const dir = Math.random() < 0.5 ? 'ltr' : 'rtl'
-      const top = world() === 'sea' ? 8 + Math.random() * 52 : 5 + Math.random() * 48
-      const dur = 24 + Math.random() * 28
-      const size = 24 + Math.random() * 30
-      const delay = Math.random() * 4
-      build(it, dir, top, dur, size, delay, Date.now() + delay * 1000)
-      saveState()
-    }
-    function restoreState() {
-      let list: SavedFloater[] = []
-      try {
-        list = JSON.parse(sessionStorage.getItem(FLOAT_KEY) || '[]')
-      } catch (e) {}
-      if (!list.length) return
-      const now = Date.now()
-      const lib = LIB[world() as 'sky' | 'sea']
-      for (const s of list) {
-        if (!s || !s.id || !Number.isFinite(s.startAt) || !Number.isFinite(s.dur)) continue
-        const it = lib.find((x) => x.id === s.id)
-        if (!it) continue
-        const elapsed = (now - s.startAt) / 1000
-        if (elapsed >= s.dur) continue // 已飞完全程，不再恢复
-        build(it, s.dir, s.top, s.dur, s.size, (s.startAt - now) / 1000, s.startAt)
-      }
-      saveState() // 清掉已飞完的项
-    }
-    function topUp() {
-      if (pool.length >= 3) return
-      const list = LIB[world() as 'sky' | 'sea']
-      const act = activeIds()
-      const avail = shuffle(list.filter((it) => act.indexOf(it.id) === -1))
-      const n = Math.min(3 - pool.length, avail.length)
-      for (let i = 0; i < n; i++) spawnOne(avail[i])
-    }
-    function clearAll() {
-      for (let i = pool.length - 1; i >= 0; i--) {
-        const p = pool[i]
-        if (p.parentNode) p.parentNode.removeChild(p)
-      }
-      pool.length = 0
-      saveState()
-    }
-    new MutationObserver((muts) => {
-      muts.forEach((m) => {
-        if (m.type === 'attributes' && m.attributeName === 'data-theme') {
-          clearAll()
-          setTimeout(topUp, 320)
-        }
-      })
-    }).observe(root, { attributes: true })
-    restoreState()
-    topUp()
-    setInterval(topUp, 9000)
-    // 标签页切走时直接冻结漂浮物动画：内联 animationPlayState 优先级最高，
-    // 避免 floatL/floatR 一次性动画在后台推进到终点被 animationend 回收（表现为“重置”），
-    // 回前台再从冻结点续播。这里同时冻结外层飞行动画与 svg 的 bob 摆动。
-    document.addEventListener('visibilitychange', () => {
-      const state = document.hidden ? 'paused' : 'running'
-      pool.forEach((el) => {
-        el.style.animationPlayState = state
-        const svg = el.firstElementChild as HTMLElement | null
-        if (svg) svg.style.animationPlayState = state
-      })
-    })
-  }
+  // 漂浮物已提前到内联脚本（首绘前生成，见上方 <script is:inline>），避免重页加载慢导致“迟到”。
 
   // —— 背景点击反馈：深海泡泡上飘 / 天空云絮星尘 ——
   const sfx = document.getElementById('skyfx')!
