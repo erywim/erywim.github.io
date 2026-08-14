@@ -3,6 +3,7 @@ import { glob } from 'astro/loaders'
 import { z } from 'astro/zod'
 
 import { CHEST_IDS, ICONS, RARITIES, TAG_IDS } from '@/data/treasure'
+import { STATUS_IDS, TYPE_IDS } from '@/data/quest'
 
 function removeDupsAndLowerCase(array: string[]) {
   if (!array.length) return array
@@ -91,4 +92,29 @@ const treasure = defineCollection({
     })
 })
 
-export const collections = { blog, logs, treasure }
+// Define quest collection (idea / todo 灵感火花)
+const quest = defineCollection({
+  loader: glob({ base: './src/content/quest', pattern: '**/*.{md,mdx}' }),
+  schema: () =>
+    z.object({
+      title: z.string().max(120),
+      /** 一句话描述 */
+      desc: z.string().default(''),
+      /** main 主线 / side 支线 */
+      type: z.enum(TYPE_IDS).default('side'),
+      /** todo 未开始 / active 进行中 / done 已完成 */
+      status: z.enum(STATUS_IDS).default('todo'),
+      /** 难度 1~3 星 */
+      diff: z.number().int().min(1).max(3).default(2),
+      /** 目标清单（只读，勾选态靠改 done） */
+      objectives: z
+        .array(z.object({ t: z.string(), done: z.boolean().default(false) }))
+        .default([]),
+      /** 奖励经验（完成后计入全局等级） */
+      exp: z.number().int().min(0),
+      /** 奖励金币（完成后计入全局金币） */
+      gold: z.number().int().min(0)
+    })
+})
+
+export const collections = { blog, logs, treasure, quest }

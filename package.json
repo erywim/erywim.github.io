@@ -18,7 +18,8 @@
     "cache:avatars": "tsx preset/scripts/cacheAvatars.ts",
     "post": "bun scripts/new-post.ts",
     "log": "bun scripts/new-log.ts",
-    "item": "bun scripts/new-item.ts"
+    "item": "bun scripts/new-item.ts",
+    "todo": "bun scripts/new-todo.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.9",

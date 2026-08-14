@@ -6,7 +6,7 @@ import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import { site } from '@/data/site'
 import { getTitleForLevel } from '@/data/titles'
-import { getPublishedBlog } from '@/utils/collections'
+import { getDoneQuests, getPublishedBlog } from '@/utils/collections'
 import { formatQuestDate } from '@/utils/format'
 import { getRpgStats } from '@/utils/rpg'
 
@@ -33,7 +33,7 @@ const rank = post.data.rank ?? 'B'
 const qno = String(dateIndex + 1).padStart(2, '0')
 
 // 解锁称号：由所有已发布文章经验合计换算出的当前等级称号
-const { level } = getRpgStats(byDate)
+const { level } = getRpgStats(byDate, await getDoneQuests())
 const title = getTitleForLevel(level)
 
 // 目录：展平 headings 树，取 h2 / h3

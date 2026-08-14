@@ -38,6 +38,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 | `/about` | 勇者档案（角色面板 + 技能 + 冒险历程） | `src/data/hero.ts` |
 | `/logs` | 旅行日志（周报） | `src/content/logs/` |
 | `/links` | 伙伴酒馆（友链） | `src/data/friends.ts` |
+| `/ideas` | 灵感火花（idea/todo 的 RPG 火花看板：主线/支线、难度星级、目标清单、EXP/金币，只读·分页） | `src/content/quest/` |
 | `/guestbook` | 留言板（giscus · GitHub Discussions 后端，未配置 `repoId`/`categoryId` 时显示占位） | `src/data/site.ts` |
 | `/search` | 站内搜索（pagefind） | 构建时自动索引 |
 | `/404` | 迷路页 | — |
@@ -48,11 +49,12 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 - **周报** `src/content/logs/`：title / description / publishDate / week。
 - **勇者档案** `src/data/hero.ts`：名字/职业/属性/简介/技能/冒险历程。
 - **伙伴酒馆** `src/data/friends.ts`：友链列表（name/role/intro/link/avatar）。link 为 '#' 时渲染为不可点击。
+- **灵感火花（任务）** `src/content/quest/*.md`：idea/todo 的 RPG 任务，每条一个 md（frontmatter 含 type 主线·支线/status 未开始·进行中·已完成/diff 难度 1~3/objectives 目标清单/exp/gold）。纯前端只读页——任务创建（`bun run todo "标题"`，随机生成金币 <150 / 经验 <200）与完成/勾选都靠改对应 md 文件（改 `status` 或 `objectives[].done`），随构建发布。可选项词汇在 `src/data/quest.ts`。
 - **首页道具/存档** `src/data/home.ts`：项目与职业历程；repo/demo href 为 '#' 时渲染为不可点击按钮。
 - **品牌文案** `src/data/site.ts`：游戏标题、勇者名、副标语、GitHub、版权、天气兜底城市（`weatherCity`）、留言板配置（`giscus`）。改一处全局生效。
 - **频道语料** `src/data/sayings.ts`：天空/深海频道随机展示的像素游戏·动漫短句，每次加载随机抽 9 条，每 3 条语料重播一次天气，语料间以像素图标分隔。
 - **统一统计** `src/utils/metrics.ts`：文章总数/长文/笔记/日志（构建期实时计算，冒险档案等共用）。
-- **RPG 掉落统计** `src/utils/rpg.ts`：每篇已发布文章的 gold/exp 合计与等级（每 100 经验升 1 级，上限 100）。`FamicomLayout` 构建期内嵌 `{quests, titles}` JSON，客户端异步求和、按日缓存（localStorage 键 `erywim-rpg-stats`）并滚动回显到 HUD/状态面板/天空频道（`[data-stat]` 标记）。新增文章后合计自动变化，无需手改。
+- **RPG 掉落统计** `src/utils/rpg.ts`：每篇已发布文章 + 已完成任务（`status: done`）的 gold/exp 合计与等级（每 100 经验升 1 级，上限 100）。`FamicomLayout` 构建期内嵌 `{quests, titles}` JSON，客户端异步求和、按日缓存（localStorage 键 `erywim-rpg-stats`）并滚动回显到 HUD/状态面板/天空频道（`[data-stat]` 标记）。新增文章/完成任务后合计自动变化，无需手改。
 - **等级称号** `src/data/titles.ts`：每 5 级一个称号（Lv1 基础 + Lv5~100，共 21 个，RPG/动漫梗混搭），`getTitleForLevel(level)` 取当前等级最高称号。回显到首页状态面板、勇者档案 hero-card、文章正文奖励行（`[data-rpg-title]` 标记，客户端随经验统计更新并闪烁揭示）。文章页「任务奖励 EXP/G」直接用该文章 frontmatter 真实值。
 - **体力/经验实时值** `src/utils/vitals.ts`：首页状态面板与勇者档案的 HP/MP 随本地时间递减（6:00 满 100 → 24:00 线性降，HP 剩 10、MP 剩 30，凌晨 0-6 点维持各自底值），客户端每 30s + 回前台时刷新（`[data-live-hp]` / `[data-live-mp]` 标记，平滑滚动）。两处 EXP 显示改用真实经验合计（`data-stat='exp'` 滚动回显），EXP 条为距下一级进度（`exp % 100`）。`src/data/hero.ts` 的 stats 仅保留数据定义，不再直接展示。
 - **命令菜单** `src/components/famicom/CmdMenu.astro`：智能导航——首页点击平滑滚动到对应模块锚点，子页面点击跳转到对应页面。

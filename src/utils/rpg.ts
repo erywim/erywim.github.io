@@ -3,7 +3,8 @@ import type { CollectionEntry } from 'astro:content'
 /**
  * RPG 掉落统计（金币/经验）
  * - 每篇已发布文章在创建时随机掉落 gold（1~19）与 exp（1~99），存在 frontmatter。
- * - 本站为纯静态站，构建期把每篇文章的 {id, gold, exp} 内嵌进页面，
+ * - 灵感火花（任务）的 gold/exp 也存在各自 md 的 frontmatter；任务标记「已完成」后才掉落。
+ * - 本站为纯静态站，构建期把每条 {id, gold, exp} 内嵌进页面，
  *   由客户端异步求和并回显（HUD / 状态面板 / 天空频道）。
  * - quests 只含求和所需的最小字段，控制内嵌体积。
  */
@@ -15,9 +16,9 @@ export interface RpgQuest {
 }
 
 export interface RpgStats {
-  /** 金币合计（所有已发布文章 gold 之和） */
+  /** 金币合计（已发布文章 + 已完成任务的 gold 之和） */
   gold: number
-  /** 经验合计（所有已发布文章 exp 之和） */
+  /** 经验合计（已发布文章 + 已完成任务的 exp 之和） */
   exp: number
   /** 等级 = 每 100 经验升一级，上限 100、下限 1（称号设计到 100 级） */
   level: number
@@ -25,13 +26,20 @@ export interface RpgStats {
   quests: RpgQuest[]
 }
 
-export function getRpgStats(posts: CollectionEntry<'blog'>[]): RpgStats {
-  const gold = posts.reduce((s, p) => s + p.data.gold, 0)
-  const exp = posts.reduce((s, p) => s + p.data.exp, 0)
+export function getRpgStats(
+  posts: CollectionEntry<'blog'>[],
+  doneQuests: CollectionEntry<'quest'>[] = []
+): RpgStats {
+  const drops: RpgQuest[] = [
+    ...posts.map((p) => ({ id: p.id, gold: p.data.gold, exp: p.data.exp })),
+    ...doneQuests.map((q) => ({ id: q.id, gold: q.data.gold, exp: q.data.exp }))
+  ]
+  const gold = drops.reduce((s, d) => s + d.gold, 0)
+  const exp = drops.reduce((s, d) => s + d.exp, 0)
   return {
     gold,
     exp,
     level: Math.min(100, Math.max(1, Math.floor(exp / 100) + 1)),
-    quests: posts.map((p) => ({ id: p.id, gold: p.data.gold, exp: p.data.exp }))
+    quests: drops
   }
 }

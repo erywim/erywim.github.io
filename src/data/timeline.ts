@@ -16,6 +16,12 @@ export interface TimelineItem {
 
 export const timeline: TimelineItem[] = [
   {
+    date: '2026-08-14',
+    title: '上线灵感火花',
+    desc: '灵光一闪的 idea 与待办有了新家，火花随记随取。',
+    link: '/ideas'
+  },
+  {
     date: '2026-08-12',
     title: '博客上线',
     desc: 'ERYWIM’S BLOG 正式对外发布，冒险之旅就此启程！',

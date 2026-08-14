@@ -14,14 +14,14 @@ import { hero } from '@/data/hero'
 import { site } from '@/data/site'
 import { getTitleForLevel } from '@/data/titles'
 import { tagById } from '@/data/treasure'
-import { getPublishedBlog } from '@/utils/collections'
+import { getDoneQuests, getPublishedBlog } from '@/utils/collections'
 import { getMetrics } from '@/utils/metrics'
 import { getRpgStats } from '@/utils/rpg'
 import { hpAt, mpAt } from '@/utils/vitals'
 
 const posts = await getPublishedBlog()
 const { essays, notes, logs } = await getMetrics()
-const { gold, exp, level } = getRpgStats(posts)
+const { gold, exp, level } = getRpgStats(posts, await getDoneQuests())
 const title = getTitleForLevel(level)
 
 // 探索地图统计（按文章 category）

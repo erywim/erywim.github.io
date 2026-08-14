@@ -1,0 +1,274 @@
+---
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Panel from '@/components/famicom/Panel.astro'
+import { TYPE, STATUS } from '@/data/quest'
+import { site } from '@/data/site'
+import { getQuests } from '@/utils/collections'
+
+// 全部任务（排序：主线在前 → 难度降序 → slug 升序），客户端分页 + 筛选 + 只读详情
+const quests = await getQuests()
+
+// 静态统计（构建期）：主线 / 支线 / 已完成 / 累计 EXP（已完成任务的 exp 之和）
+const countMain = quests.filter((q) => q.data.type === 'main').length
+const countSide = quests.filter((q) => q.data.type === 'side').length
+const countDone = quests.filter((q) => q.data.status === 'done').length
+
+// 内嵌 JSON（客户端分页/筛选/详情用），与服务端同一数据源
+const payload = {
+  quests: quests.map((q) => ({
+    id: q.id,
+    type: q.data.type,
+    status: q.data.status,
+    diff: q.data.diff,
+    title: q.data.title,
+    desc: q.data.desc,
+    objectives: q.data.objectives,
+    exp: q.data.exp,
+    gold: q.data.gold
+  })),
+  TYPE,
+  STATUS
+}
+---
+
+<FamicomLayout title='灵感火花'>
+  <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '灵感火花' }]} />
+
+  <CmdMenu active='ideas' />
+
+  <section class='q-stats' data-od-id='quest-stats' aria-label='火花统计'>
+    <div class='q-stat'><b class='red'>{countMain}</b><span>主线 MAIN</span></div>
+    <div class='q-stat'><b class='cyan'>{countSide}</b><span>支线 SIDE</span></div>
+    <div class='q-stat'><b class='green'>{countDone}</b><span>已完成 DONE</span></div>
+  </section>
+
+  <Panel title='灵感火花' en='SPARK' metaId='questCount' class='reveal'>
+    <div class='filter-row' data-od-id='quest-filter'>
+      <span class='fl'>筛选</span>
+      <button class='q-filter on' data-filter='all' type='button'>全部 <span class='n'>{quests.length}</span></button>
+      <button class='q-filter' data-filter='main' type='button'>主线 <span class='n'>{countMain}</span></button>
+      <button class='q-filter' data-filter='side' type='button'>支线 <span class='n'>{countSide}</span></button>
+      <button class='q-filter' data-filter='done' type='button'>已完成 <span class='n'>{countDone}</span></button>
+    </div>
+
+    <div class='quest-grid' id='questGrid'></div>
+    <div class='empty' id='questEmpty' hidden>
+      <b>NO SPARK</b>这个分组里还没有火花，试试切换其它筛选。
+    </div>
+    <div class='q-pager' id='qPager' hidden>
+      <button class='q-pg-btn' id='qPrev' type='button'>◀ 上一页</button>
+      <span class='q-pg-info' id='qPgInfo'>1 / 1</span>
+      <button class='q-pg-btn' id='qNext' type='button'>下一页 ▶</button>
+    </div>
+  </Panel>
+
+  <Dialogue
+    speaker={site.heroName}
+    avatar
+    class='reveal'
+    typewriter='灵感像火花一样转瞬即逝，记下来才抓得住。这里收着我灵光一闪的 idea，和一件件想做还没做的事。'
+  />
+
+  <!-- 火花详情弹窗（只读：目标勾选态为静态展示，不可点击） -->
+  <div class='q-overlay' id='qOverlay' aria-hidden='true'>
+    <div class='q-panel' role='dialog' aria-modal='true' aria-label='火花详情'>
+      <div class='q-titlebar'>
+        ◆ 火花详情 <span class='en'>SPARK</span>
+        <button class='q-x' id='qClose' type='button' aria-label='关闭'>✕</button>
+      </div>
+      <div class='q-body'>
+        <div class='q-icon' id='qIcon'></div>
+        <div class='q-main' id='qMain'></div>
+      </div>
+    </div>
+  </div>
+
+  <div id='quest-data' hidden>{JSON.stringify(payload)}</div>
+</FamicomLayout>
+
+<script>
+  const $ = (s: string) => document.querySelector(s) as HTMLElement
+  const esc = (s: string) =>
+    String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+
+  interface QObjective { t: string; done: boolean }
+  interface QQuest {
+    id: string
+    type: 'main' | 'side'
+    status: 'todo' | 'active' | 'done'
+    diff: number
+    title: string
+    desc: string
+    objectives: QObjective[]
+    exp: number
+    gold: number
+  }
+  interface QData {
+    quests: QQuest[]
+    TYPE: Record<string, { name: string; en: string }>
+    STATUS: Record<string, { name: string; en: string }>
+  }
+
+  let data: QData | null = null
+  try {
+    data = JSON.parse($('#quest-data').textContent || '')
+  } catch {}
+
+  if (data && data.quests.length) {
+    const { quests, TYPE, STATUS } = data
+    const PAGE_SIZE = 8
+    let filter = 'all'
+    let page = 1
+
+    const starRow = (diff: number, max = 3) =>
+      Array.from({ length: max }, (_, i) =>
+        `<svg class="q-star${i < diff ? '' : ' off'}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-star"/></svg>`
+      ).join('')
+
+    const progressHTML = (q: QQuest) => {
+      const objs = q.objectives || []
+      const doneN = objs.filter((o) => o.done).length
+      if (objs.length) {
+        const segs = objs.map((o) => `<i class="${o.done ? 'on' : ''}"></i>`).join('')
+        return `<div class="q-prog">${segs}</div><span class="q-pct">${doneN}/${objs.length}</span>`
+      }
+      const on = q.status === 'done' ? 'on' : ''
+      const pct = q.status === 'done' ? '✓' : '—'
+      return `<div class="q-prog"><i class="${on}"></i></div><span class="q-pct">${pct}</span>`
+    }
+
+    const cardHTML = (q: QQuest) => {
+      return `<article class="q-card ${q.type}" data-id="${esc(q.id)}" tabindex="0" role="button" aria-haspopup="dialog" title="点击查看详情">
+        <div class="q-head">
+          <span class="q-type ${q.type}">${TYPE[q.type].name}</span>
+          <span class="q-status ${q.status}">${STATUS[q.status].name}</span>
+          <span class="q-stars">${starRow(q.diff)}</span>
+        </div>
+        <h3>${esc(q.title)}</h3>
+        <p class="q-desc">${esc(q.desc)}</p>
+        <div class="q-progrow">${progressHTML(q)}</div>
+        <div class="q-foot">
+          <span class="q-reward"><span class="rw-exp">EXP ${q.exp}</span><span class="rw-g"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-coin"/></svg>${q.gold}</span></span>
+          <span class="q-open">▶</span>
+        </div>
+      </article>`
+    }
+
+    const filtered = () => {
+      if (filter === 'all') return quests
+      if (filter === 'done') return quests.filter((q) => q.status === 'done')
+      return quests.filter((q) => q.type === filter)
+    }
+
+    function render() {
+      const list = filtered()
+      const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
+      if (page > totalPages) page = totalPages
+      const start = (page - 1) * PAGE_SIZE
+      const slice = list.slice(start, start + PAGE_SIZE)
+
+      $('#questGrid').innerHTML = slice.map(cardHTML).join('')
+      $('#questEmpty').hidden = list.length > 0
+      $('#questCount').textContent = `当前 ${list.length} / ${quests.length} 项`
+
+      document.querySelectorAll<HTMLElement>('.q-filter').forEach((b) =>
+        b.classList.toggle('on', b.dataset.filter === filter)
+      )
+
+      const pager = $('#qPager')
+      pager.hidden = totalPages <= 1
+      $('#qPgInfo').textContent = `${page} / ${totalPages}`
+      ;($('#qPrev') as HTMLButtonElement).disabled = page <= 1
+      ;($('#qNext') as HTMLButtonElement).disabled = page >= totalPages
+    }
+
+    document.querySelectorAll<HTMLElement>('.q-filter').forEach((b) =>
+      b.addEventListener('click', () => {
+        filter = b.dataset.filter || 'all'
+        page = 1
+        render()
+      })
+    )
+    ;($('#qPrev') as HTMLButtonElement).addEventListener('click', () => {
+      if (page > 1) {
+        page -= 1
+        render()
+      }
+    })
+    ;($('#qNext') as HTMLButtonElement).addEventListener('click', () => {
+      const total = Math.max(1, Math.ceil(filtered().length / PAGE_SIZE))
+      if (page < total) {
+        page += 1
+        render()
+      }
+    })
+
+    // —— 详情弹窗（只读） ——
+    const overlay = $('#qOverlay')
+    function openModal(id: string) {
+      const q = quests.find((x) => x.id === id)
+      if (!q) return
+      const icon = q.type === 'main' ? 'it-sword' : 'it-scroll'
+      const objRows = (q.objectives || []).length
+        ? q.objectives
+            .map((o) => `<div class="q-obj${o.done ? ' done' : ''}"><span class="q-chk"></span><span>${esc(o.t)}</span></div>`)
+            .join('')
+        : '<p class="q-noobj">暂无目标清单。</p>'
+
+      $('#qIcon').innerHTML = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${icon}"/></svg>`
+      $('#qMain').innerHTML = `
+        <h3>${esc(q.title)}</h3>
+        <div class="q-meta">
+          <span class="q-type ${q.type}">${TYPE[q.type].name}</span>
+          <span class="q-status ${q.status}">${STATUS[q.status].name}</span>
+        </div>
+        <div class="q-stars-row">${starRow(q.diff)}<span class="q-diff">难度 ${q.diff}/3</span></div>
+        <p class="q-desc-full">${esc(q.desc)}</p>
+        <div class="q-sec-label">目标清单 OBJECTIVES</div>
+        ${objRows}
+        <div class="q-reward-row">
+          <span class="lb">任务奖励</span>
+          <span class="rw-exp">EXP ${q.exp}</span>
+          <span class="rw-g"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-coin"/></svg>${q.gold}</span>
+        </div>
+        <div class="q-actions"><button class="q-btn ghost" id="qCancel" type="button">关闭</button></div>`
+
+      overlay.classList.add('show')
+      overlay.setAttribute('aria-hidden', 'false')
+      document.body.style.overflow = 'hidden'
+      $('#qClose').focus()
+    }
+    function closeModal() {
+      overlay.classList.remove('show')
+      overlay.setAttribute('aria-hidden', 'true')
+      document.body.style.overflow = ''
+    }
+
+    const grid = $('#questGrid')
+    grid.addEventListener('click', (e) => {
+      const card = (e.target as HTMLElement).closest('.q-card') as HTMLElement | null
+      if (card?.dataset.id) openModal(card.dataset.id)
+    })
+    grid.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      const card = (e.target as HTMLElement).closest('.q-card') as HTMLElement | null
+      if (card?.dataset.id) {
+        e.preventDefault()
+        openModal(card.dataset.id)
+      }
+    })
+
+    overlay.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement
+      if (t === overlay || t.closest('#qClose') || t.closest('#qCancel')) closeModal()
+    })
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('show')) closeModal()
+    })
+
+    render()
+  }
+</script>

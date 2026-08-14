@@ -41,3 +41,19 @@ export async function getPublishedLogs(): Promise<CollectionEntry<'logs'>[]> {
   const logs = await getCollection('logs', ({ data }) => !data.draft)
   return logs.sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
 }
+
+/** 灵感火花（任务）全部，排序：主线在前 → 难度降序 → slug 升序 */
+export async function getQuests(): Promise<CollectionEntry<'quest'>[]> {
+  if (!collectionHasFiles('src/content/quest')) return []
+  const quests = await getCollection('quest')
+  return quests.sort((a, b) => {
+    if (a.data.type !== b.data.type) return a.data.type === 'main' ? -1 : 1
+    if (a.data.diff !== b.data.diff) return b.data.diff - a.data.diff
+    return a.id.localeCompare(b.id)
+  })
+}
+
+/** 已完成的任务（经验/金币计入全局等级） */
+export async function getDoneQuests(): Promise<CollectionEntry<'quest'>[]> {
+  return (await getQuests()).filter((q) => q.data.status === 'done')
+}

@@ -3,7 +3,7 @@ import config from '@/site-config'
 import { site } from '@/data/site'
 import { sayings } from '@/data/sayings'
 import { TITLES } from '@/data/titles'
-import { getPublishedBlog } from '@/utils/collections'
+import { getDoneQuests, getPublishedBlog } from '@/utils/collections'
 import { getRpgStats } from '@/utils/rpg'
 import '@/assets/styles/famicom.css'
 
@@ -17,7 +17,7 @@ const pageTitle =
   title && title !== config.title ? `${title} · ${site.gameTitle}` : site.gameTitle
 
 // RPG 掉落合计（构建期兜底值，客户端异步统计后再滚动回显）
-const { gold, level, quests } = getRpgStats(await getPublishedBlog())
+const { gold, level, quests } = getRpgStats(await getPublishedBlog(), await getDoneQuests())
 const goldStr = `G ${String(gold).padStart(4, '0')}`
 const levelStr = `LV.${level}`
 
@@ -280,6 +280,7 @@ const favicon =
         <a href='/about'>勇者档案</a>
         <a href='/logs'>旅行日志</a>
         <a href='/treasure'>道具宝箱</a>
+        <a href='/ideas'>灵感火花</a>
         <a href='/links'>伙伴酒馆</a>
         <a href='/guestbook'>留言板</a>
         <a href={site.github} target='_blank' rel='noopener'>GitHub</a>
@@ -808,6 +809,28 @@ const favicon =
           <rect x='2' y='5' width='12' height='1' fill='var(--gold-hi)'/><rect x='2' y='6' width='12' height='2' fill='var(--gold)'/>
           <rect x='3' y='8' width='10' height='6' fill='var(--orange)'/><rect x='3' y='8' width='10' height='1' fill='var(--gold)'/>
           <rect x='7' y='6' width='2' height='3' fill='var(--red)'/><rect x='2' y='14' width='12' height='1' fill='var(--black)'/>
+        </symbol>
+        <!-- 灵感火花页像素图标 -->
+        <symbol id='it-sword' viewBox='0 0 16 16'>
+          <rect x='7' y='0' width='2' height='1' fill='var(--gold-hi)'/>
+          <rect x='6' y='1' width='1' height='7' fill='var(--gold-hi)'/><rect x='7' y='1' width='2' height='7' fill='var(--gold)'/><rect x='9' y='1' width='1' height='1' fill='var(--orange)'/>
+          <rect x='5' y='8' width='6' height='1' fill='var(--red)'/>
+          <rect x='6' y='9' width='4' height='1' fill='var(--gold)'/>
+          <rect x='7' y='10' width='2' height='3' fill='var(--panel3)'/>
+          <rect x='6' y='13' width='4' height='1' fill='var(--red)'/>
+          <rect x='7' y='14' width='2' height='1' fill='var(--gold)'/>
+        </symbol>
+        <symbol id='it-coin' viewBox='0 0 16 16'>
+          <rect x='5' y='3' width='6' height='1' fill='var(--gold-hi)'/>
+          <rect x='3' y='4' width='10' height='2' fill='var(--gold)'/><rect x='3' y='10' width='10' height='2' fill='var(--gold)'/>
+          <rect x='4' y='6' width='8' height='4' fill='var(--gold)'/><rect x='5' y='12' width='6' height='1' fill='var(--gold-hi)'/>
+          <rect x='7' y='6' width='2' height='4' fill='var(--gold-hi)'/><rect x='4' y='7' width='1' height='2' fill='var(--gold-hi)'/>
+          <rect x='3' y='4' width='1' height='2' fill='var(--orange)'/><rect x='12' y='6' width='1' height='2' fill='var(--orange)'/>
+        </symbol>
+        <symbol id='it-star' viewBox='0 0 8 8'>
+          <rect x='3' y='0' width='2' height='1' fill='currentColor'/><rect x='2' y='1' width='4' height='1' fill='currentColor'/>
+          <rect x='1' y='2' width='6' height='1' fill='currentColor'/><rect x='2' y='3' width='4' height='1' fill='currentColor'/>
+          <rect x='3' y='4' width='2' height='1' fill='currentColor'/>
         </symbol>
       </defs>
     </svg>

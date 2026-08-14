@@ -8,7 +8,7 @@ import Panel from '@/components/famicom/Panel.astro'
 import { hero } from '@/data/hero'
 import { site } from '@/data/site'
 import { getTitleForLevel } from '@/data/titles'
-import { getPublishedBlog } from '@/utils/collections'
+import { getDoneQuests, getPublishedBlog } from '@/utils/collections'
 import { getRpgStats } from '@/utils/rpg'
 import { hpAt, mpAt } from '@/utils/vitals'
 
@@ -16,7 +16,7 @@ import { hpAt, mpAt } from '@/utils/vitals'
 const hpNow = hpAt(new Date())
 const mpNow = mpAt(new Date())
 // 等级称号与真实经验：由所有已发布文章的 gold/exp 合计换算
-const { exp, level } = getRpgStats(await getPublishedBlog())
+const { exp, level } = getRpgStats(await getPublishedBlog(), await getDoneQuests())
 const title = getTitleForLevel(level)
 const expBar = exp % 100
 ---
