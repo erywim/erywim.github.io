@@ -8,15 +8,35 @@ import { TYPE, STATUS } from '@/data/quest'
 import { site } from '@/data/site'
 import { getQuests } from '@/utils/collections'
 
-// 全部任务（排序：主线在前 → 难度降序 → slug 升序），客户端分页 + 筛选 + 只读详情
+// 全部任务（排序：主线在前 → 难度降序 → slug 升序）。卡片服务端渲染（渐进式：内容直接进 HTML），
+// 客户端只做筛选 / 分页 / 只读详情，不再整块重建 DOM。
 const quests = await getQuests()
 
-// 静态统计（构建期）：主线 / 支线 / 已完成 / 累计 EXP（已完成任务的 exp 之和）
+// 静态统计（构建期）：主线 / 支线 / 已完成
 const countMain = quests.filter((q) => q.data.type === 'main').length
 const countSide = quests.filter((q) => q.data.type === 'side').length
 const countDone = quests.filter((q) => q.data.status === 'done').length
 
-// 内嵌 JSON（客户端分页/筛选/详情用），与服务端同一数据源
+// 难度星级（服务端渲染卡片 + 客户端详情弹窗复用同一规则）
+const starRow = (diff: number, max = 3) =>
+  Array.from({ length: max }, (_, i) =>
+    `<svg class="q-star${i < diff ? '' : ' off'}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-star"/></svg>`
+  ).join('')
+
+// 目标进度条（服务端渲染卡片用）
+const progressHtml = (q: { objectives: { t: string; done: boolean }[]; status: string }) => {
+  const objs = q.objectives || []
+  const doneN = objs.filter((o) => o.done).length
+  if (objs.length) {
+    const segs = objs.map((o) => `<i class="${o.done ? 'on' : ''}"></i>`).join('')
+    return `<div class="q-prog">${segs}</div><span class="q-pct">${doneN}/${objs.length}</span>`
+  }
+  const on = q.status === 'done' ? 'on' : ''
+  const pct = q.status === 'done' ? '✓' : '—'
+  return `<div class="q-prog"><i class="${on}"></i></div><span class="q-pct">${pct}</span>`
+}
+
+// 内嵌 JSON（详情弹窗用），与服务端同一数据源
 const payload = {
   quests: quests.map((q) => ({
     id: q.id,
@@ -54,7 +74,38 @@ const payload = {
       <button class='q-filter' data-filter='done' type='button'>已完成 <span class='n'>{countDone}</span></button>
     </div>
 
-    <div class='quest-grid' id='questGrid'></div>
+    <div class='quest-grid' id='questGrid'>
+      {
+        quests.map((q) => (
+          <article
+            class={`q-card ${q.data.type}`}
+            data-id={q.id}
+            data-type={q.data.type}
+            data-status={q.data.status}
+            tabindex='0'
+            role='button'
+            aria-haspopup='dialog'
+            title='点击查看详情'
+          >
+            <div class='q-head'>
+              <span class={`q-type ${q.data.type}`}>{TYPE[q.data.type].name}</span>
+              <span class={`q-status ${q.data.status}`}>{STATUS[q.data.status].name}</span>
+              <span class='q-stars' set:html={starRow(q.data.diff)} />
+            </div>
+            <h3>{q.data.title}</h3>
+            <p class='q-desc'>{q.data.desc}</p>
+            <div class='q-progrow' set:html={progressHtml(q.data)} />
+            <div class='q-foot'>
+              <span class='q-reward'>
+                <span class='rw-exp'>EXP {q.data.exp}</span>
+                <span class='rw-g'><svg viewBox='0 0 16 16' shape-rendering='crispEdges' aria-hidden='true'><use href='#it-coin'/></svg>{q.data.gold}</span>
+              </span>
+              <span class='q-open'>▶</span>
+            </div>
+          </article>
+        ))
+      }
+    </div>
     <div class='empty' id='questEmpty' hidden>
       <b>NO SPARK</b>这个分组里还没有火花，试试切换其它筛选。
     </div>
@@ -117,158 +168,130 @@ const payload = {
     data = JSON.parse($('#quest-data').textContent || '')
   } catch {}
 
-  if (data && data.quests.length) {
-    const { quests, TYPE, STATUS } = data
-    const PAGE_SIZE = 8
-    let filter = 'all'
-    let page = 1
+  const PAGE_SIZE = 8
+  const grid = $('#questGrid')
+  const allCards = Array.from(grid.querySelectorAll<HTMLElement>('.q-card'))
+  const overlay = $('#qOverlay')
+  let filter = 'all'
+  let page = 1
 
-    const starRow = (diff: number, max = 3) =>
-      Array.from({ length: max }, (_, i) =>
-        `<svg class="q-star${i < diff ? '' : ' off'}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-star"/></svg>`
-      ).join('')
+  // 详情弹窗用：难度星级（与服务端渲染规则一致）
+  const starRow = (diff: number, max = 3) =>
+    Array.from({ length: max }, (_, i) =>
+      `<svg class="q-star${i < diff ? '' : ' off'}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-star"/></svg>`
+    ).join('')
 
-    const progressHTML = (q: QQuest) => {
-      const objs = q.objectives || []
-      const doneN = objs.filter((o) => o.done).length
-      if (objs.length) {
-        const segs = objs.map((o) => `<i class="${o.done ? 'on' : ''}"></i>`).join('')
-        return `<div class="q-prog">${segs}</div><span class="q-pct">${doneN}/${objs.length}</span>`
-      }
-      const on = q.status === 'done' ? 'on' : ''
-      const pct = q.status === 'done' ? '✓' : '—'
-      return `<div class="q-prog"><i class="${on}"></i></div><span class="q-pct">${pct}</span>`
-    }
+  const filtered = () =>
+    allCards.filter((card) => {
+      if (filter === 'all') return true
+      if (filter === 'done') return card.dataset.status === 'done'
+      return card.dataset.type === filter
+    })
 
-    const cardHTML = (q: QQuest) => {
-      return `<article class="q-card ${q.type}" data-id="${esc(q.id)}" tabindex="0" role="button" aria-haspopup="dialog" title="点击查看详情">
-        <div class="q-head">
-          <span class="q-type ${q.type}">${TYPE[q.type].name}</span>
-          <span class="q-status ${q.status}">${STATUS[q.status].name}</span>
-          <span class="q-stars">${starRow(q.diff)}</span>
-        </div>
-        <h3>${esc(q.title)}</h3>
-        <p class="q-desc">${esc(q.desc)}</p>
-        <div class="q-progrow">${progressHTML(q)}</div>
-        <div class="q-foot">
-          <span class="q-reward"><span class="rw-exp">EXP ${q.exp}</span><span class="rw-g"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-coin"/></svg>${q.gold}</span></span>
-          <span class="q-open">▶</span>
-        </div>
-      </article>`
-    }
-
-    const filtered = () => {
-      if (filter === 'all') return quests
-      if (filter === 'done') return quests.filter((q) => q.status === 'done')
-      return quests.filter((q) => q.type === filter)
-    }
-
-    function render() {
-      const list = filtered()
-      const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
-      if (page > totalPages) page = totalPages
-      const start = (page - 1) * PAGE_SIZE
-      const slice = list.slice(start, start + PAGE_SIZE)
-
-      $('#questGrid').innerHTML = slice.map(cardHTML).join('')
-      $('#questEmpty').hidden = list.length > 0
-      $('#questCount').textContent = `当前 ${list.length} / ${quests.length} 项`
-
-      document.querySelectorAll<HTMLElement>('.q-filter').forEach((b) =>
-        b.classList.toggle('on', b.dataset.filter === filter)
-      )
-
-      const pager = $('#qPager')
-      pager.hidden = totalPages <= 1
-      $('#qPgInfo').textContent = `${page} / ${totalPages}`
-      ;($('#qPrev') as HTMLButtonElement).disabled = page <= 1
-      ;($('#qNext') as HTMLButtonElement).disabled = page >= totalPages
-    }
+  function render() {
+    const list = filtered()
+    const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
+    if (page > totalPages) page = totalPages
+    const start = (page - 1) * PAGE_SIZE
+    list.forEach((card, i) => {
+      card.hidden = !(i >= start && i < start + PAGE_SIZE)
+    })
+    $('#questEmpty').hidden = list.length > 0
+    $('#questCount').textContent = `当前 ${list.length} / ${allCards.length} 项`
 
     document.querySelectorAll<HTMLElement>('.q-filter').forEach((b) =>
-      b.addEventListener('click', () => {
-        filter = b.dataset.filter || 'all'
-        page = 1
-        render()
-      })
+      b.classList.toggle('on', b.dataset.filter === filter)
     )
-    ;($('#qPrev') as HTMLButtonElement).addEventListener('click', () => {
-      if (page > 1) {
-        page -= 1
-        render()
-      }
-    })
-    ;($('#qNext') as HTMLButtonElement).addEventListener('click', () => {
-      const total = Math.max(1, Math.ceil(filtered().length / PAGE_SIZE))
-      if (page < total) {
-        page += 1
-        render()
-      }
-    })
 
-    // —— 详情弹窗（只读） ——
-    const overlay = $('#qOverlay')
-    function openModal(id: string) {
-      const q = quests.find((x) => x.id === id)
-      if (!q) return
-      const icon = q.type === 'main' ? 'it-sword' : 'it-scroll'
-      const objRows = (q.objectives || []).length
-        ? q.objectives
-            .map((o) => `<div class="q-obj${o.done ? ' done' : ''}"><span class="q-chk"></span><span>${esc(o.t)}</span></div>`)
-            .join('')
-        : '<p class="q-noobj">暂无目标清单。</p>'
-
-      $('#qIcon').innerHTML = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${icon}"/></svg>`
-      $('#qMain').innerHTML = `
-        <h3>${esc(q.title)}</h3>
-        <div class="q-meta">
-          <span class="q-type ${q.type}">${TYPE[q.type].name}</span>
-          <span class="q-status ${q.status}">${STATUS[q.status].name}</span>
-        </div>
-        <div class="q-stars-row">${starRow(q.diff)}<span class="q-diff">难度 ${q.diff}/3</span></div>
-        <p class="q-desc-full">${esc(q.desc)}</p>
-        <div class="q-sec-label">目标清单 OBJECTIVES</div>
-        ${objRows}
-        <div class="q-reward-row">
-          <span class="lb">任务奖励</span>
-          <span class="rw-exp">EXP ${q.exp}</span>
-          <span class="rw-g"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-coin"/></svg>${q.gold}</span>
-        </div>
-        <div class="q-actions"><button class="q-btn ghost" id="qCancel" type="button">关闭</button></div>`
-
-      overlay.classList.add('show')
-      overlay.setAttribute('aria-hidden', 'false')
-      document.body.style.overflow = 'hidden'
-      $('#qClose').focus()
-    }
-    function closeModal() {
-      overlay.classList.remove('show')
-      overlay.setAttribute('aria-hidden', 'true')
-      document.body.style.overflow = ''
-    }
-
-    const grid = $('#questGrid')
-    grid.addEventListener('click', (e) => {
-      const card = (e.target as HTMLElement).closest('.q-card') as HTMLElement | null
-      if (card?.dataset.id) openModal(card.dataset.id)
-    })
-    grid.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' && e.key !== ' ') return
-      const card = (e.target as HTMLElement).closest('.q-card') as HTMLElement | null
-      if (card?.dataset.id) {
-        e.preventDefault()
-        openModal(card.dataset.id)
-      }
-    })
-
-    overlay.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement
-      if (t === overlay || t.closest('#qClose') || t.closest('#qCancel')) closeModal()
-    })
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.classList.contains('show')) closeModal()
-    })
-
-    render()
+    const pager = $('#qPager')
+    pager.hidden = totalPages <= 1
+    $('#qPgInfo').textContent = `${page} / ${totalPages}`
+    ;($('#qPrev') as HTMLButtonElement).disabled = page <= 1
+    ;($('#qNext') as HTMLButtonElement).disabled = page >= totalPages
   }
+
+  document.querySelectorAll<HTMLElement>('.q-filter').forEach((b) =>
+    b.addEventListener('click', () => {
+      filter = b.dataset.filter || 'all'
+      page = 1
+      render()
+    })
+  )
+  ;($('#qPrev') as HTMLButtonElement).addEventListener('click', () => {
+    if (page > 1) {
+      page -= 1
+      render()
+    }
+  })
+  ;($('#qNext') as HTMLButtonElement).addEventListener('click', () => {
+    const total = Math.max(1, Math.ceil(filtered().length / PAGE_SIZE))
+    if (page < total) {
+      page += 1
+      render()
+    }
+  })
+
+  // —— 详情弹窗（只读） ——
+  function openModal(id: string) {
+    const q = data?.quests.find((x) => x.id === id)
+    if (!q || !data) return
+    const { TYPE, STATUS } = data
+    const icon = q.type === 'main' ? 'it-sword' : 'it-scroll'
+    const objRows = (q.objectives || []).length
+      ? q.objectives
+          .map((o) => `<div class="q-obj${o.done ? ' done' : ''}"><span class="q-chk"></span><span>${esc(o.t)}</span></div>`)
+          .join('')
+      : '<p class="q-noobj">暂无目标清单。</p>'
+
+    $('#qIcon').innerHTML = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#${icon}"/></svg>`
+    $('#qMain').innerHTML = `
+      <h3>${esc(q.title)}</h3>
+      <div class="q-meta">
+        <span class="q-type ${q.type}">${TYPE[q.type].name}</span>
+        <span class="q-status ${q.status}">${STATUS[q.status].name}</span>
+      </div>
+      <div class="q-stars-row">${starRow(q.diff)}<span class="q-diff">难度 ${q.diff}/3</span></div>
+      <p class="q-desc-full">${esc(q.desc)}</p>
+      <div class="q-sec-label">目标清单 OBJECTIVES</div>
+      ${objRows}
+      <div class="q-reward-row">
+        <span class="lb">任务奖励</span>
+        <span class="rw-exp">EXP ${q.exp}</span>
+        <span class="rw-g"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="#it-coin"/></svg>${q.gold}</span>
+      </div>
+      <div class="q-actions"><button class="q-btn ghost" id="qCancel" type="button">关闭</button></div>`
+
+    overlay.classList.add('show')
+    overlay.setAttribute('aria-hidden', 'false')
+    document.body.style.overflow = 'hidden'
+    $('#qClose').focus()
+  }
+  function closeModal() {
+    overlay.classList.remove('show')
+    overlay.setAttribute('aria-hidden', 'true')
+    document.body.style.overflow = ''
+  }
+
+  grid.addEventListener('click', (e) => {
+    const card = (e.target as HTMLElement).closest('.q-card') as HTMLElement | null
+    if (card?.dataset.id) openModal(card.dataset.id)
+  })
+  grid.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return
+    const card = (e.target as HTMLElement).closest('.q-card') as HTMLElement | null
+    if (card?.dataset.id) {
+      e.preventDefault()
+      openModal(card.dataset.id)
+    }
+  })
+
+  overlay.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement
+    if (t === overlay || t.closest('#qClose') || t.closest('#qCancel')) closeModal()
+  })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) closeModal()
+  })
+
+  render()
 </script>

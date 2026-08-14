@@ -412,12 +412,14 @@ body.dive #divefx {
   }
 }
 /* 模块化退出：每个面板单独掉落(入海)/升起(升空)，错峰 + 随机偏移旋转（仅 transform+opacity，保证 GPU 合成流畅） */
-body.dive.to-night .wrap > * {
+body.dive.to-night .wrap > .hud-bar,
+body.dive.to-night .wrap-main > * {
   animation: panelFall 0.5s cubic-bezier(0.5, 0, 1, 0.5) forwards;
   animation-delay: calc(var(--ri, 0) * 32ms);
   will-change: transform;
 }
-body.dive.to-day .wrap > * {
+body.dive.to-day .wrap > .hud-bar,
+body.dive.to-day .wrap-main > * {
   animation: panelRise 0.5s cubic-bezier(0.5, 0, 1, 0.5) forwards;
   animation-delay: calc(var(--ri, 0) * 32ms);
   will-change: transform;
@@ -481,14 +483,16 @@ body.dive.build #ticker {
   transform: none;
   opacity: 1;
 }
-body.dive.build .wrap > * {
+body.dive.build .wrap > .hud-bar,
+body.dive.build .wrap-main > * {
   animation: none;
   transform: none;
   filter: none;
   opacity: 0;
 }
 /* 上顶：面板逐块升起（错峰） */
-body.dive.land .wrap > * {
+body.dive.land .wrap > .hud-bar,
+body.dive.land .wrap-main > * {
   opacity: 1;
   transform: none;
   transition:
@@ -1186,15 +1190,10 @@ section.panel {
   margin-bottom: 18px;
 }
 .reveal {
-  opacity: 0;
-  transform: translateY(12px);
+  /* 骨架图（.px-skeleton）接管「加载→内容」的显现，面板不再整体隐藏 */
 }
 .reveal.in {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.4s linear,
-    transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* 保留占位，兼容现有 IntersectionObserver */
 }
 
 /* —— 状态面板 —— */
@@ -4774,4 +4773,43 @@ footer a:hover {
   font-size: 9px;
   color: var(--dim);
   letter-spacing: 0.04em;
+}
+
+/* —— 道具宝箱：切换主题宝箱时的宝剑遮罩容器 —— */
+.item-stage {
+  position: relative;
+  min-height: 240px;
+}
+
+/* —— 骨架图：每块面板先显示宝剑骨架，就绪后错峰淡出到真实内容 —— */
+.px-body {
+  position: relative;
+}
+.px-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel2);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.px-skeleton.gone {
+  opacity: 0;
+  pointer-events: none;
+}
+.px-skeleton .gb-sword {
+  width: 82px;
+  height: 24px;
+  animation: skPulse 1.3s ease-in-out infinite;
+}
+@keyframes skPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }

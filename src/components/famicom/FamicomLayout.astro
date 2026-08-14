@@ -48,6 +48,7 @@ const favicon =
         } catch (e) {}
       })()
     </script>
+    <noscript><style>.px-skeleton{display:none}</style></noscript>
   </head>
   <body>
     <div id='progress' aria-hidden='true'></div>
@@ -272,21 +273,23 @@ const favicon =
         </span>
       </div>
 
-      <slot />
+      <div class='wrap-main'>
+        <slot />
 
-      <footer>
-        <a href='/'>■ 返回标题</a>
-        <a href='/blog'>冒险记录</a>
-        <a href='/about'>勇者档案</a>
-        <a href='/logs'>旅行日志</a>
-        <a href='/treasure'>道具宝箱</a>
-        <a href='/ideas'>灵感火花</a>
-        <a href='/links'>伙伴酒馆</a>
-        <a href='/guestbook'>留言板</a>
-        <a href={site.github} target='_blank' rel='noopener'>GitHub</a>
-        <a href={site.poweredBy} target='_blank' rel='noopener'>Powered by Astro</a>
-        <span>{site.copyright}</span>
-      </footer>
+        <footer>
+          <a href='/'>■ 返回标题</a>
+          <a href='/blog'>冒险记录</a>
+          <a href='/about'>勇者档案</a>
+          <a href='/logs'>旅行日志</a>
+          <a href='/treasure'>道具宝箱</a>
+          <a href='/ideas'>灵感火花</a>
+          <a href='/links'>伙伴酒馆</a>
+          <a href='/guestbook'>留言板</a>
+          <a href={site.github} target='_blank' rel='noopener'>GitHub</a>
+          <a href={site.poweredBy} target='_blank' rel='noopener'>Powered by Astro</a>
+          <span>{site.copyright}</span>
+        </footer>
+      </div>
     </div>
 
     <!-- 天空频道字幕 -->
@@ -911,7 +914,7 @@ const favicon =
       }
       document.body.classList.add('dive', toNight ? 'to-night' : 'to-day')
       // 每个面板分配错峰序号 + 随机偏移/旋转
-      const kids = document.querySelectorAll('.wrap > *')
+      const kids = document.querySelectorAll('.wrap > .hud-bar, .wrap-main > *')
       const total = kids.length
       kids.forEach((kid, i) => {
         // 下潜(→夜)按 DOM 顺序自上而下；上浮(→昼)反向自下而上
@@ -1052,6 +1055,25 @@ const favicon =
     { threshold: 0.06 }
   )
   document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
+
+  // —— 骨架图显现：每块面板先显示宝剑骨架，就绪后错峰淡出到真实内容 ——
+  const skeletons = Array.from(document.querySelectorAll<HTMLElement>('.px-skeleton'))
+  if (skeletons.length) {
+    let skDone = false
+    const skReveal = () => {
+      if (skDone) return
+      skDone = true
+      skeletons.forEach((sk, i) => {
+        setTimeout(() => {
+          sk.classList.add('gone')
+          setTimeout(() => sk.remove(), 600)
+        }, i * 90)
+      })
+    }
+    if (document.readyState === 'complete') skReveal()
+    else window.addEventListener('load', skReveal)
+    setTimeout(skReveal, 3000)
+  }
 
   // —— 天空频道：双份内容无缝滚动 + 收起/展开 ——
   const track = document.getElementById('tickerTrack')

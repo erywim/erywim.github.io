@@ -102,14 +102,33 @@ import { site } from '@/data/site'
       </div>
       <div class='fb-tags' id='filterTags'></div>
     </div>
-    <div class='item-grid' id='itemGrid'></div>
-    <div class='empty' id='itemEmpty' hidden>
-      <b>EMPTY CHEST</b>这个宝箱里还没有对应的道具，试试切换主题或清除标签筛选。
-    </div>
-    <div class='item-pager' id='itemPager' hidden>
-      <button class='pg-btn' id='pgPrev' type='button'>◀ 上一页</button>
-      <span class='pg-info' id='pgInfo'>1 / 1</span>
-      <button class='pg-btn' id='pgNext' type='button'>下一页 ▶</button>
+    <div class='item-stage' id='itemStage'>
+      <div class='item-grid' id='itemGrid'></div>
+      <div class='empty' id='itemEmpty' hidden>
+        <b>EMPTY CHEST</b>这个宝箱里还没有对应的道具，试试切换主题或清除标签筛选。
+      </div>
+      <div class='item-pager' id='itemPager' hidden>
+        <button class='pg-btn' id='pgPrev' type='button'>◀ 上一页</button>
+        <span class='pg-info' id='pgInfo'>1 / 1</span>
+        <button class='pg-btn' id='pgNext' type='button'>下一页 ▶</button>
+      </div>
+      <div class='gb-loader hidden' id='tabLoader' aria-hidden='true'>
+        <svg class='gb-sword' id='tabSword' viewBox='0 0 41 12' shape-rendering='crispEdges'>
+          <rect x='0' y='3' width='2' height='6' fill='var(--gold)' />
+          <rect x='2' y='4' width='3' height='4' fill='var(--orange)' />
+          <rect x='5' y='1' width='2' height='10' fill='var(--gold-hi)' />
+          <rect class='seg' x='7' y='4' width='4' height='4' />
+          <rect class='seg' x='11' y='4' width='4' height='4' />
+          <rect class='seg' x='15' y='4' width='4' height='4' />
+          <rect class='seg' x='19' y='4' width='4' height='4' />
+          <rect class='seg' x='23' y='4' width='4' height='4' />
+          <rect class='seg' x='27' y='4' width='4' height='4' />
+          <rect class='seg' x='31' y='4' width='4' height='4' />
+          <rect class='seg' x='35' y='4' width='4' height='4' />
+          <rect class='seg' x='39' y='5' width='2' height='2' />
+        </svg>
+        <span class='gb-loader-txt'>切换中…</span>
+      </div>
     </div>
   </Panel>
 
@@ -272,12 +291,32 @@ import { site } from '@/data/site'
         ;($('#filterClear') as HTMLElement).hidden = activeTags.size === 0
       }
 
+      // —— 宝剑遮罩：切换主题宝箱时先亮遮罩、渲染完隐藏，避免卡顿时「点了没反应」 ——
+      const tabLoader = $('#tabLoader')
+      const tabSword = document.getElementById('tabSword')
+      if (tabSword) {
+        const swordSegs = Array.from(tabSword.querySelectorAll('.seg'))
+        const swordN = swordSegs.length
+        let swordFilled = 0
+        setInterval(() => {
+          swordFilled = (swordFilled + 1) % (swordN + 1)
+          swordSegs.forEach((seg, i) => seg.classList.toggle('on', i < swordFilled))
+        }, 110)
+      }
+      const showTabLoader = () => tabLoader.classList.remove('hidden')
+      const hideTabLoader = () => tabLoader.classList.add('hidden')
+
       $('#chestTabs').addEventListener('click', (e) => {
         const btn = (e.target as HTMLElement).closest('.chest-tab') as HTMLElement | null
         if (!btn) return
         activeChest = btn.dataset.chest || 'all'
         localStorage.setItem('erywim-vault-chest', activeChest)
-        renderAll()
+        // 先显示遮罩，等浏览器上屏后再渲染，渲染完成即隐藏
+        showTabLoader()
+        setTimeout(() => {
+          renderAll()
+          hideTabLoader()
+        }, 0)
       })
 
       $('#filterTags').addEventListener('click', (e) => {

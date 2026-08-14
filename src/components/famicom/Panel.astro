@@ -24,5 +24,23 @@ const panelClass = `px${className ? ` ${className}` : ''}`
     <slot name='actions' />
     {link && <a class='px-link' href={link}>{linkLabel}</a>}
   </div>
-  <slot />
+  <div class='px-body'>
+    <div class='px-skeleton' aria-hidden='true'>
+      <svg class='gb-sword' viewBox='0 0 41 12' shape-rendering='crispEdges'>
+        <rect x='0' y='3' width='2' height='6' fill='var(--gold)' />
+        <rect x='2' y='4' width='3' height='4' fill='var(--orange)' />
+        <rect x='5' y='1' width='2' height='10' fill='var(--gold-hi)' />
+        <rect x='7' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='11' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='15' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='19' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='23' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='27' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='31' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='35' y='4' width='4' height='4' fill='var(--dim)' />
+        <rect x='39' y='5' width='2' height='2' fill='var(--dim)' />
+      </svg>
+    </div>
+    <slot />
+  </div>
 </section>
