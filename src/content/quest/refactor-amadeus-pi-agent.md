@@ -1,6 +1,6 @@
 ---
 title: '基于 pi Agent 重构 Amadeus'
-desc: '用 pi Agent 的范式重构 Amadeus。'
+desc: '给PiAgent做页面以及结合live 2D进行优化'
 type: side
 status: todo
 diff: 3
