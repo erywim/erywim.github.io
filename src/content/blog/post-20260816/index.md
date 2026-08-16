@@ -1,7 +1,7 @@
 ---
 title: '《Build effective agent》笔记'
 description: '似乎现在业内公认的agent&workflow标准都是以这篇博客的定义来的'
-publishDate: 2026-05-06
+publishDate: 2026-03-06
 gold: 8
 exp: 44
 rank: S
