@@ -10,7 +10,7 @@ tags: [anthropic,agent,multi-agent]
 draft: false
 ---
 
-> 原文链接：https://claude\.com/blog/building\-multi\-agent\-systems\-when\-and\-how\-to\-use\-them
+> 原文链接：https://claude.com/blog/building-multi-agent-systems-when-and-how-to-use-them
 > 
 > # ▍这个博客可以提供什么解决思路
 > 
@@ -36,7 +36,7 @@ draft: false
 
 Anthropic 团队分享：他们见过很多团队在花费大量成本实现了多Agent的架构后，发现通过修改单Agent的提示词也能够达到相同的效果。
 
-> Today, multi\-agent systems are often applied in situations where a single agent would perform better, though this calculus continues to evolve as models improve\. At Anthropic, we’ve seen teams invest months building elaborate multi\-agent architectures only to discover that improved prompting on a single agent achieved equivalent results\.
+> Today, multi-agent systems are often applied in situations where a single agent would perform better, though this calculus continues to evolve as models improve\. At Anthropic, we’ve seen teams invest months building elaborate multi-agent architectures only to discover that improved prompting on a single agent achieved equivalent results\.
 > 
 > 
 
@@ -74,7 +74,7 @@ Anthropic 团队分享：他们见过很多团队在花费大量成本实现了�
 
     
 
-**数据对比**：多智能体实现通常比单智能体方法多使用 **3\-10 倍 Token**。
+**数据对比**：多智能体实现通常比单智能体方法多使用 **3-10 倍 Token**。
 
 
 
@@ -245,7 +245,7 @@ class SupportAgent:
 
 
 
-**关键点**：这种模式会消耗 3\-10 倍 Token，且由于总计算量增加，实际执行时间往往比单智能体更长。它的核心价值是**彻底性**——当你需要确保没有遗漏关键信息时，这种"地毯式搜索"是值得的。
+**关键点**：这种模式会消耗 3-10 倍 Token，且由于总计算量增加，实际执行时间往往比单智能体更长。它的核心价值是**彻底性**——当你需要确保没有遗漏关键信息时，这种"地毯式搜索"是值得的。
 
 ### ▍代码示例
 
@@ -338,7 +338,7 @@ async def research_subagent(facet: str) -> dict:
 
 **适用条件**：
 
-- 工具数量超过 15\-20 个，选择准确率显著下降
+- 工具数量超过 15-20 个，选择准确率显著下降
 
 - 工具跨越多个不相关领域，存在功能相似但用途不同的工具（例如发送短信和发送邮件）
 
@@ -562,7 +562,7 @@ def handle_complex_request(user_request: str):
 
 
 
-**现象**：当智能体拥有 15\-20\+ 工具时，模型花费大量上下文和注意力理解选项，工具选择准确率下降，或频繁出现参数填充错误。
+**现象**：当智能体拥有 15-20\+ 工具时，模型花费大量上下文和注意力理解选项，工具选择准确率下降，或频繁出现参数填充错误。
 
 
 
@@ -574,7 +574,7 @@ def handle_complex_request(user_request: str):
 
 
 
-Tool Search Tool 是 Anthropic 推出的一个功能，国内模型暂时没看到有类似的概念。详见：https://docs\.anthropic\.com/en/docs/agents\-and\-tools/tool\-use/tool\-search\-tool
+Tool Search Tool 是 Anthropic 推出的一个功能，国内模型暂时没看到有类似的概念。详见：https://docs\.anthropic\.com/en/docs/agents-and-tools/tool-use/tool-search-tool
 
 ---
 
@@ -929,7 +929,7 @@ def implement_with_verification(requirements: str, max_attempts: int = 3):
 
 
 
-> *This is the first in a series of posts on multi\-agent systems\. For more on single\-agent patterns, see *[*Building effective agents*](https://www.anthropic.com/engineering/building-effective-agents)*\. For context management strategies, see *[*Effective context engineering for AI agents*](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)*\. For a deep dive into how we built our multi\-agent research system, see *[*How we built our multi\-agent research system*](https://www.anthropic.com/engineering/multi-agent-research-system)*\.*
+> *This is the first in a series of posts on multi-agent systems\. For more on single-agent patterns, see *[*Building effective agents*](https://www.anthropic.com/engineering/building-effective-agents)*\. For context management strategies, see *[*Effective context engineering for AI agents*](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)*\. For a deep dive into how we built our multi-agent research system, see *[*How we built our multi-agent research system*](https://www.anthropic.com/engineering/multi-agent-research-system)*\.*
 > 
 > 
 
@@ -943,7 +943,7 @@ def implement_with_verification(requirements: str, max_attempts: int = 3):
 
     - 《Effective context engineering for AI agents》：上下文管理策略
 
-    - 《How we built our multi\-agent research system》：多智能体研究系统实战
+    - 《How we built our multi-agent research system》：多智能体研究系统实战
 
 
 

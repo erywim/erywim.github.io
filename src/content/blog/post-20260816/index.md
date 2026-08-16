@@ -10,7 +10,7 @@ tags: [anthropic,agent,workflow]
 draft: false
 ---
 
-> 原文链接：https://www\.anthropic\.com/engineering/building\-effective\-agents
+> 原文链接：https://www-anthropic-com/engineering/building-effective-agents
 > 
 > 
 
@@ -18,7 +18,7 @@ draft: false
 
 ### ▍Workflow（工作流）——程序员主导
 
-> *"Workflows are systems where LLMs and tools are orchestrated through predefined code paths\."*
+> *"Workflows are systems where LLMs and tools are orchestrated through predefined code paths-"*
 > （工作流是通过预定义代码路径来编排 LLM 和工具的系统）
 > 
 > 
@@ -35,7 +35,7 @@ draft: false
 
 ### ▍Agent（智能体）——模型主导
 
-> *"Agents, on the other hand, are systems where LLMs dynamically direct their own processes and tool usage, maintaining control over how they accomplish tasks\."*
+> *"Agents, on the other hand, are systems where LLMs dynamically direct their own processes and tool usage, maintaining control over how they accomplish tasks-"*
 > （智能体是 LLM 动态指导自身流程和工具使用的系统，自己掌控完成任务的方式）
 > 
 > 
@@ -68,7 +68,7 @@ draft: false
 
 **典型 Agent 使用场景**：
 
-- SWE\-bench Coding Agent：根据任务描述自主决定修改哪些文件、如何修改
+- SWE-bench Coding Agent：根据任务描述自主决定修改哪些文件、如何修改
 
 - Computer Use：Claude 自主使用计算机完成任务，自己决定点击哪里、输入什么
 
@@ -78,9 +78,9 @@ draft: false
 > 
 > The following examples are from our own implementations:
 > 
-> - A coding Agent to resolve [SWE\-bench tasks](https://www.anthropic.com/research/swe-bench-sonnet), which involve edits to many files based on a task description;
+> - A coding Agent to resolve [SWE-bench tasks](https://www.anthropic.com/research/swe-bench-sonnet), which involve edits to many files based on a task description;
 > 
-> - Our [“computer use” reference implementation](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo), where Claude uses a computer to accomplish tasks\.
+> - Our [“computer use” reference implementation](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo), where Claude uses a computer to accomplish tasks-
 > 
 > 
 
@@ -104,7 +104,7 @@ draft: false
 
 
 
-> *\[**https://towardsdatascience\.com/a\-developers\-guide\-to\-building\-scalable\-ai\-workflows\-vs\-agents/**\]\("Workflows are more like you calling the shots and the LLM following your lead\. Agents are more like hiring a brilliant, slightly chaotic intern who figures things out on their own — sometimes beautifully, sometimes in terrifyingly expensive ways\."\)*
+> *\[**https://towardsdatascience-com/a-developers-guide-to-building-scalable-ai-workflows-vs-agents/**\]\("Workflows are more like you calling the shots and the LLM following your lead- Agents are more like hiring a brilliant, slightly chaotic intern who figures things out on their own — sometimes beautifully, sometimes in terrifyingly expensive ways-"\)*
 > 
 > \(工作流更像是LLM跟随你的指令。代理更像是雇佣一个聪明但有点混乱的实习生，他自己想办法——有时干的非常完美，有时的方式贵的可怕。\)
 > 
@@ -116,7 +116,7 @@ draft: false
 
 
 
-正如前文所言，模块  \-\-\> workflow \-\-\> agent，并且这个演进过程中的复杂度是递增的。
+正如前文所言，模块  --\> workflow --\> agent，并且这个演进过程中的复杂度是递增的。
 
 
 
@@ -126,7 +126,7 @@ draft: false
 
 作为智能体中基础单元级别的东西，我们构建它可以是一个通过 `检索` 、`工具`、`记忆`等手段增强LLM调用过程，模型会主动地去使用这些功能并且自行决定保留哪些东西，最终达到提升模型输出准确度的效果
 
-![image\.png](图片和附件/image%205.png)
+![image-png](图片和附件/image%205.png)
 
 
 
@@ -134,7 +134,7 @@ draft: false
 
 
 
-![image\.png](图片和附件/image.png)
+![image-png](图片和附件/image.png)
 
 ### ▍核心概念
 
@@ -206,7 +206,7 @@ Prompt Chaining 是将复杂任务分解为**一系列顺序执行的步骤**，
 
     - 输入：产品技术规格、目标市场、品牌调性
 
-    - 输出：3\-5条核心卖点（英文）
+    - 输出：3-5条核心卖点（英文）
 
     - **Gate 检查**：卖点是否突出差异化？是否符合品牌调性？
 
@@ -252,7 +252,7 @@ Prompt Chaining 是将复杂任务分解为**一系列顺序执行的步骤**，
 
 
 
-![image\.png](图片和附件/image%203.png)
+![image-png](图片和附件/image%203.png)
 
 ### ▍核心概念
 
@@ -342,7 +342,7 @@ Routing 是构建一个**智能分类器**，根据输入的特征将其分配�
 
 3. **特殊处理**：
 
-    - 分类置信度\<0\.8 → 转人工客服
+    - 分类置信度\<0-8 → 转人工客服
 
     - 同时包含多类特征 → 询问用户澄清意图
 
@@ -358,7 +358,7 @@ Routing 是构建一个**智能分类器**，根据输入的特征将其分配�
 
 
 
-![image\.png](图片和附件/image%206.png)
+![image-png](图片和附件/image%206.png)
 
 ### ▍核心概念
 
@@ -466,15 +466,15 @@ Parallelization 是**同时发起多个 LLM 调用**，处理同一任务的不�
 
 
 
-## ▍Workflow模式 4 ：Orchestrator\-Workers（协调器\-工作者）
+## ▍Workflow模式 4 ：Orchestrator-Workers（协调器-工作者）
 
 
 
-![image\.png](图片和附件/image%201.png)
+![image-png](图片和附件/image%201.png)
 
 ### ▍核心概念
 
-Orchestrator\-Workers 引入一个**中央协调器（Orchestrator）**，它接收复杂任务后，**动态分析需求并拆解为子任务**，分配给多个**工作者（Workers）** 并行处理，最后整合结果。与 Parallelization 的关键区别：**子任务不是预先定义的，而是由协调器根据输入实时生成的**。
+Orchestrator-Workers 引入一个**中央协调器（Orchestrator）**，它接收复杂任务后，**动态分析需求并拆解为子任务**，分配给多个**工作者（Workers）** 并行处理，最后整合结果。与 Parallelization 的关键区别：**子任务不是预先定义的，而是由协调器根据输入实时生成的**。
 
 
 
@@ -592,15 +592,15 @@ Orchestrator\-Workers 引入一个**中央协调器（Orchestrator）**，它接
 
 
 
-## ▍Workflow模式 5 ：Evaluator\-Optimizer（评估器\-优化器）
+## ▍Workflow模式 5 ：Evaluator-Optimizer（评估器-优化器）
 
 
 
-![image\.png](图片和附件/image%202.png)
+![image-png](图片和附件/image%202.png)
 
 ### ▍核心概念
 
-Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator）产出内容，评估器（Evaluator）检查质量并提供反馈，生成器根据反馈改进，循环直到满足质量标准或达到迭代上限。这是一种**对抗式协作**架构，核心是**质量控制**和**渐进改进**。
+Evaluator-Optimizer 构建一个**迭代优化闭环**：生成器（Generator）产出内容，评估器（Evaluator）检查质量并提供反馈，生成器根据反馈改进，循环直到满足质量标准或达到迭代上限。这是一种**对抗式协作**架构，核心是**质量控制**和**渐进改进**。
 
 
 
@@ -632,7 +632,7 @@ Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 |劣势|说明|
 |---|---|
 |**成本不可控**|每次迭代都消耗 Token，复杂任务可能循环多次|
-|**延迟极高**|必须等待多次生成\-评估周期，实时性最差|
+|**延迟极高**|必须等待多次生成-评估周期，实时性最差|
 |**终止条件难设**|如何定义"足够好"？容易陷入**无限优化或过早停止**|
 |**反馈质量依赖**|如果评估器反馈模糊，优化效果有限|
 
@@ -682,7 +682,7 @@ Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 
         - **风险点**：是否有对律所不利的模糊表述？
 
-    - 输出评估报告："知识产权条款第3\.2条不够明确，建议细化所有权转移时点；缺少数据安全相关条款"
+    - 输出评估报告："知识产权条款第3-2条不够明确，建议细化所有权转移时点；缺少数据安全相关条款"
 
         
 
@@ -710,7 +710,7 @@ Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 
         
 
-**迭代价值**：法律文书对准确性要求极高，单次生成几乎必然存在疏漏。通过专业评估器（模拟资深律师审查）的多轮检查，逐步消除风险点，最终输出达到可直接提交客户审核的质量。虽然耗时较长（3\-5轮迭代），但相比人工起草\+审查仍节省大量时间。
+**迭代价值**：法律文书对准确性要求极高，单次生成几乎必然存在疏漏。通过专业评估器（模拟资深律师审查）的多轮检查，逐步消除风险点，最终输出达到可直接提交客户审核的质量。虽然耗时较长（3-5轮迭代），但相比人工起草\+审查仍节省大量时间。
 
 
 
@@ -722,14 +722,14 @@ Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 
 
 
-|维度|Prompt Chaining|Routing|Parallelization|Orchestrator\-Workers|Evaluator\-Optimizer|
+|维度|Prompt Chaining|Routing|Parallelization|Orchestrator-Workers|Evaluator-Optimizer|
 |---|---|---|---|---|---|
 |**核心哲学**|分步求精|专人专事|多管齐下|按需组队|精雕细琢|
 |**控制方式**|硬编码顺序|硬编码分支|硬编码并行|动态生成任务|动态循环迭代|
 |**灵活性**|低|中|低|高|高|
 |**延迟**|中（累加）|低|低（并行）|高（动态规划）|很高（迭代）|
-|**成本**|中（累加）|可控|高（并行倍率）|中\-高（按需）|高（不可预估）|
-|**质量上限**|中|中\-高|高|高|极高|
+|**成本**|中（累加）|可控|高（并行倍率）|中-高（按需）|高（不可预估）|
+|**质量上限**|中|中-高|高|高|极高|
 |**调试难度**|低|中|中|高|高|
 |**最适合**|流程明确的任务|多类别输入|需多角度验证|开放复杂问题|质量优先场景|
 
@@ -766,7 +766,7 @@ Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 
 - **Orchestrator \+ Parallelization**：协调器分配任务，多个工作者并行处理
 
-- **Prompt Chaining \+ Evaluator\-Optimizer**：流水线的最后一步加入质量迭代
+- **Prompt Chaining \+ Evaluator-Optimizer**：流水线的最后一步加入质量迭代
 
 
 
@@ -782,7 +782,7 @@ Evaluator\-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 
 ### ▍核心概念
 
-![image\.png](图片和附件/image%204.png)
+![image-png](图片和附件/image%204.png)
 
 
 
@@ -873,7 +873,7 @@ Agent 是随着 LLM 关键能力成熟（理解复杂输入、推理规划、可
 
 
 
-用户指令："帮我修复这个 Python 项目的内存泄漏问题，项目地址是 github\.com/example/app"
+用户指令："帮我修复这个 Python 项目的内存泄漏问题，项目地址是 github-com/example/app"
 
 
 
@@ -1084,7 +1084,7 @@ Agent 正在工作... [加载中]
 
 
 
-#### ▍1\. 面向模型的文档
+#### ▍1- 面向模型的文档
 
 
 
@@ -1102,7 +1102,7 @@ Agent 正在工作... [加载中]
 
     
 
-#### ▍2\. 参数设计简洁
+#### ▍2- 参数设计简洁
 
 
 
@@ -1120,7 +1120,7 @@ Agent 正在工作... [加载中]
 
     
 
-#### ▍3\. 返回结果结构化
+#### ▍3- 返回结果结构化
 
 
 
@@ -1138,7 +1138,7 @@ Agent 正在工作... [加载中]
 
     
 
-#### ▍4\. 错误信息可行动
+#### ▍4- 错误信息可行动
 
 
 
@@ -1150,7 +1150,7 @@ Agent 正在工作... [加载中]
 
 - **区分错误类型**：参数错误、权限错误、资源不存在等
 
-- **提供修复建议**："参数 `date` 格式应为 YYYY\-MM\-DD"
+- **提供修复建议**："参数 `date` 格式应为 YYYY-MM-DD"
 
 - **降级选项**：部分失败时返回可用数据而非完全失败
 
@@ -1272,7 +1272,7 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 
 
-#### ▍1\. 环境感知（Ground Truth）
+#### ▍1- 环境感知（Ground Truth）
 
 
 
@@ -1296,7 +1296,7 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 
 
-#### ▍2\. 规划与重规划
+#### ▍2- 规划与重规划
 
 
 
@@ -1308,13 +1308,13 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 - **一次性规划**：开始前制定完整计划，执行中严格遵循
 
-- **渐进式规划**：每步只规划接下来 1\-2 步，保留灵活性
+- **渐进式规划**：每步只规划接下来 1-2 步，保留灵活性
 
 - **触发式重规划**：遇到意外结果时重新评估并调整计划
 
     
 
-#### ▍3\. 暂停与恢复机制
+#### ▍3- 暂停与恢复机制
 
 
 
@@ -1391,7 +1391,7 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 **第 3 轮循环**：
 
-- **感知**：第3周（3月15\-21日）销售额异常低
+- **感知**：第3周（3月15-21日）销售额异常低
 
 - **规划**：调查该周是否有产品缺货、促销结束、或区域性问题
 
@@ -1411,7 +1411,7 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 - **行动**：调用 `analyze_factor_impact(product="A", events=["stockout", "promo_end"])`
 
-- **观察**：模型显示这两个因素通常导致 25\-30% 降幅，不足以完全解释 40%
+- **观察**：模型显示这两个因素通常导致 25-30% 降幅，不足以完全解释 40%
 
 - **评估**：还有其他未知因素，需要进一步调查或求助
 
@@ -1429,7 +1429,7 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 **成功终止**：
 
-- 综合分析：缺货（\-15%）\+ 促销结束（\-12%）\+ 网站维护（\-15%）= 解释42%降幅
+- 综合分析：缺货（-15%）\+ 促销结束（-12%）\+ 网站维护（-15%）= 解释42%降幅
 
 - 生成报告并交付
 
