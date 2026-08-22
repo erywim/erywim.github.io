@@ -148,7 +148,7 @@ Anthropic 团队分享：他们见过很多团队在花费大量成本实现了�
 
 **单智能体方法的问题**：
 
-```Python
+```python
 # ▍单智能体在上下文中累积所有内容
 conversation_history = [
     {"role": "user", "content": "我的订单 #12345 无法使用"},
@@ -164,7 +164,7 @@ conversation_history = [
 
 **多智能体解决方案**：
 
-```Python
+```python
 from anthropic import Anthropic
 
 client = Anthropic()
@@ -253,7 +253,7 @@ class SupportAgent:
 
 单智能体方法的局限：
 
-```Python
+```python
 # ▍单智能体串行研究，上下文被早期维度耗尽
 conversation_history = [
     {"role": "user", "content": "研究新能源汽车市场格局"},
@@ -271,7 +271,7 @@ conversation_history = [
 
 多智能体解决方案：
 
-```Python
+```python
 import asyncio
 from anthropic import AsyncAnthropic
 
@@ -418,7 +418,7 @@ async def research_subagent(facet: str) -> dict:
 
 单智能体方法的问题：
 
-```Python
+```python
 # ▍单智能体面对 40+ 工具和冲突的行为要求
 available_tools = [
     # ▍CRM 工具（15个）
@@ -446,7 +446,7 @@ system_prompt = """你是一个企业助手，可以访问 CRM、营销和开发
 
 多智能体解决方案：
 
-```Python
+```python
 from anthropic import Anthropic
 
 client = Anthropic()
@@ -783,7 +783,7 @@ Tool Search Tool 是 Anthropic 推出的一个功能，国内模型暂时没看�
 
 
 
-```Python
+```python
 from anthropic import Anthropic
 
 client = Anthropic()
@@ -887,7 +887,7 @@ def implement_with_verification(requirements: str, max_attempts: int = 3):
 
 
 
-```Plain Text
+```text
 □ 是否已尝试优化单智能体的提示词？
 □ 是否已尝试上下文管理技术（摘要、压缩、外部存储）？
 □ 是否已尝试工具搜索模式减少工具负载？

@@ -88,7 +88,7 @@ draft: false
 
 **决策树**
 
-```Plain Text
+```text
 开始
   ↓
 任务能否用单次 LLM 调用 + 上下文解决？
@@ -737,7 +737,7 @@ Evaluator-Optimizer 构建一个**迭代优化闭环**：生成器（Generator�
 
 ### ▍选择决策树
 
-```Plain Text
+```text
 1. 任务能否一次性完成？
    └─ 是 → 直接调用 LLM，无需工作流
    
@@ -1021,7 +1021,7 @@ Anthropic 总结了构建生产级 Agent 的四大设计原则，这些原则源
 
 不良设计：
 
-```Plain Text
+```text
 Agent 正在工作... [加载中]
 [5分钟后]
 为您规划了巴黎3日游行程。
@@ -1031,7 +1031,7 @@ Agent 正在工作... [加载中]
 
 良好设计（透明性原则）：
 
-```Plain Text
+```text
 🎯 任务理解：用户需要巴黎3日文化游，预算中等，偏好艺术博物馆
 
 📋 执行计划：
@@ -1166,7 +1166,7 @@ Agent 正在工作... [加载中]
 
 不良设计：
 
-```Python
+```python
 def analyze_code(code): 
     # ▍返回自由文本描述
     return "这段代码看起来还行，但第10行有个变量名不太清晰，还有性能可以优化"
@@ -1176,7 +1176,7 @@ def analyze_code(code):
 
 良好设计：
 
-```Python
+```python
 def analyze_code(code: str, focus_areas: List[Literal["security", "performance", "readability", "correctness"]]) -> dict:
     """
     分析代码质量并返回结构化问题列表。
@@ -1246,7 +1246,7 @@ Agent 的核心能力是**自主循环（Autonomous Loop）**：感知环境 →
 
 
 
-```Plain Text
+```text
 ┌─────────────────────────────────────────┐
         ▼                                         │
    [感知环境] ← 接收用户指令、工具返回、系统状态      │

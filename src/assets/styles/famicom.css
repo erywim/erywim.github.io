@@ -4404,6 +4404,10 @@ footer a:hover {
   font-size: 12px;
   line-height: 1.7;
   flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .q-progrow {
   display: flex;
