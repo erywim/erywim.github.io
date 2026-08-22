@@ -4408,6 +4408,7 @@ footer a:hover {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  white-space: pre-line;
 }
 .q-progrow {
   display: flex;
@@ -4601,6 +4602,7 @@ footer a:hover {
   font-size: 13px;
   line-height: 1.8;
   margin-bottom: 13px;
+  white-space: pre-line;
 }
 .q-sec-label {
   font-family: var(--ps2);
