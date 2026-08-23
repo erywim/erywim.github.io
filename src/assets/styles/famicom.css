@@ -116,6 +116,10 @@ html {
 html[data-theme='night'] {
   color-scheme: dark;
 }
+html {
+  /* 恒定预留滚动条空间，避免滚动条出现/消失时居中内容左右抽动 */
+  scrollbar-gutter: stable;
+}
 body {
   background: var(--sky-top);
   color: var(--fg);
@@ -123,6 +127,7 @@ body {
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 body::before {
   content: '';
@@ -697,7 +702,7 @@ html[data-theme='night'] .tl-ic-night {
 .wrap {
   position: relative;
   z-index: 1;
-  max-width: 1000px;
+  max-width: 1150px;
   margin: 0 auto;
   padding: 18px 14px 96px;
 }
@@ -2076,6 +2081,19 @@ details:not([open]) > .list-rule .ba-arrow::before {
   color: var(--dim);
   font-family: 'Songti SC', 'SimSun', '宋体', serif;
   font-size: 13px;
+}
+/* 博客/日志正文：现代博客系统无衬线（仅文章正文；其余保持像素主题不动） */
+.read-body p,
+.read-body li,
+.read-body blockquote {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.read-body p,
+.read-body li {
+  font-size: 16px;
+  line-height: 1.8;
 }
 .scroll code {
   background: var(--panel3);
