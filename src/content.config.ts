@@ -80,8 +80,6 @@ const treasure = defineCollection({
       rarity: z.enum(RARITIES).default('B'),
       /** 主题宝箱 id（可选值见 CHEST_IDS，不含「全部 all」） */
       chest: z.enum(CHEST_IDS),
-      /** 来源，如 spring.io / 待读；留空则不显示 */
-      from: z.string().default(''),
       title: z.string().max(120),
       /** 一句话简介 */
       desc: z.string().default(''),

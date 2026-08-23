@@ -59,7 +59,6 @@ ${tagCommentLines}
 icon: it-book
 rarity: B
 chest: java
-from: ''
 title: '${yamlTitle}'
 desc: '（一句话简介）'
 tags: []
@@ -83,4 +82,4 @@ for (const g of tagsByCat) {
   console.log(`  tags·${CATEGORIES[g.cat].name}：${g.ids.join(' / ')}`)
 }
 console.log('')
-console.log('  保存后即生效；href 留空则渲染为「待读」不可点。')
+console.log('  保存后即生效；href 留空则渲染为「待读」不可点，来源 from 自动取 href 域名。')

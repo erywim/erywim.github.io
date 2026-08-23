@@ -16,6 +16,7 @@ import { getTitleForLevel } from '@/data/titles'
 import { tagById } from '@/data/treasure'
 import { getDoneQuests, getPublishedBlog } from '@/utils/collections'
 import { getMetrics } from '@/utils/metrics'
+import { domainOf } from '@/utils/url'
 import { getRpgStats } from '@/utils/rpg'
 import { hpAt, mpAt } from '@/utils/vitals'
 
@@ -117,13 +118,15 @@ const bagItems = [...allTreasure].sort(() => Math.random() - 0.5).slice(0, 2)
       <div class='bag-list' id='bagList'>
         {
           bagItems.length > 0 ? (
-            bagItems.map((item) => (
+            bagItems.map((item) => {
+              const from = domainOf(item.data.href)
+              return (
               <div class='item-card' data-od-id={`bag-${item.id}`}>
                 <div class='item-icon'>
                   <svg viewBox='0 0 16 16' shape-rendering='crispEdges' aria-hidden='true'><use href={`#${item.data.icon}`}/></svg>
                 </div>
                 <div style='min-width:0'>
-                  <div class='it'>稀有度 {item.data.rarity}{item.data.from ? ` · ${item.data.from}` : ''}</div>
+                  <div class='it'>稀有度 {item.data.rarity}{from ? ` · ${from}` : ''}</div>
                   <h3>
                     {
                       item.data.href ? (
@@ -149,7 +152,8 @@ const bagItems = [...allTreasure].sort(() => Math.random() - 0.5).slice(0, 2)
                   </div>
                 </div>
               </div>
-            ))
+              )
+            })
           ) : (
             <p style='padding:14px 16px;color:var(--dim)'>还没有收集任何道具。</p>
           )

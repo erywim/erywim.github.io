@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content'
 
 import { CATEGORIES, CHESTS, TAGS } from '@/data/treasure'
+import { domainOf } from '@/utils/url'
 
 // 把道具词汇表 + 全部道具内联为 JSON，供客户端（首页「换一批」、宝箱页筛选/开箱）读取。
 // 与服务端渲染保持同一份数据源。
@@ -16,7 +17,7 @@ const payload = {
     icon: i.data.icon,
     rarity: i.data.rarity,
     chest: i.data.chest,
-    from: i.data.from,
+    from: domainOf(i.data.href),
     title: i.data.title,
     desc: i.data.desc,
     tags: i.data.tags,
