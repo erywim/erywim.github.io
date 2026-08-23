@@ -3983,6 +3983,29 @@ footer a:hover {
 .filter-clear[hidden] {
   display: none;
 }
+.item-search {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--pix);
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 2px solid var(--line);
+  padding: 7px 10px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.14s linear;
+}
+.item-search:focus {
+  border-color: var(--cyan);
+}
+.item-search::placeholder {
+  color: var(--dim);
+}
+.item-search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
 
 /* —— 道具网格 —— */
 .it-card {

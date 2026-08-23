@@ -97,6 +97,11 @@ import { site } from '@/data/site'
   <Panel title='道具' en='ITEMS' metaId='itemCount' class='reveal'>
     <div class='filter-bar' data-od-id='tag-filter'>
       <div class='fb-head'>
+        <span class='fl'>搜索</span>
+        <button class='filter-clear' id='searchClear' type='button' hidden>清除 ✕</button>
+      </div>
+      <input class='item-search' id='itemSearch' type='search' placeholder='按标题搜索…' autocomplete='off' spellcheck='false' aria-label='按标题搜索' />
+      <div class='fb-head'>
         <span class='fl'>筛选</span>
         <button class='filter-clear' id='filterClear' type='button' hidden>清除 ✕</button>
       </div>
@@ -105,7 +110,7 @@ import { site } from '@/data/site'
     <div class='item-stage' id='itemStage'>
       <div class='item-grid' id='itemGrid'></div>
       <div class='empty' id='itemEmpty' hidden>
-        <b>EMPTY CHEST</b>这个宝箱里还没有对应的道具，试试切换主题或清除标签筛选。
+        <b>EMPTY CHEST</b>这个宝箱里还没有对应的道具，试试调整搜索词、切换主题或清除标签筛选。
       </div>
       <div class='item-pager' id='itemPager' hidden>
         <button class='pg-btn' id='pgPrev' type='button'>◀ 上一页</button>
@@ -193,6 +198,7 @@ import { site } from '@/data/site'
       const activeTags = new Set<string>()
       const PAGE_SIZE = 10
       let page = 1
+      let searchQuery = ''
 
       const esc = (s: string) =>
         String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
@@ -227,6 +233,7 @@ import { site } from '@/data/site'
           if (activeTags.size > 0) {
             for (const t of activeTags) if (!i.tags.includes(t)) return false
           }
+          if (searchQuery && !i.title.toLowerCase().includes(searchQuery)) return false
           return true
         })
       }
@@ -330,6 +337,20 @@ import { site } from '@/data/site'
 
       $('#filterClear').addEventListener('click', () => {
         activeTags.clear()
+        renderAll()
+      })
+
+      const searchInput = $('#itemSearch') as HTMLInputElement
+      const searchClear = $('#searchClear')
+      searchInput.addEventListener('input', () => {
+        searchQuery = searchInput.value.trim().toLowerCase()
+        searchClear.hidden = !searchQuery
+        renderAll()
+      })
+      searchClear.addEventListener('click', () => {
+        searchInput.value = ''
+        searchQuery = ''
+        searchClear.hidden = true
         renderAll()
       })
 
