@@ -1,0 +1,14 @@
+name = "erywim-blog-api"
+main = "src/entry.py"
+compatibility_date = "2026-09-07"
+compatibility_flags = ["python_workers"]
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://erywim.github.io,http://localhost:4321,http://127.0.0.1:4321"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "erywim"
+database_id = "75740673-09b3-47d5-b848-dc998e0ed0d2"
+migrations_dir = "migrations"

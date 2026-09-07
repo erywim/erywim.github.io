@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content'
 
 import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import DevApiPanel from '@/components/famicom/DevApiPanel.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import FishSprite from '@/components/famicom/FishSprite.astro'
@@ -57,6 +58,8 @@ const bagItems = [...allTreasure].sort(() => Math.random() - 0.5).slice(0, 2)
   </header>
 
   <CmdMenu />
+
+  <DevApiPanel />
 
   <Panel title='状态' en='STATUS' id='status' class='reveal' link='/about' linkLabel='勇者档案 →'>
     <div class='status-body'>

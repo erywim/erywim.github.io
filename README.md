@@ -80,6 +80,12 @@ bun preview
 bun pure new
 ```
 
+## Free Cloudflare backend probe
+
+The [`worker/`](./worker/) directory contains a minimal Cloudflare Python Worker + D1 backend. The home page's “开发接口” button calls `/api/hello` and only reports `ONLINE` after reading `hello world` from D1.
+
+See [`worker/README.md`](./worker/README.md) for the first deployment steps. Set the public build variable `PUBLIC_API_BASE_URL` if you replace the default Worker endpoint.
+
 ## Contributions
 
 To spend more time coding and less time fiddling with whitespace, this project uses code conventions and styles to encourage consistency. Code with a consistent style is easier (and less error-prone!) to review, maintain, and understand.

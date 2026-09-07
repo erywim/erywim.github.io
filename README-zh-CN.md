@@ -80,6 +80,14 @@ bun preview
 bun pure new
 ```
 
+## Cloudflare 免费后端探针
+
+仓库内的 [`worker/`](./worker/) 是一个完全免费的 Cloudflare Python Worker + D1 最小后端。首页的「开发接口」按钮会请求 `/api/hello`，只有真实读取 D1 中的 `hello world` 后才显示 `ONLINE`。
+
+首次部署请先在项目根目录执行 `wrangler login`，再按照 [`worker/README.md`](./worker/README.md) 执行 migration 和部署 Worker。当前前端默认连接的 Worker 地址是 `https://erywim-blog-api.okunoda.workers.dev`；更换地址时，用公开构建变量 `PUBLIC_API_BASE_URL` 覆盖它。
+
+> Cloudflare Workers 可以通过 Wasm 运行 Go，但这条路径不是完整的服务器运行时；本探针采用 Python Workers 直接使用 D1 与 Fetch 绑定，保持免费和边缘部署。后续若需要 Hertz/Kitex 原生运行时，应迁移到可运行容器的 Go 主机。
+
 ## 贡献
 
 为了花更多时间编写代码，减少在空白上纠结的时间，本项目使用代码约定和样式来鼓励一致性。风格一致的代码更容易（且更不容易出错）进行审查、维护和理解。

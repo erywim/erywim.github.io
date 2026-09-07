@@ -1,0 +1,128 @@
+---
+import { site } from '@/data/site'
+
+import Panel from './Panel.astro'
+
+const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL || site.apiBaseUrl).trim()
+---
+
+<div class='dev-api-wrap' data-dev-api data-api-base={apiBaseUrl}>
+  <button
+    class='dev-api-toggle'
+    id='devApiToggle'
+    type='button'
+    aria-controls='devApiPanel'
+    aria-expanded='false'><span class='dev-api-dot' aria-hidden='true'></span><span
+      class='dev-api-label'>开发接口</span></button
+  >
+
+  <div class='dev-api-panel' id='devApiPanel' hidden>
+    <Panel title='开发接口' en='DEV API' class='reveal'>
+      <div slot='actions' class='px-actions'>
+        <span class='dev-api-status' id='devApiStatus' data-state='idle'>READY</span>
+        <button class='px-refresh dev-api-run' id='devApiRun' type='button'>运行 ▶</button>
+      </div>
+
+      <div class='dev-api-body'>
+        <div class='dev-api-copy'>
+          <div class='dev-api-kicker'>线上探针 · CLOUDFLARE WORKER</div>
+          <p>点击运行，从线上后端取回一条问候。返回内容来自 D1 数据库。</p>
+          <code class='dev-api-route'>GET /api/hello</code>
+        </div>
+        <output class='dev-api-result' id='devApiResult' data-state='idle' aria-live='polite'
+          >尚未执行。</output
+        >
+      </div>
+    </Panel>
+  </div>
+</div>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-dev-api]')
+  const toggle = document.getElementById('devApiToggle') as HTMLButtonElement | null
+  const panel = document.getElementById('devApiPanel')
+  const button = document.getElementById('devApiRun') as HTMLButtonElement | null
+  const status = document.getElementById('devApiStatus')
+  const result = document.getElementById('devApiResult')
+
+  if (box && toggle && panel && button && status && result) {
+    const apiBase = box.dataset.apiBase?.trim() || ''
+    const label = toggle.querySelector<HTMLElement>('.dev-api-label')
+
+    const setExpanded = (expanded: boolean) => {
+      panel.hidden = !expanded
+      toggle.setAttribute('aria-expanded', String(expanded))
+      toggle.classList.toggle('is-open', expanded)
+      if (label) label.textContent = expanded ? '收起探针' : '开发接口'
+    }
+
+    toggle.addEventListener('click', () => setExpanded(panel.hidden === true))
+
+    const setState = (state: 'idle' | 'loading' | 'success' | 'error', message: string) => {
+      status.dataset.state = state
+      result.dataset.state = state
+      status.textContent =
+        state === 'loading'
+          ? 'RUNNING'
+          : state === 'success'
+            ? 'ONLINE'
+            : state === 'error'
+              ? 'ERROR'
+              : 'READY'
+      result.textContent = message
+      button.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false')
+    }
+
+    button.addEventListener('click', async () => {
+      if (button.getAttribute('aria-busy') === 'true') return
+      if (!apiBase) {
+        setState('error', '未配置线上 Worker 地址，请设置 PUBLIC_API_BASE_URL。')
+        return
+      }
+
+      let endpoint: URL
+      try {
+        endpoint = new URL('/api/hello', apiBase)
+      } catch {
+        setState('error', 'Worker 地址格式不正确，请检查 PUBLIC_API_BASE_URL。')
+        return
+      }
+
+      setState('loading', '正在连接线上后端…')
+      const controller = new AbortController()
+      const timeout = window.setTimeout(() => controller.abort(), 8000)
+
+      try {
+        const response = await fetch(endpoint, {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal
+        })
+        const payload = (await response.json().catch(() => null)) as {
+          message?: unknown
+          source?: unknown
+          error?: unknown
+        } | null
+
+        if (!response.ok) {
+          throw new Error(
+            typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`
+          )
+        }
+        if (typeof payload?.message !== 'string') throw new Error('响应缺少 message 字段')
+
+        const source = typeof payload.source === 'string' ? ` · ${payload.source}` : ''
+        setState('success', `${payload.message}${source}`)
+      } catch (error) {
+        const message =
+          error instanceof DOMException && error.name === 'AbortError'
+            ? '请求超时，请稍后重试。'
+            : error instanceof Error
+              ? error.message
+              : '请求失败，请稍后重试。'
+        setState('error', message)
+      } finally {
+        window.clearTimeout(timeout)
+      }
+    })
+  }
+</script>

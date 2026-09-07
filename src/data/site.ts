@@ -15,6 +15,8 @@ export const site = {
   heroName: 'erywim',
   /** 标题屏副标语 */
   tagline: '全栈 Agent 开发工程师',
+  /** 免费 Cloudflare Worker API（可由 PUBLIC_API_BASE_URL 在构建时覆盖） */
+  apiBaseUrl: 'https://erywim-blog-api.okunoda.workers.dev',
   /** GitHub 主页 */
   github: 'https://github.com/erywim',
   /** 页脚署名 */

@@ -28,9 +28,10 @@ pnpm-debug.log*
 # dependencies
 node_modules/
 
-# environment variables
-.env
-.env.production
+# environment variables and local secrets
+.env*
+!.env.example
+.dev.vars*
 
 ### Custom ###
 .DS_Store
@@ -40,3 +41,11 @@ bunfig.toml
 /src/content/blog/test.*
 /test/
 .gstack/
+
+### Cloudflare Python Worker generated files ###
+worker/.venv/
+worker/.venv-workers/
+worker/python_modules/
+worker/pylock.toml
+worker/.wrangler/
+worker/**/__pycache__/
