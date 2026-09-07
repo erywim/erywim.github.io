@@ -1,6 +1,6 @@
 ---
 title: '冲突探针（可删）'
-desc: '主库修复验证版'
+desc: '真·手改2'
 type: side
 status: todo
 diff: 2
