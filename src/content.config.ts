@@ -69,6 +69,20 @@ const logs = defineCollection({
     })
 })
 
+// Define chatter collection (campfire notes / short thoughts)
+const chatter = defineCollection({
+  loader: glob({ base: './src/content/chatter', pattern: '**/*.{md,mdx}' }),
+  schema: () =>
+    z.object({
+      title: z.string().max(120),
+      /** 时间线卡片显示的短摘要 */
+      description: z.string().max(240).default(''),
+      publishDate: z.coerce.date(),
+      tags: z.array(z.string()).default([]).transform(removeDupsAndLowerCase),
+      draft: z.boolean().default(false)
+    })
+})
+
 // Define treasure collection (collected materials / 道具宝箱)
 const treasure = defineCollection({
   loader: glob({ base: './src/content/treasure', pattern: '**/*.{md,mdx}' }),
@@ -115,4 +129,4 @@ const quest = defineCollection({
     })
 })
 
-export const collections = { blog, logs, treasure, quest }
+export const collections = { blog, logs, chatter, treasure, quest }

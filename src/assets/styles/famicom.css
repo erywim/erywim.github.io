@@ -2776,11 +2776,11 @@ details:not([open]) > .list-rule .ba-arrow::before {
   scrollbar-width: thin;
   scrollbar-color: var(--gold) var(--panel3);
 }
-.tl-scroll .tl-body h3 a {
+.tl-body h3 a {
   color: inherit;
   text-decoration: none;
 }
-.tl-scroll .tl-body h3 a:hover {
+.tl-body h3 a:hover {
   color: var(--cyan);
   text-decoration: underline;
 }

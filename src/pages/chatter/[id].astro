@@ -1,0 +1,96 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+import { site } from '@/data/site'
+
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import { getPublishedChatter } from '@/utils/collections'
+import { formatLogDate } from '@/utils/format'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const entries = await getPublishedChatter()
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry }
+  }))
+}
+
+interface Props {
+  entry: CollectionEntry<'chatter'>
+}
+
+const { entry } = Astro.props as Props
+const { Content } = await render(entry)
+
+const entries = await getPublishedChatter()
+const index = entries.findIndex((item) => item.id === entry.id)
+const prev = entries[index - 1]
+const next = entries[index + 1]
+const entryNo = String(index + 1).padStart(2, '0')
+---
+
+<FamicomLayout title={entry.data.title} description={entry.data.description}>
+  <Breadcrumb
+    items={[
+      { label: '■ 标题画面', href: '/' },
+      { label: '篝火手记', href: '/chatter' },
+      { label: entry.data.title }
+    ]}
+  />
+
+  <CmdMenu active='chatter' />
+
+  <header class='quest-head reveal'>
+    <div class='qno'>
+      CAMPFIRE <b>{entryNo}</b> · 手记
+    </div>
+    <h1>{entry.data.title}</h1>
+    <div class='qmeta'>
+      <span>日期 <b>{formatLogDate(entry.data.publishDate)}</b></span>
+      <span>状态 <b style='color:var(--green)'>已记录</b></span>
+    </div>
+    {
+      entry.data.tags.length > 0 && (
+        <div class='quest-tags'>
+          {entry.data.tags.map((tag) => (
+            <span class='tag'>{tag}</span>
+          ))}
+        </div>
+      )
+    }
+  </header>
+
+  <article class='scroll reveal read-body'>
+    <Content />
+  </article>
+
+  <div class='nav-quests'>
+    {
+      prev && (
+        <a href={`/chatter/${prev.id}`}>
+          <span class='dir'>◀ 上一则</span>
+          {prev.data.title}
+        </a>
+      )
+    }
+    {
+      next && (
+        <a href={`/chatter/${next.id}`} style='text-align:right'>
+          <span class='dir'>下一则 ▶</span>
+          {next.data.title}
+        </a>
+      )
+    }
+  </div>
+
+  <Dialogue
+    speaker={site.heroName}
+    avatar
+    class='reveal'
+    typewriter='篝火边留下的只言片语，也值得被记住。回到手记，继续翻翻这条时间线吧。'
+  />
+</FamicomLayout>

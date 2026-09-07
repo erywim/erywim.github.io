@@ -18,6 +18,7 @@
     "cache:avatars": "tsx preset/scripts/cacheAvatars.ts",
     "post": "bun scripts/new-post.ts",
     "log": "bun scripts/new-log.ts",
+    "note": "bun scripts/new-note.ts",
     "item": "bun scripts/new-item.ts",
     "todo": "bun scripts/new-todo.ts"
   },

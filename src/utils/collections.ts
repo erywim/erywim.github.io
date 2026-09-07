@@ -42,6 +42,13 @@ export async function getPublishedLogs(): Promise<CollectionEntry<'logs'>[]> {
   return logs.sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
 }
 
+/** 已发布篝火手记，按日期倒序 */
+export async function getPublishedChatter(): Promise<CollectionEntry<'chatter'>[]> {
+  if (!collectionHasFiles('src/content/chatter')) return []
+  const chatter = await getCollection('chatter', ({ data }) => !data.draft)
+  return chatter.sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+}
+
 /** 灵感火花（任务）全部，排序：主线在前 → 难度降序 → slug 升序 */
 export async function getQuests(): Promise<CollectionEntry<'quest'>[]> {
   if (!collectionHasFiles('src/content/quest')) return []

@@ -51,6 +51,7 @@ export const theme: ThemeUserConfig = {
       { title: '冒险记录', link: '/blog' },
       { title: '勇者档案', link: '/about' },
       { title: '旅行日志', link: '/logs' },
+      { title: '篝火手记', link: '/chatter' },
       { title: '伙伴酒馆', link: '/links' },
       { title: '搜索', link: '/search' }
     ]

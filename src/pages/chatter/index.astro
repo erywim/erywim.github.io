@@ -1,0 +1,66 @@
+---
+import { site } from '@/data/site'
+
+import Breadcrumb from '@/components/famicom/Breadcrumb.astro'
+import CmdMenu from '@/components/famicom/CmdMenu.astro'
+import Dialogue from '@/components/famicom/Dialogue.astro'
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Panel from '@/components/famicom/Panel.astro'
+import { getPublishedChatter } from '@/utils/collections'
+import { formatLogDate } from '@/utils/format'
+
+const chatter = await getPublishedChatter()
+---
+
+<FamicomLayout title='篝火手记'>
+  <Breadcrumb items={[{ label: '■ 标题画面', href: '/' }, { label: '篝火手记' }]} />
+
+  <CmdMenu active='chatter' />
+
+  <Panel title='篝火手记' en={`CAMPFIRE NOTES · ${chatter.length}`} class='reveal'>
+    {
+      chatter.length === 0 && (
+        <p style='padding:14px 16px;color:var(--dim)'>篝火还没点起，下一条手记可以从这里开始。</p>
+      )
+    }
+    {
+      chatter.length > 0 && (
+        <ul class='timeline'>
+          {chatter.map((entry) => (
+            <li class='tl-item'>
+              <span class='tl-rail' aria-hidden='true'>
+                <i class='tl-node' />
+              </span>
+              <div class='tl-body'>
+                <article class='tl-card'>
+                  <div class='quest-main'>
+                    <span class='tl-date'>{formatLogDate(entry.data.publishDate)}</span>
+                    <h3>
+                      <a href={`/chatter/${entry.id}`}>{entry.data.title}</a>
+                    </h3>
+                    <p>{entry.data.description}</p>
+                    <div class='quest-tags'>
+                      {entry.data.tags.map((tag) => (
+                        <span class='tag'>{tag}</span>
+                      ))}
+                      <a class='px-link' href={`/chatter/${entry.id}`}>
+                        翻开手记 →
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </Panel>
+
+  <Dialogue
+    speaker={site.heroName}
+    avatar
+    class='reveal'
+    typewriter='这里收着冒险途中在篝火边记下的几句话。可能是突发奇想，也可能只是一天结束时的一页小记。'
+  />
+</FamicomLayout>
