@@ -1,6 +1,6 @@
 ---
 title: '冲突探针（可删）'
-desc: '原始描述'
+desc: '手改版本'
 type: side
 status: todo
 diff: 2
