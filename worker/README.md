@@ -59,7 +59,7 @@ cp .env.example .env.local
 # 按需将 PUBLIC_API_BASE_URL 改成新的 Worker 地址
 ```
 
-GitHub Pages 工作流默认使用当前 Worker 地址；如果更换地址，可在仓库设置中增加同名 Repository variable：`PUBLIC_API_BASE_URL` 覆盖默认值。首页「开发接口」面板会调用线上 Worker。
+GitHub Pages 工作流默认使用当前 Worker 地址；如果更换地址，可在仓库设置中增加同名 Repository variable：`PUBLIC_API_BASE_URL` 覆盖默认值。（首页探针面板已移除；可直接 curl 验证。）
 
 ## 密钥与开源仓库
 

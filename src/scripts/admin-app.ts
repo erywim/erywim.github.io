@@ -15,6 +15,8 @@ interface FieldUI {
   max?: number
   rows?: number
   options?: string[]
+  /** 字典类别（GET /admin/dict），优先于 options */
+  dict?: string
   mono?: boolean
 }
 interface DomainUI {
@@ -32,13 +34,28 @@ interface Item {
 interface AdminState {
   apiBase: string
   domains: DomainUI[]
+  dict: Record<string, { value: string; label: string }[]>
   current: string
   items: Item[]
   editing: { domain: string; id: string | null; conflict: boolean } | null
   loggedIn: boolean
 }
 
-const S: AdminState = { apiBase: '', domains: [], current: '', items: [], editing: null, loggedIn: false }
+const S: AdminState = {
+  apiBase: '',
+  domains: [],
+  dict: {},
+  current: '',
+  items: [],
+  editing: null,
+  loggedIn: false,
+}
+
+/** 字段可选项：字典优先，options 兜底 */
+function fieldOptions(f: FieldUI): { value: string; label: string }[] {
+  if (f.dict && S.dict[f.dict]?.length) return S.dict[f.dict]
+  return (f.options ?? []).map((v) => ({ value: v, label: v }))
+}
 
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement
 
@@ -62,7 +79,9 @@ function el<K extends keyof HTMLElementTagNameMap>(
 async function api(path: string, init: RequestInit = {}): Promise<any> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   const method = (init.method ?? 'GET').toUpperCase()
-  if (init.body) headers['Content-Type'] = 'application/json'
+  if (init.body || (method !== 'GET' && method !== 'HEAD')) {
+    headers['Content-Type'] = 'application/json'
+  }
   const res = await fetch(`${S.apiBase}${path}`, { ...init, headers, credentials: 'include' })
   let data: any = null
   try {
@@ -122,10 +141,17 @@ function enterApp(username: string): void {
   $('admLogin').hidden = true
   $('admApp').hidden = false
   log(`欢迎回来，${username}。`)
-  void refreshSummary().then(() => {
+  void (async () => {
+    try {
+      const d = await api('/admin/dict')
+      S.dict = d.categories ?? {}
+    } catch (e) {
+      log(`字典加载失败（下拉框将退回原始值）：${e instanceof Error ? e.message : e}`, 'err')
+    }
+    await refreshSummary()
     const first = S.domains[0]?.key ?? ''
     if (first) void selectDomain(first)
-  })
+  })()
 }
 
 /* —— 汇总与导航 —— */
@@ -461,11 +487,14 @@ function fieldBlock(f: FieldUI, value: unknown, item: Item | null): HTMLElement 
       return wrap
     }
     case 'select': {
-      const sel = el('select', { name: f.key }) as HTMLSelectElement
+      const sel = el('select', { name: f.key, class: 'adm-select' }) as HTMLSelectElement
       const current = value == null ? '' : String(value)
-      for (const opt of f.options ?? []) {
-        const o = el('option', { value: opt }, opt) as HTMLOptionElement
-        if (opt === current) o.selected = true
+      const opts = [...fieldOptions(f)]
+      if (current && !opts.some((o) => o.value === current)) opts.unshift({ value: current, label: `${current}（未知值）` })
+      if (!f.required && !opts.some((o) => o.value === '')) opts.unshift({ value: '', label: '（未设置）' })
+      for (const opt of opts) {
+        const o = el('option', { value: opt.value }, opt.label) as HTMLOptionElement
+        if (opt.value === current || (!current && opt.value === '')) o.selected = true
         sel.append(o)
       }
       return fieldWrap(f.key, label, sel)
@@ -485,6 +514,55 @@ function fieldBlock(f: FieldUI, value: unknown, item: Item | null): HTMLElement 
       const arr = Array.isArray(value) ? (value as string[]) : []
       const input = el('input', { type: 'text', name: f.key, value: arr.join(', ') }) as HTMLInputElement
       return fieldWrap(f.key, label, input)
+    }
+    case 'tags-enum': {
+      const arr = Array.isArray(value) ? (value as string[]) : []
+      const box = el('div', { class: 'adm-chips' })
+      const chipList = el('div', { class: 'adm-chip-list' })
+      const optsAll = fieldOptions(f)
+      const labelOf = (v: string) => optsAll.find((o) => o.value === v)?.label ?? v
+
+      const picker = el('select', { class: 'adm-select adm-chip-add' }) as HTMLSelectElement
+      const rebuildPicker = () => {
+        picker.replaceChildren(el('option', { value: '' }, '＋ 选择标签…'))
+        for (const o of optsAll) {
+          if (!arr.includes(o.value)) picker.append(el('option', { value: o.value }, o.label))
+        }
+      }
+
+      const renderChips = () => {
+        chipList.replaceChildren()
+        for (const v of arr) {
+          const chip = el('span', { class: 'adm-chip' })
+          chip.append(document.createTextNode(labelOf(v)))
+          const x = el('button', { class: 'adm-chip-x', type: 'button', 'aria-label': `移除 ${labelOf(v)}` }, '×')
+          x.addEventListener('click', () => {
+            const i = arr.indexOf(v)
+            if (i >= 0) arr.splice(i, 1)
+            rebuildPicker()
+            renderChips()
+          })
+          chip.append(x)
+          chipList.append(chip)
+        }
+        box.dataset.values = JSON.stringify(arr)
+      }
+
+      picker.addEventListener('change', () => {
+        const v = picker.value
+        if (v && !arr.includes(v)) arr.push(v)
+        picker.value = ''
+        rebuildPicker()
+        renderChips()
+      })
+
+      rebuildPicker()
+      renderChips()
+      box.append(chipList, picker)
+
+      const wrap = el('div', { class: 'adm-field', 'data-field': f.key })
+      wrap.append(el('label', { class: 'k' }, label), box, el('div', { class: 'adm-field-err', hidden: true }))
+      return wrap
     }
     case 'objectives': {
       const box = el('div', { class: 'adm-objectives', 'data-field': f.key })
@@ -648,6 +726,14 @@ async function saveItem(d: DomainUI, existing: Item | null): Promise<void> {
           .split(/[,，]/)
           .map((s) => s.trim())
           .filter(Boolean)
+        break
+      }
+      case 'tags-enum': {
+        try {
+          body[f.key] = JSON.parse((wrap.querySelector('.adm-chips') as HTMLElement | null)?.dataset.values ?? '[]')
+        } catch {
+          body[f.key] = []
+        }
         break
       }
       case 'objectives': {

@@ -13,6 +13,7 @@ import {
 import { checkLocked, recordFailure, resetFails } from '../lib/throttle'
 import { adminCors, jsonOnly, requireAuth } from '../middleware/adminGuard'
 import { content } from './content'
+import { dict } from './dict'
 import { publishRoutes } from './publish'
 import { upload } from './upload'
 
@@ -85,6 +86,9 @@ admin.route('/publish', publishRoutes)
 
 /** 图片上传（multipart，走 /admin/upload） */
 admin.route('/upload', upload)
+
+/** 字典表（下拉框选项） */
+admin.route('/dict', dict)
 
 admin.get('/me', async (c) => {
   const session = c.get('adminSession')

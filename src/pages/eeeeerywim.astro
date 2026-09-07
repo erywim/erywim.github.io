@@ -23,8 +23,8 @@ const DOMAIN_UI = [
       { key: 'updatedDate', label: '更新日期', input: 'date' },
       { key: 'gold', label: '金币 1~19', input: 'number', required: true, min: 1, max: 19 },
       { key: 'exp', label: '经验 1~99', input: 'number', required: true, min: 1, max: 99 },
-      { key: 'rank', label: '难度', input: 'select', options: ['S', 'A', 'B', 'C'] },
-      { key: 'category', label: '地图', input: 'select', options: ['技术', '产品', '生活', '笔记'] },
+      { key: 'rank', label: '难度', input: 'select', dict: 'blog.rank', options: ['S', 'A', 'B', 'C'] },
+      { key: 'category', label: '地图', input: 'select', dict: 'blog.category', options: ['技术', '产品', '生活', '笔记'] },
       { key: 'tags', label: '标签（逗号分隔）', input: 'tags' },
       { key: 'draft', label: '草稿（不发布）', input: 'checkbox' },
       { key: 'comment', label: '允许评论', input: 'checkbox' },
@@ -69,12 +69,12 @@ const DOMAIN_UI = [
     titleKey: 'title',
     fields: [
       { key: 'title', label: '名称', input: 'text', required: true, maxLength: 120 },
-      { key: 'icon', label: '图标', input: 'select', options: ['it-scroll', 'it-book', 'it-paper', 'it-video', 'it-gear', 'it-crystal', 'it-chip', 'it-graph', 'it-box'] },
-      { key: 'rarity', label: '稀有度', input: 'select', options: ['S', 'A', 'B'] },
-      { key: 'chest', label: '主题宝箱', input: 'select', options: ['java', 'python', 'agent', 'deep-learning', 'rag', 'system-design', 'frontend'] },
+      { key: 'icon', label: '图标', input: 'select', dict: 'treasure.icon' },
+      { key: 'rarity', label: '稀有度', input: 'select', dict: 'treasure.rarity', options: ['S', 'A', 'B'] },
+      { key: 'chest', label: '主题宝箱', input: 'select', dict: 'treasure.chest' },
       { key: 'desc', label: '一句话简介', input: 'textarea', rows: 2 },
       { key: 'href', label: '跳转链接（空=待读）', input: 'text' },
-      { key: 'tags', label: '标签 id（逗号分隔）', input: 'tags' }
+      { key: 'tags', label: '标签', input: 'tags-enum', dict: 'treasure.tag' }
     ]
   },
   {
@@ -85,8 +85,8 @@ const DOMAIN_UI = [
     fields: [
       { key: 'title', label: '标题', input: 'text', required: true, maxLength: 120 },
       { key: 'desc', label: '描述', input: 'textarea', rows: 3 },
-      { key: 'type', label: '类型', input: 'select', options: ['main', 'side'] },
-      { key: 'status', label: '状态', input: 'select', options: ['todo', 'active', 'done'] },
+      { key: 'type', label: '类型', input: 'select', dict: 'quest.type', options: ['main', 'side'] },
+      { key: 'status', label: '状态', input: 'select', dict: 'quest.status', options: ['todo', 'active', 'done'] },
       { key: 'diff', label: '难度 1~3', input: 'number', min: 1, max: 3 },
       { key: 'exp', label: '经验', input: 'number', required: true, min: 0 },
       { key: 'gold', label: '金币', input: 'number', required: true, min: 0 },
@@ -130,7 +130,7 @@ const DOMAIN_UI = [
       { key: 'class', label: '职业', input: 'text' },
       { key: 'desc', label: '一句话', input: 'text' },
       { key: 'period', label: '时期', input: 'text' },
-      { key: 'avatar', label: '头像', input: 'select', options: ['mage', 'warrior'] },
+      { key: 'avatar', label: '头像', input: 'select', dict: 'party.avatar', options: ['mage', 'warrior'] },
       { key: 'chips', label: '标签（逗号分隔）', input: 'tags' },
       { key: 'sortOrder', label: '排序（小在前）', input: 'number' }
     ]
