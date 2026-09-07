@@ -1,6 +1,6 @@
 ---
 title: '冲突探针（可删）'
-desc: '后台强制版'
+desc: '后台再来一版'
 type: side
 status: todo
 diff: 2
