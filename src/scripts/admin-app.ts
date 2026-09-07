@@ -1300,8 +1300,16 @@ function boot(): void {
   $('admPublishAll').addEventListener('click', () => void publishAllAction())
   $('admSync').addEventListener('click', () => void syncAllAction())
 
-  // 完全不做会话保持：每次打开页面都从登录屏开始，不做 /admin/me 自动探测
+  // 会话保持（浏览器会话级）：浏览器开着期间免重复登录；关闭浏览器 Cookie 即失效
   toLogin()
+  void (async () => {
+    try {
+      const me = await api('/admin/me')
+      enterApp(me.username)
+    } catch {
+      /* 浏览器会话已结束（或未登录），停在登录屏 */
+    }
+  })()
 }
 
 document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot()
