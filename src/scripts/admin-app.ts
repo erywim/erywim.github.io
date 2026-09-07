@@ -187,6 +187,19 @@ function renderNav(): void {
   badge.textContent = `待发布 ${dirtyTotal}`
   badge.hidden = dirtyTotal === 0
   $('admPublishAll').textContent = dirtyTotal > 0 ? `全部发布（${dirtyTotal}）` : '全部发布'
+
+  // 访问统计（非内容域，走独立视图 openStats）
+  nav.append(
+    el(
+      'button',
+      {
+        class: `adm-nav-btn${S.current === STATS_KEY ? ' active' : ''}`,
+        type: 'button',
+        onclick: () => void openStats()
+      },
+      '访问统计'
+    )
+  )
 }
 
 /* —— 列表 —— */
@@ -292,6 +305,362 @@ async function selectDomain(key: string): Promise<void> {
 
 function errBox(e: unknown): HTMLElement {
   return el('div', { class: 'adm-error' }, e instanceof Error ? e.message : String(e))
+}
+
+/* —— 访问统计（/admin/stats，非内容域：日期范围 + 概览 + 趋势 + 排行 + 流水） —— */
+const STATS_KEY = '__stats__'
+const vaRange = { from: '', to: '' }
+/** 流水翻页游标：本页最小 id（0 = 无更多） */
+let vaFlowOldest = 0
+
+interface VaDaily {
+  day: string
+  pv: number
+  uv: number
+}
+interface VaIp {
+  ip: string
+  hits: number
+  paths: number
+  first_at: string
+  last_at: string
+  country: string | null
+}
+interface VaPath {
+  path: string
+  pv: number
+  uv: number
+}
+interface VaVisit {
+  id: number
+  ip: string
+  path: string
+  user_agent: string | null
+  referer: string | null
+  country: string | null
+  visited_at: string
+}
+interface VaStats {
+  overview: { range: { pv: number; uv: number }; today: { pv: number; uv: number } }
+  daily: VaDaily[]
+  topIps: VaIp[]
+  topPaths: VaPath[]
+  recent: VaVisit[]
+}
+
+/** 北京时间（站点口径）的今天 / N 天前，YYYY-MM-DD */
+function bjDay(offsetDays = 0): string {
+  return new Date(Date.now() + (8 * 3600 - offsetDays * 86400) * 1000).toISOString().slice(0, 10)
+}
+/** 库内 UTC 文本 → 北京时间 MM-DD HH:MM */
+function bjTime(utc: string): string {
+  return new Date(Date.parse(`${utc.slice(0, 19).replace(' ', 'T')}Z`) + 8 * 3600 * 1000)
+    .toISOString()
+    .slice(5, 16)
+    .replace('T', ' ')
+}
+/** ISO 国家代码 → 中文名（CF-IPCountry；解析失败回退原码） */
+function regionName(code: string | null): string {
+  if (!code) return ''
+  try {
+    return new Intl.DisplayNames(['zh-CN'], { type: 'region' }).of(code) ?? code
+  } catch {
+    return code
+  }
+}
+/** UA → 浏览器/客户端简称（展示用，顺序即优先级） */
+function uaShort(ua: string | null): string {
+  if (!ua) return '—'
+  if (/bot|crawl|spider|slurp|bingpreview|lighthouse|headless/i.test(ua)) return '爬虫'
+  if (/MicroMessenger/i.test(ua)) return '微信'
+  if (/Edg\//.test(ua)) return 'Edge'
+  if (/Firefox\//i.test(ua)) return 'Firefox'
+  if (/Chrome\//.test(ua)) return 'Chrome'
+  if (/Safari\//.test(ua)) return 'Safari'
+  if (/curl|wget|python|Go-http|node/i.test(ua)) return '脚本'
+  return '其他'
+}
+
+function statsParams(before?: number): string {
+  const p = new URLSearchParams()
+  if (before && before > 0) p.set('before', String(before))
+  if (vaRange.from) p.set('from', vaRange.from)
+  if (vaRange.to) p.set('to', vaRange.to)
+  const s = p.toString()
+  return s ? `?${s}` : ''
+}
+
+async function openStats(): Promise<void> {
+  S.current = STATS_KEY
+  $('admEditor').hidden = true
+  const list = $('admList')
+  list.hidden = false
+  renderNav()
+  await loadStats()
+}
+
+async function loadStats(): Promise<void> {
+  const list = $('admList')
+  list.replaceChildren(el('div', { class: 'adm-loading' }, '读取中…'))
+  try {
+    renderStats((await api(`/admin/stats/visits${statsParams()}`)) as VaStats)
+  } catch (e) {
+    list.replaceChildren(errBox(e))
+  }
+}
+
+function statsToolbar(): HTMLElement {
+  const fromInput = el('input', { type: 'date', value: vaRange.from }) as HTMLInputElement
+  const toInput = el('input', { type: 'date', value: vaRange.to }) as HTMLInputElement
+  const apply = el('button', {
+    class: 'px-refresh',
+    type: 'button',
+    onclick: () => {
+      vaRange.from = fromInput.value
+      vaRange.to = toInput.value
+      void loadStats()
+    }
+  }, '查询')
+  const quick = (label: string, from: string, to: string) =>
+    el('button', {
+      class: 'px-refresh',
+      type: 'button',
+      onclick: () => {
+        vaRange.from = from
+        vaRange.to = to
+        void loadStats()
+      }
+    }, label)
+  return el(
+    'div',
+    { class: 'adm-va-toolbar' },
+    el('span', { class: 'adm-va-toolbar-k' }, '日期'),
+    fromInput,
+    el('span', { class: 'adm-va-sep' }, '至'),
+    toInput,
+    apply,
+    el('span', { class: 'adm-va-sep' }, '·'),
+    quick('今天', bjDay(), bjDay()),
+    quick('近 7 天', bjDay(6), bjDay()),
+    quick('近 30 天', bjDay(29), bjDay()),
+    quick('全部', '', '')
+  )
+}
+
+function vaCard(label: string, value: number, sub: string): HTMLElement {
+  return el(
+    'div',
+    { class: 'adm-va-card' },
+    el('span', { class: 'k' }, label),
+    el('span', { class: 'v' }, String(value)),
+    el('span', { class: 'sub' }, sub)
+  )
+}
+
+/** 每日趋势：PV/UV 成对柱（同轴，均为计数）+ 图例 + 悬停读数 + 折叠数据表 */
+function vaChartSection(daily: VaDaily[]): HTMLElement {
+  const sec = el('div', { class: 'adm-va-sec' })
+  const readout = el('span', { class: 'adm-va-readout' })
+  sec.append(
+    el(
+      'div',
+      { class: 'adm-va-sec-title' },
+      '每日趋势（近 90 天）',
+      el(
+        'span',
+        { class: 'adm-va-legend' },
+        el('span', {}, el('i', { class: 'adm-va-dot pv' }), 'PV 次数'),
+        el('span', {}, el('i', { class: 'adm-va-dot uv' }), 'UV 人数')
+      ),
+      readout
+    )
+  )
+  if (daily.length === 0) {
+    sec.append(el('p', { class: 'adm-empty' }, '该范围内还没有访问记录。'))
+    return sec
+  }
+
+  const max = Math.max(...daily.map((x) => x.pv), 1)
+  const setReadout = (x: VaDaily) => {
+    readout.textContent = `${x.day.slice(5)} · PV ${x.pv} · UV ${x.uv}`
+  }
+  const chart = el('div', { class: 'adm-va-chart' })
+  for (const x of daily) {
+    chart.append(
+      el(
+        'div',
+        {
+          class: 'adm-va-day',
+          title: `${x.day} · PV ${x.pv} · UV ${x.uv}`,
+          onmouseenter: () => setReadout(x)
+        },
+        el('div', { class: 'adm-va-bar pv', style: `height:${Math.max(2, Math.round((x.pv / max) * 100))}%` }),
+        el('div', { class: 'adm-va-bar uv', style: `height:${Math.max(2, Math.round((x.uv / max) * 100))}%` })
+      )
+    )
+  }
+  setReadout(daily[daily.length - 1])
+  sec.append(chart)
+  sec.append(
+    el('div', { class: 'adm-va-axis' },
+      el('span', {}, daily[0].day.slice(5)),
+      el('span', {}, daily[daily.length - 1].day.slice(5))
+    )
+  )
+
+  // 精确读数兜底：折叠的按日数据表
+  const table = el('table')
+  table.append(
+    el('tr', {}, el('th', {}, '日期'), el('th', {}, 'PV'), el('th', {}, 'UV'))
+  )
+  for (const x of daily) {
+    table.append(el('tr', {}, el('td', {}, x.day), el('td', {}, String(x.pv)), el('td', {}, String(x.uv))))
+  }
+  sec.append(el('details', { class: 'adm-va-table' }, el('summary', {}, '按日数据表'), table))
+  return sec
+}
+
+function vaRankRow(rank: number, main: HTMLElement, num: string, sub?: string): HTMLElement {
+  const row = el(
+    'div',
+    { class: 'adm-va-row' },
+    el('span', { class: 'adm-va-rank' }, String(rank)),
+    el('div', { class: 'adm-va-main' }, main)
+  )
+  if (sub) row.append(el('span', { class: 'adm-va-num' }, num, el('span', { class: 'u' }, ` · ${sub}`)))
+  else row.append(el('span', { class: 'adm-va-num' }, num))
+  return row
+}
+
+function vaSection(title: string, rows: HTMLElement[], emptyText: string): HTMLElement {
+  const sec = el('div', { class: 'adm-va-sec' })
+  sec.append(el('div', { class: 'adm-va-sec-title' }, title))
+  if (rows.length === 0) sec.append(el('p', { class: 'adm-empty' }, emptyText))
+  else sec.append(el('div', { class: 'adm-va-rows' }, ...rows))
+  return sec
+}
+
+function renderStats(d: VaStats): void {
+  const list = $('admList')
+  list.replaceChildren(statsToolbar())
+
+  const rangeLabel =
+    vaRange.from || vaRange.to ? `${vaRange.from || '最初'} ~ ${vaRange.to || '今天'}` : '全部时间'
+  list.append(
+    el(
+      'div',
+      { class: 'adm-va-cards' },
+      vaCard('浏览量 PV', d.overview.range.pv, rangeLabel),
+      vaCard('访客数 UV', d.overview.range.uv, `${rangeLabel} · 按 IP 去重`),
+      vaCard('今日 PV', d.overview.today.pv, bjDay()),
+      vaCard('今日 UV', d.overview.today.uv, `${bjDay()} · 按 IP 去重`)
+    )
+  )
+  list.append(vaChartSection(d.daily))
+
+  // 热门页面（按访问人数排序）+ 访客排行：双列
+  const maxUv = Math.max(...d.topPaths.map((p) => p.uv), 1)
+  const pathRows = d.topPaths.map((p, i) =>
+    vaRankRow(
+      i + 1,
+      el(
+        'div',
+        { class: 'adm-va-path' },
+        el('div', { class: 'adm-va-title', title: p.path }, p.path),
+        el('div', { class: 'adm-va-meter' }, el('i', { style: `width:${Math.max(2, Math.round((p.uv / maxUv) * 100))}%` }))
+      ),
+      `${p.uv} 人`,
+      `${p.pv} 次`
+    )
+  )
+  const ipRows = d.topIps.map((v, i) =>
+    vaRankRow(
+      i + 1,
+      el(
+        'div',
+        { class: 'adm-va-path' },
+        el(
+          'div',
+          { class: 'adm-va-title' },
+          v.ip,
+          v.country ? el('span', { class: 'adm-va-geo' }, ` ${regionName(v.country)}`) : null
+        ),
+        el(
+          'div',
+          { class: 'adm-va-meta' },
+          `首次 ${v.first_at.slice(0, 10)} · 最近 ${v.last_at.slice(0, 10)} · 看过 ${v.paths} 个页面`
+        )
+      ),
+      `${v.hits} 次`
+    )
+  )
+  list.append(
+    el(
+      'div',
+      { class: 'adm-va-cols' },
+      vaSection('热门页面（人数排序）', pathRows, '该范围内还没有页面访问。'),
+      vaSection('访客排行（IP）', ipRows, '该范围内还没有访客。')
+    )
+  )
+
+  // 最新访问流水
+  const flow = el('div', { class: 'adm-va-flow', id: 'admVaFlow' })
+  appendFlowRows(flow, d.recent)
+  const flowSec = el('div', { class: 'adm-va-sec' })
+  flowSec.append(el('div', { class: 'adm-va-sec-title' }, '最新访问'))
+  if (d.recent.length === 0) {
+    flowSec.append(el('p', { class: 'adm-empty' }, '还没有访问记录。'))
+  } else {
+    flowSec.append(flow)
+    vaFlowOldest = d.recent[d.recent.length - 1].id
+    if (d.recent.length >= 50) {
+      flowSec.append(
+        el('button', {
+          class: 'px-refresh adm-va-more',
+          type: 'button',
+          onclick: () => void loadMoreFlow()
+        }, '加载更多')
+      )
+    }
+  }
+  list.append(flowSec)
+}
+
+function appendFlowRows(wrap: HTMLElement, visits: VaVisit[]): void {
+  for (const v of visits) {
+    wrap.append(
+      el(
+        'div',
+        { class: 'adm-va-flow-row' },
+        el('span', { class: 'adm-va-flow-time' }, bjTime(v.visited_at)),
+        el('span', { class: 'adm-va-flow-ip' }, v.ip),
+        el('span', { class: 'adm-va-flow-path', title: v.path }, v.path),
+        el('span', { class: 'adm-va-flow-ua' }, uaShort(v.user_agent)),
+        v.country ? el('span', { class: 'adm-va-flow-geo' }, regionName(v.country)) : null
+      )
+    )
+  }
+}
+
+async function loadMoreFlow(): Promise<void> {
+  if (!vaFlowOldest) return
+  const btn = document.querySelector<HTMLButtonElement>('.adm-va-more')
+  if (btn) btn.disabled = true
+  try {
+    const d = (await api(`/admin/stats/visits/recent${statsParams(vaFlowOldest)}`)) as { recent: VaVisit[] }
+    const wrap = $('admVaFlow')
+    appendFlowRows(wrap, d.recent)
+    if (d.recent.length > 0) vaFlowOldest = d.recent[d.recent.length - 1].id
+    if (d.recent.length < 50 && btn) {
+      btn.textContent = '没有更多了'
+      btn.disabled = true
+    } else if (btn) {
+      btn.disabled = false
+    }
+  } catch (e) {
+    log(`流水加载失败：${e instanceof Error ? e.message : e}`, 'err')
+    if (btn) btn.disabled = false
+  }
 }
 
 /* —— 编辑器 —— */
@@ -931,16 +1300,8 @@ function boot(): void {
   $('admPublishAll').addEventListener('click', () => void publishAllAction())
   $('admSync').addEventListener('click', () => void syncAllAction())
 
-  // 登录前零管理请求：先展示登录屏，me 探测只用于「已登录」免输场景
+  // 完全不做会话保持：每次打开页面都从登录屏开始，不做 /admin/me 自动探测
   toLogin()
-  void (async () => {
-    try {
-      const me = await api('/admin/me')
-      enterApp(me.username)
-    } catch {
-      /* 未登录，停在登录屏 */
-    }
-  })()
 }
 
 document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot()

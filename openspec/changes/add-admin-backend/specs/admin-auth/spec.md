@@ -22,14 +22,18 @@
 
 ### Requirement: 会话生命周期
 
-系统 SHALL 通过 HttpOnly、Secure、SameSite=None 的 Cookie 承载会话（Cookie 归属 Worker 域），会话在服务端存储、有固定有效期（默认 7 天）、支持滑动续期，并可通过登出主动撤销。会话过期或被撤销后，携带原 Cookie 的请求 SHALL 被拒绝。
+系统 SHALL 通过 HttpOnly、Secure、SameSite=None 的浏览器会话级 Cookie 承载会话（Cookie 归属 Worker 域、不设 Max-Age，关闭浏览器即失效），服务端存储设 12 小时上限并支持滑动续期，可通过登出主动撤销。系统 SHALL 不做跨访问的会话保持：后台页面每次打开都从登录屏开始，不自动探测或恢复既有会话。会话过期或被撤销后，携带原 Cookie 的请求 SHALL 被拒绝。
 
-#### Scenario: 有效会话访问管理接口
-- **WHEN** 请求携带未过期且未撤销的会话 Cookie
+#### Scenario: 登录后的使用期内访问
+- **WHEN** 本次登录后的同一浏览器会话中携带 Cookie 请求管理接口
 - **THEN** 管理接口正常响应
 
+#### Scenario: 重新打开页面须重新登录
+- **WHEN** 已登录用户重新打开后台页面（或新开浏览器会话）
+- **THEN** 页面从登录屏开始，不自动进入工作台
+
 #### Scenario: 会话过期
-- **WHEN** 会话超过有效期且无续期活动后携带原 Cookie 请求
+- **WHEN** 会话超过 12 小时服务端上限且无续期活动后携带原 Cookie 请求
 - **THEN** 返回 401，需重新登录
 
 #### Scenario: 登出撤销
