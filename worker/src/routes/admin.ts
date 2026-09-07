@@ -15,6 +15,7 @@ import { adminCors, jsonOnly, requireAuth } from '../middleware/adminGuard'
 import { content } from './content'
 import { dict } from './dict'
 import { publishRoutes } from './publish'
+import { stats } from './stats'
 import { upload } from './upload'
 
 /** /admin/* —— 后台 API（规格 admin-auth） */
@@ -89,6 +90,9 @@ admin.route('/upload', upload)
 
 /** 字典表（下拉框选项） */
 admin.route('/dict', dict)
+
+/** 访问统计（visits 聚合） */
+admin.route('/stats', stats)
 
 admin.get('/me', async (c) => {
   const session = c.get('adminSession')

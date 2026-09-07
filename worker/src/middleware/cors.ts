@@ -20,7 +20,8 @@ export function allowedOrigins(c: Context): Set<string> {
  * 与旧 Python Worker 对等的 CORS 策略：
  * 带 Origin 且不在白名单 → 403 origin_not_allowed；
  * OPTIONS → 204 短路；其余响应回显允许头。
- * （admin 路由后续在此基础上叠 credentials / 更多方法，见 openspec 设计 D5）
+ * （admin 路由后续在此基础上叠 credentials / 更多方法，见 openspec 设计 D5；
+ *   公开 POST 目前仅 /visit 埋点，Accept/Content-Type 已覆盖所需头）
  */
 export const cors: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   const origin = c.req.header('Origin')
@@ -32,7 +33,7 @@ export const cors: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
     }
     headers = {
       'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Accept, Content-Type',
       Vary: 'Origin',
     }

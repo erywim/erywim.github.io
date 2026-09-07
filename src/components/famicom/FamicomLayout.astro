@@ -867,6 +867,28 @@ const favicon =
 </html>
 
 <script>
+  import { site as siteApiBase } from '@/data/site'
+
+  // —— 访问埋点：PV 上报 worker（Astro 每次导航整页加载 → 每次进入页面记一条；后台 /eeeeerywim 自身不记）。
+  //    放在脚本最前：后面的主题/动画等逻辑万一抛错也不影响计数；发送本身推迟到空闲时机 ——
+  ;(() => {
+    try {
+      const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || siteApiBase).trim()
+      if (!apiBase || location.pathname.startsWith('/eeeeerywim')) return
+      const body = JSON.stringify({ path: location.pathname.slice(0, 200) })
+      const send = () => {
+        fetch(`${apiBase}/visit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+        }).catch(() => {})
+      }
+      if ('requestIdleCallback' in window) requestIdleCallback(send, { timeout: 3000 })
+      else setTimeout(send, 0)
+    } catch {}
+  })()
+
   // —— 昼夜切换：整页潜入深海 / 升上天空之城 ——
   const root = document.documentElement
   const tb = document.getElementById('themeToggle') as HTMLButtonElement | null

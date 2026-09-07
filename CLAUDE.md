@@ -43,7 +43,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 | `/ideas` | 灵感火花（idea/todo 的 RPG 火花看板：主线/支线、难度星级、目标清单、EXP/金币，只读·分页） | `src/content/quest/` |
 | `/guestbook` | 留言板（giscus · GitHub Discussions 后端，未配置 `repoId`/`categoryId` 时显示占位） | `src/data/site.ts` |
 | `/search` | 站内搜索（pagefind） | 构建时自动索引 |
-| `/eeeeerywim` | 开发后台（noindex 隐藏路由；登录后九域内容管理） | worker API + D1 |
+| `/eeeeerywim` | 开发后台（noindex 隐藏路由；登录后九域内容管理 + 访问统计） | worker API + D1 |
 | `/404` | 迷路页 | — |
 
 ## 内容与数据

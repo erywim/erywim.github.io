@@ -3,6 +3,7 @@
  *
  * 路由分层：
  *   /health, /api/hello   公开探针（只读）
+ *   /visit                公开埋点（页面 PV 记录，POST）
  *   /admin/*              后台 API（权限系统 + 内容管理，随 openspec change 逐步上线）
  */
 import { Hono } from 'hono'
@@ -11,15 +12,17 @@ import type { Env } from './env'
 import { cors } from './middleware/cors'
 import { admin } from './routes/admin'
 import { probe } from './routes/probe'
+import { visit } from './routes/visit'
 
 const app = new Hono<{ Bindings: Env }>()
 
-// 公开探针走全局 CORS；/admin/* 由 adminGuard 处理（credentials 版）
+// 公开探针与埋点走全局 CORS；/admin/* 由 adminGuard 处理（credentials 版）
 app.use('*', async (c, next) => {
   if (c.req.path.startsWith('/admin')) return next()
   return cors(c, next)
 })
 app.route('/', probe)
+app.route('/visit', visit)
 app.route('/admin', admin)
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404))

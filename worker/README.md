@@ -1,6 +1,6 @@
 # Erywim Blog API
 
-博客的 Cloudflare 后端：**TypeScript Worker + D1**。提供线上探针只读接口（`/health`、`/api/hello`）与 `/eeeeerywim` 后台 API（鉴权 + 九域内容 CRUD + 发布/同步）。设计详见仓库根 `openspec/changes/add-admin-backend/`。
+博客的 Cloudflare 后端：**TypeScript Worker + D1**。提供线上探针只读接口（`/health`、`/api/hello`）、公开访问埋点（`POST /visit`）与 `/eeeeerywim` 后台 API（鉴权 + 九域内容 CRUD + 发布/同步 + 访问统计）。设计详见仓库根 `openspec/changes/add-admin-backend/`。
 
 > 2026-09：Worker 已从 Python 迁移到 TypeScript（行为等价，`/health` 的 `runtime` 字段如实变更）。
 
@@ -47,6 +47,14 @@ bun run deploy
 curl -i https://erywim-blog-api.okunoda.workers.dev/health
 curl -i https://erywim-blog-api.okunoda.workers.dev/api/hello
 ```
+
+`/api/hello` 必须返回 HTTP 200，并且 JSON 中包含 `"message": "hello world"` 与 `"source": "cloudflare-d1"`。如果返回 `d1_unavailable` 或 `hello_row_missing`，不要把它当作成功：检查 D1 ID、远程 migration 和 Worker binding。
+
+## 访问统计（visits）
+
+- **采集**：前端 `FamicomLayout` 每次页面加载 POST `/visit`（body `{path}`；后台 `/eeeeerywim` 自身不上报）。Worker 记录 IP（`CF-Connecting-IP`）、UA、Referer、国家（`CF-IPCountry`）到 D1 `visits` 表（0007 迁移）。
+- **防滥用**：公开 CORS 白名单（扩展支持 POST）+ 同 IP 每分钟最多 30 条，超出静默丢弃（`{ok:true,skipped:true}`）；path 仅收 `/` 开头且 ≤200 字符，否则记 `/`。
+- **查看**：后台「访问统计」tab（`GET /admin/stats/visits?from=&to=`，日期为北京时间闭区间）返回概览 PV/UV、每日趋势（近 90 天）、热门页面（按 IP 去重人数排序）、访客排行、最新流水（`/admin/stats/visits/recent?before=<id>` 翻页）。数据永久保留。
 
 `/api/hello` 必须返回 HTTP 200，并且 JSON 中包含 `"message": "hello world"` 与 `"source": "cloudflare-d1"`。如果返回 `d1_unavailable` 或 `hello_row_missing`，不要把它当作成功：检查 D1 ID、远程 migration 和 Worker binding。
 

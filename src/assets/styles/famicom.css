@@ -5293,6 +5293,275 @@ footer a:hover {
   color: var(--gold);
 }
 
+/* 访问统计（adm-va-*）。图表系列色经 CVD/对比度校验：PV #0891b2 / UV #b87d1a（面板底 #fff8ec）；
+   文本一律用 fg/dim 令牌，系列色只出现在柱条/色块上 */
+.adm-va-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.adm-va-toolbar-k {
+  font-size: 12px;
+  color: var(--dim);
+}
+.adm-va-toolbar input[type='date'] {
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--fg);
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-family: inherit;
+}
+.adm-va-sep {
+  font-size: 12px;
+  color: var(--dim);
+}
+.adm-va-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.adm-va-card {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 10px 12px;
+  border-radius: 3px;
+}
+.adm-va-card .k {
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.02em;
+}
+.adm-va-card .v {
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-card .sub {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 3px;
+}
+.adm-va-sec {
+  margin-top: 18px;
+}
+.adm-va-sec-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.adm-va-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--dim);
+  font-weight: 400;
+}
+.adm-va-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+.adm-va-dot.pv {
+  background: #0891b2;
+}
+.adm-va-dot.uv {
+  background: #b87d1a;
+}
+.adm-va-readout {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--dim);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  height: 130px;
+  padding: 4px 2px 0;
+  border-bottom: 2px solid var(--line);
+}
+.adm-va-day {
+  flex: 1;
+  min-width: 2px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+.adm-va-day:hover .adm-va-bar {
+  filter: brightness(1.25);
+}
+.adm-va-bar {
+  flex: 1;
+  min-width: 1px;
+  max-width: 12px;
+}
+.adm-va-bar.pv {
+  background: #0891b2;
+}
+.adm-va-bar.uv {
+  background: #b87d1a;
+}
+.adm-va-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-table {
+  margin-top: 8px;
+}
+.adm-va-table summary {
+  cursor: pointer;
+  color: var(--dim);
+  font-size: 12px;
+}
+.adm-va-table table {
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.adm-va-table th,
+.adm-va-table td {
+  border: 1px solid var(--line);
+  padding: 3px 10px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-table th {
+  background: var(--panel2);
+  font-weight: 600;
+}
+.adm-va-table th:first-child,
+.adm-va-table td:first-child {
+  text-align: left;
+}
+.adm-va-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.adm-va-rows {
+  display: grid;
+  gap: 6px;
+}
+.adm-va-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 8px 12px;
+  border-radius: 3px;
+}
+.adm-va-rank {
+  font-size: 12px;
+  color: var(--dim);
+  min-width: 20px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-main {
+  flex: 1;
+  min-width: 0;
+}
+.adm-va-path {
+  min-width: 0;
+}
+.adm-va-title {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-va-geo {
+  font-size: 12px;
+  color: var(--dim);
+  font-weight: 400;
+}
+.adm-va-meta {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+.adm-va-meter {
+  height: 4px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  margin-top: 4px;
+}
+.adm-va-meter i {
+  display: block;
+  height: 100%;
+  background: #b87d1a;
+}
+.adm-va-num {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-num .u {
+  color: var(--dim);
+  font-weight: 400;
+  font-size: 12px;
+}
+.adm-va-flow {
+  display: grid;
+  gap: 6px;
+}
+.adm-va-flow-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.adm-va-flow-time {
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.adm-va-flow-ip {
+  font-weight: 600;
+}
+.adm-va-flow-path {
+  word-break: break-all;
+  min-width: 0;
+}
+.adm-va-flow-ua,
+.adm-va-flow-geo {
+  color: var(--dim);
+}
+.adm-va-more {
+  margin-top: 8px;
+}
+@media (max-width: 900px) {
+  .adm-va-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 日志控制台（保留终端配色，正文字体） */
 .adm-console-log {
   border-top: 2px solid var(--line);
