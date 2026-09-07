@@ -6,7 +6,7 @@
 
 import type { Env } from '../env'
 import { DOMAINS, DOMAIN_KEYS, type DomainDef } from './domains'
-import { parseMarkdown } from './frontmatter'
+import { parseMarkdown, type ParsedFile } from './frontmatter'
 import { getFile, listDir } from './github'
 import { sha256Hex } from './db'
 
@@ -36,6 +36,16 @@ function fmToRow(domain: DomainDef, data: Record<string, unknown>): Record<strin
       row[f.col] = v as string | number
     }
   }
+  return row
+}
+
+/** frontmatter 行 + md 正文 → 完整行。
+ *  正文在 frontmatter 定界线之外，fmToRow 覆盖不到，必须单独灌入 body_md
+ *  （否则同步后编辑器正文为空、再发布会把仓库正文清掉）；null = 空正文无尾换行（round-trip 契约） */
+export function fmRowWithBody(domain: DomainDef, parsed: ParsedFile): Record<string, string | number | null> {
+  const row = fmToRow(domain, parsed.data)
+  const bodyCol = domain.fields.find((f) => f.key === 'bodyMd')?.col
+  if (bodyCol) row[bodyCol] = parsed.bodyMd
   return row
 }
 
@@ -92,7 +102,7 @@ async function syncCollection(env: Env, domain: DomainDef): Promise<{ imported: 
     if (!file) continue
     const parsed = parseMarkdown(file.content)
     if (!parsed) continue
-    await upsertRow(env, domain, id, fmToRow(domain, parsed.data), path, file.sha, parsed.headerText)
+    await upsertRow(env, domain, id, fmRowWithBody(domain, parsed), path, file.sha, parsed.headerText)
     seen.add(id)
     imported += 1
   }
@@ -188,7 +198,7 @@ export async function syncSingle(env: Env, domainKey: string, id: string): Promi
     if (!file) throw new Error('仓库中已不存在该文件')
     const parsed = parseMarkdown(file.content)
     if (!parsed) throw new Error('文件解析失败')
-    await upsertRow(env, domain, id, fmToRow(domain, parsed.data), row.repo_path, file.sha, parsed.headerText)
+    await upsertRow(env, domain, id, fmRowWithBody(domain, parsed), row.repo_path, file.sha, parsed.headerText)
     return
   }
   if (domain.fileKind === 'json-array') {
