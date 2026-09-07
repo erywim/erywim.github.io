@@ -10,9 +10,11 @@ import '@/assets/styles/famicom.css'
 interface Props {
   title?: string
   description?: string
+  /** noindex 页面（如后台），不进搜索引擎 */
+  noindex?: boolean
 }
 
-const { title, description = config.description } = Astro.props
+const { title, description = config.description, noindex = false } = Astro.props
 const pageTitle =
   title && title !== config.title ? `${title} · ${site.gameTitle}` : site.gameTitle
 
@@ -32,6 +34,7 @@ const favicon =
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <title>{pageTitle}</title>
     <meta name='description' content={description} />
+    {noindex && <meta name='robots' content='noindex, nofollow' />}
     <link rel='icon' href={favicon} />
     <link rel='canonical' href={new URL(Astro.url.pathname, Astro.site).href} />
     <meta name='color-scheme' content='light' />

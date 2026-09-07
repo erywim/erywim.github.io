@@ -1,0 +1,22 @@
+{
+  "name": "erywim-blog-api",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Cloudflare TypeScript Worker backed by D1 for Erywim's blog (admin backend + probe APIs).",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260907.1",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.0.0"
+  },
+  "dependencies": {
+    "hono": "^4.13.7",
+    "js-yaml": "^5.4.1"
+  }
+}

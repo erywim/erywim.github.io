@@ -1,6 +1,9 @@
 ---
 import Panel from '@/components/famicom/Panel.astro'
-import { timeline } from '@/data/timeline'
+import timelineJson from '@/data/timeline.json'
+import type { TimelineItem } from '@/data/types'
+
+const timeline = timelineJson as TimelineItem[]
 
 const hasLink = (link?: string) => !!link && link !== '#'
 ---

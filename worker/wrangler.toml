@@ -1,7 +1,6 @@
 name = "erywim-blog-api"
-main = "src/entry.py"
+main = "src/index.ts"
 compatibility_date = "2026-09-07"
-compatibility_flags = ["python_workers"]
 workers_dev = true
 
 [vars]

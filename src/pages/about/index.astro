@@ -5,12 +5,15 @@ import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import FishSprite from '@/components/famicom/FishSprite.astro'
 import Panel from '@/components/famicom/Panel.astro'
-import { hero } from '@/data/hero'
+import heroJson from '@/data/hero.json'
+import type { Hero } from '@/data/types'
 import { site } from '@/data/site'
 import { getTitleForLevel } from '@/data/titles'
 import { getDoneQuests, getPublishedBlog } from '@/utils/collections'
 import { getRpgStats } from '@/utils/rpg'
 import { hpAt, mpAt } from '@/utils/vitals'
+
+const hero = heroJson as Hero
 
 // 体力随时间递减（构建期静态兜底，客户端实时刷新）；HP/MP 曲线不同，EXP 条为距下一级进度
 const hpNow = hpAt(new Date())

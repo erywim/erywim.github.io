@@ -4,7 +4,10 @@ import CmdMenu from '@/components/famicom/CmdMenu.astro'
 import Dialogue from '@/components/famicom/Dialogue.astro'
 import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
 import Panel from '@/components/famicom/Panel.astro'
-import { friends } from '@/data/friends'
+import friendsJson from '@/data/friends.json'
+import type { Friend } from '@/data/types'
+
+const friends = friendsJson as Friend[]
 ---
 
 <FamicomLayout title='伙伴酒馆'>

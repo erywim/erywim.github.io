@@ -1,0 +1,207 @@
+---
+import FamicomLayout from '@/components/famicom/FamicomLayout.astro'
+import Panel from '@/components/famicom/Panel.astro'
+
+import { site } from '@/data/site'
+
+const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || site.apiBaseUrl).trim()
+
+/**
+ * 域 UI 配置（worker/src/lib/domains.ts 的客户端镜像，仅驱动表单渲染；
+ * 校验以服务端为准，字段级错误回显在对应输入下方）。
+ */
+const DOMAIN_UI = [
+  {
+    key: 'blog',
+    label: '冒险记录',
+    fileKind: 'collection',
+    titleKey: 'title',
+    fields: [
+      { key: 'title', label: '标题', input: 'text', required: true, maxLength: 60 },
+      { key: 'description', label: '摘要', input: 'textarea', required: true, maxLength: 160, rows: 2 },
+      { key: 'publishDate', label: '发布日期', input: 'date', required: true },
+      { key: 'updatedDate', label: '更新日期', input: 'date' },
+      { key: 'gold', label: '金币 1~19', input: 'number', required: true, min: 1, max: 19 },
+      { key: 'exp', label: '经验 1~99', input: 'number', required: true, min: 1, max: 99 },
+      { key: 'rank', label: '难度', input: 'select', options: ['S', 'A', 'B', 'C'] },
+      { key: 'category', label: '地图', input: 'select', options: ['技术', '产品', '生活', '笔记'] },
+      { key: 'tags', label: '标签（逗号分隔）', input: 'tags' },
+      { key: 'draft', label: '草稿（不发布）', input: 'checkbox' },
+      { key: 'comment', label: '允许评论', input: 'checkbox' },
+      { key: 'language', label: '语言', input: 'text' },
+      { key: 'heroImage', label: '头图', input: 'upload-image' },
+      { key: 'bodyMd', label: '正文 Markdown', input: 'textarea', rows: 16, mono: true }
+    ]
+  },
+  {
+    key: 'logs',
+    label: '旅行日志',
+    fileKind: 'collection',
+    titleKey: 'title',
+    fields: [
+      { key: 'title', label: '标题', input: 'text', required: true, maxLength: 60 },
+      { key: 'description', label: '摘要', input: 'textarea', required: true, maxLength: 160, rows: 2 },
+      { key: 'publishDate', label: '发布日期', input: 'date', required: true },
+      { key: 'week', label: '第几周', input: 'number', required: true, min: 1 },
+      { key: 'tags', label: '标签（逗号分隔）', input: 'tags' },
+      { key: 'draft', label: '草稿', input: 'checkbox' },
+      { key: 'bodyMd', label: '正文 Markdown', input: 'textarea', rows: 14, mono: true }
+    ]
+  },
+  {
+    key: 'chatter',
+    label: '篝火手记',
+    fileKind: 'collection',
+    titleKey: 'title',
+    fields: [
+      { key: 'title', label: '标题', input: 'text', required: true, maxLength: 120 },
+      { key: 'description', label: '时间线摘要', input: 'textarea', maxLength: 240, rows: 2 },
+      { key: 'publishDate', label: '日期', input: 'date', required: true },
+      { key: 'tags', label: '标签（逗号分隔）', input: 'tags' },
+      { key: 'draft', label: '草稿', input: 'checkbox' },
+      { key: 'bodyMd', label: '正文', input: 'textarea', rows: 10, mono: true }
+    ]
+  },
+  {
+    key: 'treasure',
+    label: '道具宝箱',
+    fileKind: 'collection',
+    titleKey: 'title',
+    fields: [
+      { key: 'title', label: '名称', input: 'text', required: true, maxLength: 120 },
+      { key: 'icon', label: '图标', input: 'select', options: ['it-scroll', 'it-book', 'it-paper', 'it-video', 'it-gear', 'it-crystal', 'it-chip', 'it-graph', 'it-box'] },
+      { key: 'rarity', label: '稀有度', input: 'select', options: ['S', 'A', 'B'] },
+      { key: 'chest', label: '主题宝箱', input: 'select', options: ['java', 'python', 'agent', 'deep-learning', 'rag', 'system-design', 'frontend'] },
+      { key: 'desc', label: '一句话简介', input: 'textarea', rows: 2 },
+      { key: 'href', label: '跳转链接（空=待读）', input: 'text' },
+      { key: 'tags', label: '标签 id（逗号分隔）', input: 'tags' }
+    ]
+  },
+  {
+    key: 'quest',
+    label: '灵感火花',
+    fileKind: 'collection',
+    titleKey: 'title',
+    fields: [
+      { key: 'title', label: '标题', input: 'text', required: true, maxLength: 120 },
+      { key: 'desc', label: '描述', input: 'textarea', rows: 3 },
+      { key: 'type', label: '类型', input: 'select', options: ['main', 'side'] },
+      { key: 'status', label: '状态', input: 'select', options: ['todo', 'active', 'done'] },
+      { key: 'diff', label: '难度 1~3', input: 'number', min: 1, max: 3 },
+      { key: 'exp', label: '经验', input: 'number', required: true, min: 0 },
+      { key: 'gold', label: '金币', input: 'number', required: true, min: 0 },
+      { key: 'objectives', label: '目标清单', input: 'objectives' }
+    ]
+  },
+  {
+    key: 'friends',
+    label: '伙伴酒馆',
+    fileKind: 'json-array',
+    titleKey: 'name',
+    fields: [
+      { key: 'name', label: '名字', input: 'text', required: true, maxLength: 60 },
+      { key: 'role', label: '职业/头衔', input: 'text' },
+      { key: 'intro', label: '简介', input: 'textarea', rows: 2 },
+      { key: 'link', label: '链接（#=不可点）', input: 'text' },
+      { key: 'avatar', label: '占位字头', input: 'text' },
+      { key: 'sortOrder', label: '排序', input: 'number' }
+    ]
+  },
+  {
+    key: 'timeline',
+    label: '大事记',
+    fileKind: 'json-array',
+    titleKey: 'title',
+    fields: [
+      { key: 'date', label: '日期', input: 'text', required: true },
+      { key: 'title', label: '事件', input: 'text', required: true, maxLength: 60 },
+      { key: 'desc', label: '描述', input: 'textarea', rows: 2 },
+      { key: 'link', label: '跳转链接', input: 'text' },
+      { key: 'sortOrder', label: '排序（小在前）', input: 'number' }
+    ]
+  },
+  {
+    key: 'party',
+    label: '首页存档',
+    fileKind: 'json-array',
+    titleKey: 'title',
+    fields: [
+      { key: 'title', label: '阶段名', input: 'text', required: true, maxLength: 60 },
+      { key: 'class', label: '职业', input: 'text' },
+      { key: 'desc', label: '一句话', input: 'text' },
+      { key: 'period', label: '时期', input: 'text' },
+      { key: 'avatar', label: '头像', input: 'select', options: ['mage', 'warrior'] },
+      { key: 'chips', label: '标签（逗号分隔）', input: 'tags' },
+      { key: 'sortOrder', label: '排序（小在前）', input: 'number' }
+    ]
+  },
+  {
+    key: 'hero',
+    label: '勇者档案',
+    fileKind: 'json-single',
+    titleKey: 'name',
+    fields: [
+      { key: 'name', label: '名字', input: 'text', required: true },
+      { key: 'class', label: '职业', input: 'text' },
+      { key: 'location', label: '坐标', input: 'text' },
+      { key: 'status', label: '状态', input: 'text' },
+      { key: 'bio', label: '简介', input: 'textarea', rows: 4 },
+      { key: 'stats', label: 'HP / MP / EXP', input: 'stats' },
+      { key: 'skills', label: '技能（JSON）', input: 'json', rows: 8 },
+      { key: 'timeline', label: '冒险历程（JSON）', input: 'json', rows: 6 },
+      { key: 'buffs', label: '增益（JSON）', input: 'json', rows: 5 },
+      { key: 'contacts', label: '联系方式（JSON）', input: 'json', rows: 5 }
+    ]
+  }
+]
+---
+
+<FamicomLayout title='开发后台' noindex>
+  <div class='adm-wrap' data-admin data-api-base={apiBase} data-domains={JSON.stringify(DOMAIN_UI)}>
+    <!-- 登录屏：RPG 密码界面 -->
+    <section class='adm-login' id='admLogin'>
+      <Panel title='开发后台' en='DEV CONSOLE'>
+        <div class='adm-login-body'>
+          <div class='adm-login-kicker'>RESTRICTED AREA · 凭证确认</div>
+          <p class='adm-login-hint'>只有勇者本人可以通过这里。</p>
+          <form id='admLoginForm'>
+            <label class='adm-field'>
+              <span class='k'>账号 NAME</span>
+              <input type='text' name='username' autocomplete='username' required />
+            </label>
+            <label class='adm-field'>
+              <span class='k'>密码 PASSWORD</span>
+              <input type='password' name='password' autocomplete='current-password' required />
+            </label>
+            <div class='adm-login-error' id='admLoginError' hidden></div>
+            <button class='px-refresh adm-login-btn' type='submit' id='admLoginBtn'>进入 ▶</button>
+          </form>
+        </div>
+      </Panel>
+    </section>
+
+    <!-- 工作台（登录后显示） -->
+    <section class='adm-app' id='admApp' hidden>
+      <Panel title='开发后台' en='DEV CONSOLE' class='adm-console'>
+        <div slot='actions' class='px-actions'>
+          <span class='adm-dirty-count' id='admDirtyCount' hidden></span>
+          <button class='px-refresh' id='admPublishAll' type='button'>全部发布</button>
+          <button class='px-refresh' id='admSync' type='button'>从仓库同步</button>
+          <button class='px-refresh' id='admLogout' type='button'>登出</button>
+        </div>
+        <div class='adm-body'>
+          <nav class='adm-nav' id='admNav'></nav>
+          <div class='adm-main'>
+            <div class='adm-list' id='admList'></div>
+            <div class='adm-editor' id='admEditor' hidden></div>
+          </div>
+        </div>
+        <div class='adm-console-log' id='admLog' hidden></div>
+      </Panel>
+    </section>
+  </div>
+
+  <script>
+    import '../scripts/admin-app'
+  </script>
+</FamicomLayout>

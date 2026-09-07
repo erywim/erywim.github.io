@@ -4995,3 +4995,427 @@ footer a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* —— 开发后台（/eeeeerywim · 登录屏 + 工作台） —— */
+.adm-login-body {
+  padding: 18px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.adm-login-kicker {
+  font-family: var(--ps2);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  margin-bottom: 6px;
+}
+.adm-login-hint {
+  font-size: 12px;
+  color: var(--dim);
+  margin: 0 0 14px;
+}
+.adm-field {
+  margin-bottom: 12px;
+}
+.adm-field > .k,
+.adm-check .k {
+  display: block;
+  font-family: var(--ps2);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+  margin-bottom: 5px;
+}
+.adm-field input[type='text'],
+.adm-field input[type='password'],
+.adm-field input[type='number'],
+.adm-field input[type='date'],
+.adm-field select,
+.adm-field textarea,
+.adm-objectives .adm-obj-row input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--fg);
+  font-size: 13px;
+  padding: 7px 10px;
+  font-family: inherit;
+}
+.adm-field textarea {
+  resize: vertical;
+  line-height: 1.7;
+}
+.adm-field textarea.mono,
+.adm-field textarea.json {
+  font-family: var(--ps2);
+  font-size: 11px;
+}
+.adm-field input:focus,
+.adm-field select:focus,
+.adm-field textarea:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: -2px;
+}
+.adm-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adm-check .k {
+  margin: 0;
+}
+.adm-login-error {
+  border: 1px dashed var(--red);
+  color: var(--red);
+  background: var(--panel2);
+  font-size: 12px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+.adm-login-btn {
+  width: 100%;
+  font-size: 11px;
+  padding: 8px 0;
+}
+.adm-field-hint {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 4px;
+}
+.adm-field-err {
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 4px;
+}
+
+/* 工作台 */
+.adm-body {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+}
+.adm-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-nav-btn {
+  font-family: var(--ps2);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  border: 2px solid var(--line);
+  background: var(--panel2);
+  color: var(--fg);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s linear,
+    color 0.15s linear;
+}
+.adm-nav-btn:hover {
+  background: var(--panel3);
+}
+.adm-nav-btn.active {
+  background: var(--fg);
+  color: var(--panel);
+}
+.adm-nav-cnt {
+  color: var(--dim);
+  font-size: 9px;
+}
+.adm-nav-btn.active .adm-nav-cnt {
+  color: var(--panel3);
+}
+.adm-nav-dirty {
+  color: var(--gold);
+  font-size: 9px;
+}
+.adm-dirty-count {
+  font-family: var(--ps2);
+  font-size: 9px;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 3px 8px;
+  background: var(--panel2);
+}
+.adm-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.adm-list-title {
+  font-family: var(--ps2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.adm-rows {
+  display: grid;
+  gap: 8px;
+}
+.adm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 9px 12px;
+}
+.adm-row.is-deleted {
+  opacity: 0.55;
+  border-style: dashed;
+}
+.adm-row-main {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.adm-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-row-meta {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+.adm-row-badges {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.adm-badge {
+  font-family: var(--ps2);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  color: var(--dim);
+}
+.adm-badge.dirty {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.adm-badge.del {
+  color: var(--red);
+  border-color: var(--red);
+}
+.adm-badge.clean {
+  color: var(--green);
+  border-color: var(--green);
+}
+.adm-badge.draft {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+.adm-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.px-refresh.danger {
+  color: var(--red);
+}
+.adm-empty,
+.adm-loading {
+  padding: 18px 14px;
+  color: var(--dim);
+  font-size: 12px;
+}
+.adm-error {
+  margin: 14px;
+  border: 1px dashed var(--red);
+  color: var(--red);
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+/* 编辑器 */
+.adm-edit-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.adm-edit-title {
+  font-family: var(--ps2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-right: auto;
+}
+.adm-form {
+  max-width: 720px;
+}
+.adm-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.adm-save {
+  font-size: 11px;
+  padding: 8px 22px;
+}
+.adm-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.adm-conflict {
+  border: 2px dashed var(--red);
+  background: var(--panel2);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.adm-conflict-msg {
+  font-size: 12px;
+  color: var(--red);
+  margin-bottom: 10px;
+}
+.adm-conflict-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.adm-objectives-list {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.adm-obj-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adm-stats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.adm-stats-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.adm-stats-cell .k {
+  font-family: var(--ps2);
+  font-size: 10px;
+  color: var(--dim);
+}
+.adm-stats-cell input {
+  width: 64px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 5px 7px;
+  font-size: 12px;
+}
+.adm-stats-slash {
+  color: var(--dim);
+}
+.adm-upload-cur {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+.adm-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.adm-upload-status {
+  font-size: 11px;
+  color: var(--gold);
+}
+
+/* 日志控制台 */
+.adm-console-log {
+  border-top: 2px solid var(--line);
+  background: var(--black);
+  background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgba(255, 255, 255, 0.03) 2px 4px);
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  font-family: var(--ps2);
+  font-size: 10px;
+  line-height: 1.9;
+  letter-spacing: 0.03em;
+}
+.adm-log-line {
+  color: #b9c7d8;
+}
+.adm-log-line.ok {
+  color: #7fd894;
+}
+.adm-log-line.err {
+  color: var(--red-hi);
+}
+@media (max-width: 640px) {
+  .adm-row {
+    flex-wrap: wrap;
+  }
+  .adm-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* —— 首页天空彩蛋（7 次起问号提示 / 10 次传送动画） —— */
+.egg-hint {
+  position: absolute;
+  right: 14%;
+  top: 22%;
+  font-family: var(--ps2);
+  font-size: 22px;
+  color: var(--gold-hi);
+  text-shadow: 2px 2px 0 var(--black);
+  animation: eggBlink 0.5s steps(2) infinite;
+  pointer-events: none;
+}
+@keyframes eggBlink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.3;
+    transform: translateY(-4px);
+  }
+}
+.egg-warp {
+  position: fixed;
+  inset: 0;
+  z-index: 9800;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      var(--black) 0 14px,
+      var(--panel) 14px 28px
+    );
+  animation: eggWarp 0.65s steps(8) forwards;
+}
+@keyframes eggWarp {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.02);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .egg-hint {
+    animation: none;
+  }
+}

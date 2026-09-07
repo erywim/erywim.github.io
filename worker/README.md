@@ -1,29 +1,51 @@
 # Erywim Blog API
 
-这是博客的免费 Cloudflare 后端探针：Python Worker 只提供两个只读接口，`/health` 用于健康检查，`/api/hello` 从 D1 读取 `hello world`。
+博客的 Cloudflare 后端：**TypeScript Worker + D1**。提供线上探针只读接口（`/health`、`/api/hello`）与 `/eeeeerywim` 后台 API（鉴权 + 九域内容 CRUD + 发布/同步）。设计详见仓库根 `openspec/changes/add-admin-backend/`。
 
-## 首次部署
+> 2026-09：Worker 已从 Python 迁移到 TypeScript（行为等价，`/health` 的 `runtime` 字段如实变更）。
 
-前置条件：已安装 Node、Wrangler 和 uv，并在当前机器完成 `wrangler login`。
+## 开发与部署
+
+前置条件：已安装 bun；已 `wrangler login`。
 
 ```bash
 cd worker
+bun install
 
-# 已绑定现有 D1 数据库 erywim；首次部署先执行远程 migration
-wrangler d1 migrations apply erywim --remote
+# 本地开发（本地 D1 模拟，沿用 .wrangler/state）
+bun run dev            # => http://127.0.0.1:8787
 
-# 本地开发（使用本地 D1 模拟）
-uv run pywrangler dev
+# 类型检查
+bun run check
 
-# 部署 Worker；命令末尾会输出 workers.dev 地址
-uv run pywrangler deploy
+# 远程 migration（表结构变更时）
+bunx wrangler d1 migrations apply erywim --remote
+
+# 播种管理员（交互输入密码；或 ADMIN_SEED_PASSWORD 环境变量）
+bun scripts/seed-admin.ts --remote
+
+# 部署 Worker
+bun run deploy
 ```
 
-部署后先验证：
+本地联调后台页面：仓库根 `PUBLIC_API_BASE_URL=http://127.0.0.1:8787 bun run dev`（CORS 白名单已含 localhost:4321）。
+
+## GH_TOKEN（发布功能必需）
+
+后台「发布」通过 GitHub Contents API 把 D1 内容提交进本仓库，需要 fine-grained PAT：
+
+1. GitHub → Settings → Developer settings → Fine-grained tokens → Generate
+2. Repository access：仅 `erywim/erywim.github.io`；Permissions：**Contents: Read and write**（其余不勾）
+3. `cd worker && bunx wrangler secret put GH_TOKEN`（粘贴 token；本地开发则写入 `worker/.dev.vars`，已被 gitignore）
+4. 泄漏处置：GitHub 侧吊销 → 重新生成 → 重新 `secret put`；`bunx wrangler rollback` 可回退 Worker
+
+发布采用 sha 乐观锁：仓库文件被后台之外修改时发布返回 409，后台界面提示「拉取仓库覆盖 / 强制发布覆盖」二选一，绝不静默合并。
+
+## 验证（探针接口）
 
 ```bash
-curl -i https://<你的-worker-地址>/health
-curl -i https://<你的-worker-地址>/api/hello
+curl -i https://erywim-blog-api.okunoda.workers.dev/health
+curl -i https://erywim-blog-api.okunoda.workers.dev/api/hello
 ```
 
 `/api/hello` 必须返回 HTTP 200，并且 JSON 中包含 `"message": "hello world"` 与 `"source": "cloudflare-d1"`。如果返回 `d1_unavailable` 或 `hello_row_missing`，不要把它当作成功：检查 D1 ID、远程 migration 和 Worker binding。
@@ -42,6 +64,10 @@ GitHub Pages 工作流默认使用当前 Worker 地址；如果更换地址，�
 ## 密钥与开源仓库
 
 - `database_id`、Worker 地址和 `ALLOWED_ORIGINS` 是公开配置/标识，不是 Cloudflare 登录凭据。
-- 不要把 `CLOUDFLARE_API_TOKEN`、API key、密码或其他第三方凭据写进 `wrangler.toml`、源码或任何 `PUBLIC_*` 变量；需要运行时密钥时使用 `wrangler secret put <KEY>`。
+- 不要把 `CLOUDFLARE_API_TOKEN`、`GH_TOKEN`、API key、密码或其他第三方凭据写进 `wrangler.toml`、源码或任何 `PUBLIC_*` 变量；运行时密钥一律 `wrangler secret put <KEY>`。
 - 本地密钥放在 `.dev.vars*` 或 `.env*` 文件中；这些文件已加入根目录 `.gitignore`，不要提交到 Git。
-- 当前探针只有只读接口；CORS 只是浏览器策略，不是 API 认证。以后增加写接口或私有数据时，必须另加认证和限流。
+- 后台写接口上线后：鉴权（会话 Cookie）+ 登录限流 + 审计是必选项；CORS 只是浏览器策略，不是 API 认证。
+
+## 回滚
+
+`bunx wrangler rollback` 回到上一版本；D1 的 `greetings` 等表不受 Worker 回滚影响。

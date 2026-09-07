@@ -10,8 +10,9 @@ import Panel from '@/components/famicom/Panel.astro'
 import QuestItem from '@/components/famicom/QuestItem.astro'
 import Timeline from '@/components/famicom/Timeline.astro'
 import TreasureData from '@/components/famicom/TreasureData.astro'
-import { party } from '@/data/home'
-import { hero } from '@/data/hero'
+import homeJson from '@/data/home.json'
+import heroJson from '@/data/hero.json'
+import type { Hero, PartyMember } from '@/data/types'
 import { site } from '@/data/site'
 import { getTitleForLevel } from '@/data/titles'
 import { tagById } from '@/data/treasure'
@@ -20,6 +21,9 @@ import { getMetrics } from '@/utils/metrics'
 import { domainOf } from '@/utils/url'
 import { getRpgStats } from '@/utils/rpg'
 import { hpAt, mpAt } from '@/utils/vitals'
+
+const hero = heroJson as Hero
+const party = homeJson as PartyMember[]
 
 const posts = await getPublishedBlog()
 const { essays, notes, logs } = await getMetrics()
@@ -846,6 +850,61 @@ const bagItems = [...allTreasure].sort(() => Math.random() - 0.5).slice(0, 2)
       }
 
       bagReroll.addEventListener('click', draw)
+    }
+  }
+</script>
+
+<script>
+  // —— 隐藏彩蛋：3 秒窗口内连点天空 10 次 → 传送至 /eeeeerywim（规格 easter-egg） ——
+  {
+    const sky = document.querySelector<HTMLElement>('.title-screen')
+    if (sky) {
+      let count = 0
+      let timer = 0
+      let hint: HTMLElement | null = null
+
+      const resetHint = () => {
+        hint?.remove()
+        hint = null
+      }
+
+      sky.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement
+        // 交互元素不计入（按钮/链接/输入/菜单/PRESS START）
+        if (target.closest('button, a, input, select, textarea, .cmd-menu, #pressStart')) return
+
+        count += 1
+        window.clearTimeout(timer)
+        timer = window.setTimeout(() => {
+          count = 0
+          resetHint()
+        }, 3000)
+
+        if (count >= 7 && !hint) {
+          hint = document.createElement('span')
+          hint.className = 'egg-hint'
+          hint.textContent = '？'
+          hint.setAttribute('aria-hidden', 'true')
+          sky.appendChild(hint)
+        }
+
+        if (count >= 10) {
+          window.clearTimeout(timer)
+          count = 0
+          const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          if (reduced) {
+            window.location.href = '/eeeeerywim'
+            return
+          }
+          const warp = document.createElement('div')
+          warp.className = 'egg-warp'
+          warp.setAttribute('aria-hidden', 'true')
+          document.body.appendChild(warp)
+          window.setTimeout(() => {
+            window.location.href = '/eeeeerywim'
+          }, 650)
+        }
+      })
     }
   }
 </script>

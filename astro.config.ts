@@ -1,5 +1,6 @@
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import AstroPureIntegration from 'astro-pure'
+import sitemap from '@astrojs/sitemap'
 import { defineConfig, fontProviders, svgoOptimizer } from 'astro/config'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
@@ -99,6 +100,8 @@ export default defineConfig({
 
   // [Integrations]
   integrations: [
+    // 后台页不进 sitemap；astro-pure 检测到已注册的 sitemap 会跳过自己的默认实例
+    sitemap({ filter: (page) => !page.includes('/eeeeerywim') }),
     // astro-pure will automatically add sitemap, mdx & unocss
     // sitemap(),
     // mdx(),
