@@ -309,7 +309,8 @@ function errBox(e: unknown): HTMLElement {
 
 /* —— 访问统计（/admin/stats，非内容域：日期范围 + 概览 + 趋势 + 排行 + 流水） —— */
 const STATS_KEY = '__stats__'
-const vaRange = { from: '', to: '' }
+/** 默认范围：近 30 天（含今天）；快捷键「全部」看全量 */
+const vaRange = { from: bjDay(29), to: bjDay() }
 /** 流水翻页游标：本页最小 id（0 = 无更多） */
 let vaFlowOldest = 0
 
