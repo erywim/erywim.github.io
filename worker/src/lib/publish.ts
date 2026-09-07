@@ -13,6 +13,14 @@ import { writeAudit } from './audit'
 
 type Row = Record<string, unknown>
 
+/**
+ * D1 读副本可能滞后（跨请求场景：PUT 改完立刻发布，读到旧值会把旧内容发进仓库）。
+ * 发布/冲突检测等关键路径一律 withSession('first-primary') 强制读主库。
+ */
+function dbp(env: Env): D1Database {
+  return (env.DB as unknown as { withSession: (c: string) => D1Database }).withSession('first-primary')
+}
+
 /** D1 行 → 渲染用的 API 形态 */
 function rowToItem(domain: DomainDef, row: Row): Record<string, unknown> {
   const item: Record<string, unknown> = {}
@@ -59,10 +67,10 @@ async function publishJsonArrayFile(
   const domain = DOMAINS[domainKey]
   const repoPath = domain.repoPath('')
 
-  const { results } = await env.DB.prepare(
+  const { results } = await dbp(env).prepare(
     `SELECT * FROM ${domain.table} WHERE deleted = 0 ORDER BY sort_order ASC, id ASC`
   ).all<Row>()
-  const known = await env.DB.prepare(
+  const known = await dbp(env).prepare(
     `SELECT repo_sha FROM ${domain.table} WHERE repo_sha IS NOT NULL LIMIT 1`
   ).first<{ repo_sha: string }>()
   const current = await getFile(env, repoPath)
@@ -84,12 +92,12 @@ async function publishJsonArrayFile(
   const title = arr.length > 0 ? String(arr[0].name ?? arr[0].title ?? domain.label) : domain.label
   const newSha = await putFile(env, repoPath, content, sha, `admin: 发布${domain.label}「${title}」`)
 
-  await env.DB.prepare(
+  await dbp(env).prepare(
     `UPDATE ${domain.table} SET repo_sha = ?, dirty = 0, updated_at = datetime('now') WHERE deleted = 0`
   )
     .bind(newSha)
     .run()
-  await env.DB.prepare(`DELETE FROM ${domain.table} WHERE deleted = 1`).run()
+  await dbp(env).prepare(`DELETE FROM ${domain.table} WHERE deleted = 1`).run()
 
   await writeAudit(env, userId, 'publish', `${domainKey}/*`)
   return { domain: domainKey, id: '*', action: sha ? 'update' : 'create', commitPath: repoPath }
@@ -105,7 +113,7 @@ export async function publishItem(
   const domain = DOMAINS[domainKey]
   if (!domain) throw new PublishError('未知内容域', 'other')
 
-  const row = await env.DB.prepare(`SELECT * FROM ${domain.table} WHERE id = ?`).bind(id).first<Row>()
+  const row = await dbp(env).prepare(`SELECT * FROM ${domain.table} WHERE id = ?`).bind(id).first<Row>()
   if (!row) throw new PublishError('条目不存在', 'not_found')
 
   const title = String(row.title ?? row.name ?? id)
@@ -122,7 +130,7 @@ export async function publishItem(
     if (delSha) {
       await deleteFile(env, repoPath, delSha, `admin: 删除${label}「${title}」`)
     }
-    await env.DB.prepare(`DELETE FROM ${domain.table} WHERE id = ?`).bind(id).run()
+    await dbp(env).prepare(`DELETE FROM ${domain.table} WHERE id = ?`).bind(id).run()
     await writeAudit(env, userId, 'publish-delete', `${domainKey}/${id}`)
     return { domain: domainKey, id, action: 'delete', commitPath: repoPath }
   }
@@ -151,7 +159,7 @@ export async function publishItem(
   }
   const newSha = await putFile(env, repoPath, content, sha, `admin: 发布${label}「${title}」`)
 
-  await env.DB.prepare(
+  await dbp(env).prepare(
     `UPDATE ${domain.table} SET repo_sha = ?, dirty = 0, updated_at = datetime('now') WHERE id = ?`
   )
     .bind(newSha, id)
@@ -176,11 +184,11 @@ export async function publishAll(env: Env, userId: number): Promise<PublishAllRe
     const domain = DOMAINS[key]
 
     if (domain.fileKind === 'json-array') {
-      const dirty = await env.DB.prepare(
+      const dirty = await dbp(env).prepare(
         `SELECT COUNT(*) AS n FROM ${domain.table} WHERE dirty = 1 OR deleted = 1`
       ).first<{ n: number }>()
       if ((dirty?.n ?? 0) === 0) continue
-      const first = await env.DB.prepare(
+      const first = await dbp(env).prepare(
         `SELECT id FROM ${domain.table} WHERE deleted = 0 ORDER BY sort_order ASC LIMIT 1`
       ).first<{ id: string }>()
       try {
@@ -194,7 +202,7 @@ export async function publishAll(env: Env, userId: number): Promise<PublishAllRe
       continue
     }
 
-    const { results } = await env.DB.prepare(
+    const { results } = await dbp(env).prepare(
       `SELECT id FROM ${domain.table} WHERE dirty = 1 OR deleted = 1 ORDER BY updated_at ASC`
     ).all<{ id: string }>()
     for (const r of results ?? []) {

@@ -18,7 +18,9 @@ function errorStatus(err: unknown): { status: number; body: Record<string, unkno
     }
   }
   if (err instanceof GithubError) {
-    return { status: err.status === 401 ? 503 : 400, body: { error: 'github_error', message: err.message, kind: err.kind } }
+    const status = err.status === 401 ? 503 : err.kind === 'sha_mismatch' ? 409 : 400
+    const kind = err.kind === 'sha_mismatch' ? 'conflict' : err.kind
+    return { status, body: { error: 'publish_failed', message: err.message, kind } }
   }
   console.error('publish_error', { message: err instanceof Error ? err.message : String(err) })
   return { status: 500, body: { error: 'internal_error' } }
@@ -66,8 +68,9 @@ publishRoutes.get('/conflict/:domain/:id', async (c) => {
   const domain = getDomain(c.req.param('domain'))
   if (!domain) return c.json({ error: 'unknown_domain' }, 404)
   const id = c.req.param('id')
+  const primary = (c.env.DB as unknown as { withSession: (c2: string) => D1Database }).withSession('first-primary')
 
-  const row = await c.env.DB.prepare(`SELECT repo_path, repo_sha FROM ${domain.table} WHERE id = ?`)
+  const row = await primary.prepare(`SELECT repo_path, repo_sha FROM ${domain.table} WHERE id = ?`)
     .bind(id)
     .first<{ repo_path: string; repo_sha: string | null }>()
   if (!row) return c.json({ error: 'not_found' }, 404)

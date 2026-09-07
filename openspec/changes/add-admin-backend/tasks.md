@@ -38,15 +38,15 @@
 
 - [x] 6.1 实现 frontmatter 序列化器（固定字段顺序、稳定 YAML 风格）+ round-trip 测试：对仓库现存全部 md 拉取→解析→重渲染与原文件逐字节 diff 为空
 - [x] 6.2 实现「从仓库同步」：列目录→解析→upsert D1（清 dirty、写 sha）；对真实仓库跑一次空库播种，D1 行数与文件数一致、抽样字段一致
-- [ ] 6.3 实现条目发布：校验→渲染→Contents API PUT（带 `repo_sha` 乐观锁）→回写 sha/清 dirty→审计；改一条 treasure 后发布，仓库出现对应 commit、CI 构建通过、站点更新
-- [ ] 6.4 实现软删除发布（Contents API DELETE）与整文件 JSON 域发布（hero/friends/timeline/party 全量重生成、保序）；删除一条友链发布后 `friends.json` 与 D1 一致
-- [ ] 6.5 实现「全部发布」（顺序发布所有 dirty 条目、失败即停并报告明细）与冲突检测接口（打开条目时返回仓库 sha 与已知 sha 的比对结果）
-- [ ] 6.6 冲突路径端到端验证：手改一条 md → 后台打开同条目返回冲突 → 分别验证「拉取覆盖」与「强制发布」两条出路行为正确
+- [x] 6.3 实现条目发布：校验→渲染→Contents API PUT（带 `repo_sha` 乐观锁）→回写 sha/清 dirty→审计；改一条 treasure 后发布，仓库出现对应 commit、CI 构建通过、站点更新
+- [x] 6.4 实现软删除发布（Contents API DELETE）与整文件 JSON 域发布（hero/friends/timeline/party 全量重生成、保序）；删除一条友链发布后 `friends.json` 与 D1 一致
+- [x] 6.5 实现「全部发布」（顺序发布所有 dirty 条目、失败即停并报告明细）与冲突检测接口（打开条目时返回仓库 sha 与已知 sha 的比对结果）
+- [x] 6.6 冲突路径端到端验证：手改一条 md → 后台打开同条目返回冲突 → 分别验证「拉取覆盖」与「强制发布」两条出路行为正确
 
 ## 7. 图片上传（design D7）
 
-- [ ] 7.1 实现 `POST /admin/upload`：类型/大小校验（PNG/JPG/WebP ≤2MB）→ base64 提交至 `src/assets/uploads/<yyyy>/<hash>.<ext>` → 返回路径 + 审计；curl 上传合法图与超限/错误类型各验一次
-- [ ] 7.2 上传的图片在博客头图字段引用后构建渲染正常（挑一篇测试文验证）
+- [x] 7.1 实现 `POST /admin/upload`：类型/大小校验（PNG/JPG/WebP ≤2MB）→ base64 提交至 `src/assets/uploads/<yyyy>/<hash>.<ext>` → 返回路径 + 审计；curl 上传合法图与超限/错误类型各验一次
+- [x] 7.2 上传的图片在博客头图字段引用后构建渲染正常（挑一篇测试文验证）
 
 ## 8. 后台界面（spec: admin-ui，design D8）
 
@@ -65,6 +65,6 @@
 
 ## 10. 收尾与文档
 
-- [ ] 10.1 端到端演练：登录→改文章→发布→CI→站点更新→同步对账全流程走通并记录耗时
+- [x] 10.1 端到端演练：登录→改文章→发布→CI→站点更新→同步对账全流程走通并记录耗时
 - [x] 10.2 更新 `worker/README.md`（TS 部署流程、GH_TOKEN secret 配置、种子说明）与根 `CLAUDE.md`（后台路由、发布模型一句话说明）
-- [ ] 10.3 安全自查清单过一遍：未认证 401、白名单外预检拒绝、审计可查、仓库无任何凭据、`wrangler secret list` 仅预期项
+- [x] 10.3 安全自查清单过一遍：未认证 401、白名单外预检拒绝、审计可查、仓库无任何凭据、`wrangler secret list` 仅预期项

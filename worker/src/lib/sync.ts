@@ -178,8 +178,9 @@ export async function syncAll(env: Env): Promise<SyncReport> {
 export async function syncSingle(env: Env, domainKey: string, id: string): Promise<void> {
   const domain = DOMAINS[domainKey]
   if (!domain) throw new Error('未知内容域')
+  const primary = (env.DB as unknown as { withSession: (c: string) => D1Database }).withSession('first-primary')
   if (domain.fileKind === 'collection') {
-    const row = await env.DB.prepare(`SELECT repo_path FROM ${domain.table} WHERE id = ?`)
+    const row = await primary.prepare(`SELECT repo_path FROM ${domain.table} WHERE id = ?`)
       .bind(id)
       .first<{ repo_path: string }>()
     if (!row) throw new Error('条目不存在')
