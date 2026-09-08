@@ -171,12 +171,12 @@ export const DOMAINS: Record<string, DomainDef> = {
       { key: 'title', col: 'title', type: 'string', required: true, maxLength: 60 },
       { key: 'desc', col: 'description', type: 'string', required: false, fallback: '' },
       { key: 'link', col: 'link', type: 'string', required: false, fallback: '' },
-      { key: 'sortOrder', col: 'sort_order', type: 'int', required: false, fallback: 0 },
     ],
     fileKind: 'json-array',
     repoPath: () => 'src/data/timeline.json',
     repoDir: '',
-    listOrder: 'sort_order ASC, id ASC',
+    // 大事记有天然顺序：日期倒序（最新在前），同日按 id 稳定排序；sort_order 列弃用
+    listOrder: 'date DESC, id ASC',
   },
   party: {
     key: 'party', table: 'content_party', label: '首页存档',

@@ -147,7 +147,8 @@ async function syncJsonArray(env: Env, domain: DomainDef): Promise<{ imported: n
     // 稳定 id：内容哈希（重排不漂移）
     const id = `row-${(await sha256Hex(JSON.stringify([domain.key, obj.title ?? obj.name ?? obj.date ?? i]))).slice(0, 10)}`
     const row = jsonObjToRow(domain, obj)
-    row.sort_order = i
+    // 仅仍声明 sortOrder 字段的域（friends/party）保留数组顺序；timeline 按 date 排序，无需 sort_order
+    if (domain.fields.some((f) => f.key === 'sortOrder')) row.sort_order = i
     await upsertRow(env, domain, id, row, path, file.sha, null)
   }
   return { imported: arr.length }

@@ -57,18 +57,19 @@ export interface PublishResult {
   commitPath: string
 }
 
-/** json-array 域：整文件发布（含全部删除后的空数组场景） */
+/** json-array 域：整文件发布（含全部删除后的空数组场景）。triggerTitle = 触发本次发布的那条标题（commit message 用） */
 async function publishJsonArrayFile(
   env: Env,
   userId: number,
   domainKey: string,
-  force = false
+  force = false,
+  triggerTitle?: string
 ): Promise<PublishResult> {
   const domain = DOMAINS[domainKey]
   const repoPath = domain.repoPath('')
 
   const { results } = await dbp(env).prepare(
-    `SELECT * FROM ${domain.table} WHERE deleted = 0 ORDER BY sort_order ASC, id ASC`
+    `SELECT * FROM ${domain.table} WHERE deleted = 0 ORDER BY ${domain.listOrder}`
   ).all<Row>()
   const known = await dbp(env).prepare(
     `SELECT repo_sha FROM ${domain.table} WHERE repo_sha IS NOT NULL LIMIT 1`
@@ -89,7 +90,9 @@ async function publishJsonArrayFile(
     return out
   })
   const content = renderJsonFile(arr)
-  const title = arr.length > 0 ? String(arr[0].name ?? arr[0].title ?? domain.label) : domain.label
+  // commit message 优先用触发条目的标题；无触发条目（如仅剩删除行的整文件发布）退回首行标题
+  const title =
+    triggerTitle ?? (arr.length > 0 ? String(arr[0].name ?? arr[0].title ?? domain.label) : domain.label)
   const newSha = await putFile(env, repoPath, content, sha, `admin: 发布${domain.label}「${title}」`)
 
   await dbp(env).prepare(
@@ -136,7 +139,7 @@ export async function publishItem(
   }
 
   if (domain.fileKind === 'json-array') {
-    return publishJsonArrayFile(env, userId, domainKey, opts.force)
+    return publishJsonArrayFile(env, userId, domainKey, opts.force, title)
   }
 
   let content: string

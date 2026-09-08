@@ -113,11 +113,10 @@ const DOMAIN_UI = [
     fileKind: 'json-array',
     titleKey: 'title',
     fields: [
-      { key: 'date', label: '日期', input: 'text', required: true },
+      { key: 'date', label: '日期', input: 'date', required: true },
       { key: 'title', label: '事件', input: 'text', required: true, maxLength: 60 },
       { key: 'desc', label: '描述', input: 'textarea', rows: 2 },
-      { key: 'link', label: '跳转链接', input: 'text' },
-      { key: 'sortOrder', label: '排序（小在前）', input: 'number' }
+      { key: 'link', label: '跳转链接', input: 'text' }
     ]
   },
   {
