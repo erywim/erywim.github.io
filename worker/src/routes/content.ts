@@ -4,6 +4,7 @@ import type { AdminEnv } from '../env'
 import { writeAudit } from '../lib/audit'
 import { DOMAINS, DOMAIN_KEYS, getDomain, SLUG_RE, type DomainDef } from '../lib/domains'
 import { nowStr } from '../lib/db'
+import { getFile } from '../lib/github'
 import { validateDomainFields } from '../lib/validate'
 
 /** /admin/content/* —— 九域通用 CRUD（规格 content-management「九个内容域的工作区」） */
@@ -51,6 +52,69 @@ function domainOr404(key: string, c: any) {
     return { domain: null, response: c.json({ error: 'unknown_domain', available: DOMAIN_KEYS }, 404) }
   }
   return { domain, response: null }
+}
+
+/* —— id 自动生成：后台表单不填 slug，按仓库既有命名习惯生成 —— */
+
+/** 各域日期兜底前缀，对应仓库现有文件名习惯（post-20260812 / spark-20260906 / item-20260823） */
+const FALLBACK_PREFIX: Record<string, string> = {
+  blog: 'post',
+  quest: 'spark',
+  treasure: 'item',
+  chatter: 'chat',
+  logs: 'log',
+}
+
+/** 英文标题 → slug（小写、空格转连字符、剔除非 ASCII）；中文标题得到空串走日期兜底 */
+function slugifyTitle(t: string): string {
+  return t
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 48)
+    .replace(/^-+|-+$/g, '')
+}
+
+/** id 是否被占用：D1 行，或仓库已有文件（防「仓库有、D1 没同步」时发布 sha 冲突） */
+async function idTaken(env: AdminEnv['Bindings'], domain: DomainDef, id: string): Promise<boolean> {
+  const row = await env.DB.prepare(`SELECT 1 FROM ${domain.table} WHERE id = ?`).bind(id).first()
+  if (row) return true
+  if (domain.fileKind === 'collection') {
+    const file = await getFile(env, domain.repoPath(id))
+    return !!file
+  }
+  return false
+}
+
+/** 候选 id 依次尝试：logs 用周数（2026-week-33 习惯）→ 英文题名 slug → 前缀+日期，数字后缀防撞 */
+async function genUniqueId(
+  env: AdminEnv['Bindings'],
+  domain: DomainDef,
+  body: Record<string, unknown>
+): Promise<string> {
+  const candidates: string[] = []
+
+  if (domain.key === 'logs' && body.publishDate && body.week) {
+    const year = String(body.publishDate).slice(0, 4)
+    candidates.push(`${year}-week-${Number(body.week)}`)
+  }
+
+  const base = slugifyTitle(String(body.title ?? body.name ?? ''))
+  if (base.length >= 2) {
+    candidates.push(base, ...[2, 3, 4, 5].map((i) => `${base}-${i}`))
+  }
+
+  const prefix = FALLBACK_PREFIX[domain.key] ?? domain.key
+  const today = new Date().toISOString().slice(0, 10).replaceAll('-', '')
+  candidates.push(`${prefix}-${today}`, ...[2, 3, 4, 5].map((i) => `${prefix}-${today}-${i}`))
+
+  for (const c of candidates) {
+    if (SLUG_RE.test(c) && !(await idTaken(env, domain, c))) return c
+  }
+  return `row-${crypto.randomUUID().replaceAll('-', '').slice(0, 10)}`
 }
 
 /** 顶栏汇总：各域 total/dirty/deleted + 全局待发布数 */
@@ -106,10 +170,10 @@ content.post('/:domain', async (c) => {
     return c.json({ error: 'invalid_json' }, 400)
   }
 
-  // id：hero 固定；json 域（整文件发布，id 不进仓库）未提供时自动生成；collection 域（id=文件名）校验 slug
+  // id：hero 固定；未提供时按域自动生成（后台表单不再让用户填 slug）；显式提供则校验 slug
   let id = domain.fixedId ?? String(body.id ?? '').trim()
-  if (!domain.fixedId && id === '' && domain.fileKind !== 'collection') {
-    id = `row-${crypto.randomUUID().replaceAll('-', '').slice(0, 10)}`
+  if (!domain.fixedId && id === '') {
+    id = await genUniqueId(c.env, domain, body)
   }
   if (!domain.fixedId && !SLUG_RE.test(id)) {
     return c.json({ error: 'invalid_id', message: 'id 需为小写字母/数字/连字符的 slug。' }, 400)

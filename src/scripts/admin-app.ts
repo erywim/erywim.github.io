@@ -741,16 +741,7 @@ function renderEditor(d: DomainUI, item: Item | null, conflict: boolean, conflic
 
   const form = el('form', { class: 'adm-form', id: 'admForm' }) as HTMLFormElement
 
-  // id / 冲突横幅（仅 collection 域手填 id=文件名；json 域 id 由 worker 自动生成，不进仓库）
-  if (isCreate && d.fileKind === 'collection') {
-    form.append(
-      fieldWrap(
-        'id',
-        '标识 slug（小写字母/数字/连字符，即文件名）',
-        el('input', { type: 'text', name: '__id', value: '', required: true, pattern: '[a-z0-9][a-z0-9-]{1,80}' })
-      )
-    )
-  }
+  // 冲突横幅（新建不填 id：worker 按域自动生成——英文题名 slug / 日期兜底，见 worker genUniqueId）
   if (conflict) {
     const banner = el(
       'div',
@@ -1084,9 +1075,6 @@ async function saveItem(d: DomainUI, existing: Item | null): Promise<void> {
   const form = $('admForm') as HTMLFormElement
   const body: Record<string, unknown> = {}
 
-  const idInput = form.querySelector<HTMLInputElement>('input[name="__id"]')
-  if (idInput) body.id = idInput.value.trim()
-
   for (const f of d.fields) {
     const wrap = form.querySelector(`[data-field="${f.key}"]`)
     if (!wrap) continue
@@ -1183,7 +1171,6 @@ async function saveItem(d: DomainUI, existing: Item | null): Promise<void> {
       await api(`/admin/content/${d.key}/${existing.id}`, { method: 'PUT', body: JSON.stringify(body) })
       log(`已保存：${String(existing[d.titleKey] ?? existing.id)}`, 'ok')
     } else {
-      if (d.key === 'hero') delete body.id
       const created = await api(`/admin/content/${d.key}`, { method: 'POST', body: JSON.stringify(body) })
       log(`已创建：${String(created[d.titleKey] ?? created.id)}`, 'ok')
       S.editing = { domain: d.key, id: String(created.id), conflict: false }
