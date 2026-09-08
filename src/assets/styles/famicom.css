@@ -5209,7 +5209,13 @@ footer a:hover {
   margin-right: auto;
 }
 .adm-form {
+  /* 表单整体放开，由字段级 max-width 控宽：正文（bodyMd）横向铺满 */
+}
+.adm-form .adm-field {
   max-width: 720px;
+}
+.adm-form .adm-field[data-field='bodyMd'] {
+  max-width: none;
 }
 .adm-form-actions {
   display: flex;
