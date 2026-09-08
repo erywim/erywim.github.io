@@ -873,7 +873,7 @@ const favicon =
   //    放在脚本最前：后面的主题/动画等逻辑万一抛错也不影响计数；发送本身推迟到空闲时机 ——
   ;(() => {
     try {
-      const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || siteApiBase).trim()
+      const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || siteApiBase.apiBaseUrl).trim()
       if (!apiBase || location.pathname.startsWith('/eeeeerywim')) return
       const body = JSON.stringify({ path: location.pathname.slice(0, 200) })
       const send = () => {
