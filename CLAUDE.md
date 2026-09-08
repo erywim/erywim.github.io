@@ -64,6 +64,7 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 
 ## 注意事项
 
+- **改代码前必须先拉取远程**（`git pull --rebase`）：后台系统可随时经 GitHub API 向 master 推送内容提交，本地不拉就动手极易冲突/覆盖。每次会话开始改代码、以及每次提交推送前，都先拉一次。
 - 站点已配置 `locale: zh-CN`。
 - 友链不再用 `public/links.json`（数据在 `src/data/friends.json`）。hero/friends/timeline/home 四个数据文件已由 .ts 迁为 .json（可被后台发布器生成）。
 - 文章评论系统未集成（astro-pure 的 waline 集成保持关闭）；`/guestbook` 留言板用 giscus（后端=本仓库 GitHub Discussions，零部署零密钥），配置在 `site.giscus`，`repoId`/`categoryId` 未填时显示「尚未开放」占位。
