@@ -5556,6 +5556,34 @@ footer a:hover {
 .adm-va-more {
   margin-top: 8px;
 }
+
+/* Markdown 正文：加大编辑框 + 编辑⇄预览（预览复用 .scroll.read-body 文章排版，见 2000 行段） */
+.adm-md {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-md-bar {
+  display: flex;
+  gap: 6px;
+}
+.adm-md-btn {
+  font-size: 12px;
+  padding: 4px 14px;
+}
+.adm-md-btn.active {
+  background: var(--fg);
+  color: var(--panel);
+}
+.adm-md textarea {
+  min-height: 520px;
+  line-height: 1.8;
+}
+.adm-md-preview {
+  max-height: 640px;
+  overflow-y: auto;
+  box-shadow: 4px 4px 0 var(--black);
+}
 @media (max-width: 900px) {
   .adm-va-cols {
     grid-template-columns: 1fr;

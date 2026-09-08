@@ -4,6 +4,12 @@
  * 服务端为唯一校验权威，本文件只驱动 UI 并回显字段级错误。
  */
 
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+
+// 与构建期 remark-gfm 对齐：表格/删除线/任务列表开，硬换行关
+marked.setOptions({ gfm: true, breaks: false })
+
 /* —— 域 UI 配置（由页面注入，见 eeeeerywim.astro） —— */
 interface FieldUI {
   key: string
@@ -808,6 +814,33 @@ function renderEditor(d: DomainUI, item: Item | null, conflict: boolean, conflic
   editor.append(form)
 }
 
+/** bodyMd 字段：编辑 ⇄ 预览切换。预览容器复用 .scroll.read-body（与线上文章页同一套排版，所见即所得）；
+ *  marked 渲染 + DOMPurify 过滤（仓库同步回来的内容也过一道，防预览即执行） */
+function mdEditorBox(ta: HTMLTextAreaElement): HTMLElement {
+  const taWrap = el('div', { class: 'adm-md-edit' }, ta)
+  const preview = el('div', { class: 'adm-md-preview scroll read-body' })
+  preview.hidden = true
+
+  const btnEdit = el('button', { class: 'px-refresh adm-md-btn active', type: 'button' }, '编辑')
+  const btnPreview = el('button', { class: 'px-refresh adm-md-btn', type: 'button' }, '预览')
+  const show = (previewMode: boolean) => {
+    btnEdit.classList.toggle('active', !previewMode)
+    btnPreview.classList.toggle('active', previewMode)
+    taWrap.hidden = previewMode
+    if (previewMode) {
+      preview.innerHTML = DOMPurify.sanitize(marked.parse(ta.value) as string)
+      preview.hidden = false
+    } else {
+      preview.hidden = true
+      preview.replaceChildren() // 清掉渲染 DOM，编辑器不背常驻大节点
+    }
+  }
+  btnEdit.addEventListener('click', () => show(false))
+  btnPreview.addEventListener('click', () => show(true))
+
+  return el('div', { class: 'adm-md' }, el('div', { class: 'adm-md-bar' }, btnEdit, btnPreview), taWrap, preview)
+}
+
 function fieldWrap(key: string, label: string, control: HTMLElement, hint?: string): HTMLElement {
   const wrap = el('div', { class: 'adm-field', 'data-field': key })
   wrap.append(el('label', { class: 'k' }, label))
@@ -878,6 +911,10 @@ function fieldBlock(f: FieldUI, value: unknown, item: Item | null): HTMLElement 
       ta.value = text
       if (f.rows) ta.rows = f.rows
       if (f.maxLength) ta.maxLength = f.maxLength
+      // md 正文：加大编辑框 + 编辑/预览切换
+      if (f.input === 'textarea' && f.key === 'bodyMd') {
+        return fieldWrap(f.key, label, mdEditorBox(ta))
+      }
       return fieldWrap(f.key, label, ta, f.input === 'json' ? 'JSON 格式，保存时会校验' : undefined)
     }
     case 'tags': {
