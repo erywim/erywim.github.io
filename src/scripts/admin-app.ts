@@ -276,13 +276,11 @@ async function selectDomain(key: string): Promise<void> {
       el(
         'div',
         { class: 'adm-row-actions' },
-        !item.repoSha
-          ? null
-          : el(
-              'button',
-              { class: 'px-refresh', type: 'button', onclick: () => void publishOne(key, String(item.id)) },
-              '发布'
-            ),
+        el(
+          'button',
+          { class: 'px-refresh', type: 'button', onclick: () => void publishOne(key, String(item.id)) },
+          '发布'
+        ),
         item.deleted
           ? el(
               'button',
@@ -753,9 +751,16 @@ function renderEditor(d: DomainUI, item: Item | null, conflict: boolean, conflic
           type: 'button',
           onclick: async () => {
             try {
-              await api(`/admin/publish/sync-item/${d.key}/${String(item!.id)}`, { method: 'POST' })
-              log('已拉取仓库版本覆盖本地。', 'ok')
-              await openEditor(d.key, String(item!.id))
+              const r = await api(`/admin/publish/sync-item/${d.key}/${String(item!.id)}`, { method: 'POST' })
+              if (r?.removed) {
+                // 仓库文件已被删除：本地行随之移除，回列表
+                log('仓库中该文件已删除，本地条目已随之移除（找回走 git 历史或重新新建）。', 'ok')
+                await refreshSummary()
+                await selectDomain(d.key)
+              } else {
+                log('已拉取仓库版本覆盖本地。', 'ok')
+                await openEditor(d.key, String(item!.id))
+              }
             } catch (e) {
               log(`拉取失败：${e instanceof Error ? e.message : e}`, 'err')
             }
@@ -1265,8 +1270,15 @@ async function syncAllAction(): Promise<void> {
   btn.textContent = '同步中…'
   try {
     const { report } = await api('/admin/publish/sync', { method: 'POST' })
-    const parts = Object.entries(report).map(([k, v]) => `${k}:${(v as { imported: number }).imported}`)
-    log(`同步完成（仓库 → 工作区）。导入：${parts.join(' · ')}`, 'ok')
+    const parts = Object.entries(report).map(([k, v]) => {
+      const r = v as { imported: number; vanished?: number; skipped?: number | boolean }
+      const seg = [`${r.imported} 导入`]
+      if (r.vanished) seg.push(`${r.vanished} 移除`)
+      if (typeof r.skipped === 'number' && r.skipped > 0) seg.push(`${r.skipped} 跳过(未发布修改)`)
+      else if (r.skipped === true) seg.push('跳过(域内有未发布修改)')
+      return `${k}：${seg.join('，')}`
+    })
+    log(`同步完成（仓库 → 工作区）。${parts.join(' · ')}`, 'ok')
     await refreshSummary()
     await selectDomain(S.current)
   } catch (e) {

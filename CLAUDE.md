@@ -69,4 +69,4 @@ bun run clean              # 清缓存：rm -rf .astro .vercel dist
 - 友链不再用 `public/links.json`（数据在 `src/data/friends.json`）。hero/friends/timeline/home 四个数据文件已由 .ts 迁为 .json（可被后台发布器生成）。
 - 文章评论系统未集成（astro-pure 的 waline 集成保持关闭）；`/guestbook` 留言板用 giscus（后端=本仓库 GitHub Discussions，零部署零密钥），配置在 `site.giscus`，`repoId`/`categoryId` 未填时显示「尚未开放」占位。
 - 新增文章/周报后 `bun run dev` 自动刷新；统计数值会自动更新。
-- **内容双态模型**：D1 是草稿区（`worker/` 的 `/admin/*` API），Git 仓库是发布区；后台「发布」经 GitHub Contents API 提交文件触发既有 Actions 构建，「从仓库同步」反向对账。手改 md 后在后台发布会得到 409 冲突提示（sha 乐观锁），界面二选一处理。首页天空 3 秒内连点 10 次可传送进后台。
+- **内容双态模型**：D1 是草稿区（`worker/` 的 `/admin/*` API），Git 仓库是发布区；后台「发布」经 GitHub Contents API 提交文件触发既有 Actions 构建，「从仓库同步」反向对账（强制覆盖工作区）。push 部署完成后 Actions 回调 `worker` 的 `POST /hooks/sync` 做**安全同步**（跳过 dirty 行，仓库外的删除/修改几十秒内自动对齐进 D1；需 secret `CI_SYNC_TOKEN` 两边同值）。手改 md 后在后台发布会得到 409 冲突提示（sha 乐观锁），界面二选一处理（仓库文件已删时「拉取覆盖」= 移除本地行，「强制发布」= 重建文件）。首页天空 3 秒内连点 10 次可传送进后台。

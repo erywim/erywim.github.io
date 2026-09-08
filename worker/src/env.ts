@@ -5,6 +5,8 @@ export interface Env {
   ALLOWED_ORIGINS?: string
   /** GitHub fine-grained PAT（仅本仓库 Contents 读写），写入仓库必需；读取可匿名 */
   GH_TOKEN?: string
+  /** CI 回调令牌（/hooks/sync）：与仓库 Actions secret CI_SYNC_TOKEN 同值；未配置时端点关闭 */
+  CI_SYNC_TOKEN?: string
 }
 
 /** /admin 路由的上下文变量（requireAuth 注入） */

@@ -39,7 +39,16 @@ bun run deploy
 3. `cd worker && bunx wrangler secret put GH_TOKEN`（粘贴 token；本地开发则写入 `worker/.dev.vars`，已被 gitignore）
 4. 泄漏处置：GitHub 侧吊销 → 重新生成 → 重新 `secret put`；`bunx wrangler rollback` 可回退 Worker
 
-发布采用 sha 乐观锁：仓库文件被后台之外修改时发布返回 409，后台界面提示「拉取仓库覆盖 / 强制发布覆盖」二选一，绝不静默合并。
+发布采用 sha 乐观锁：仓库文件被后台之外修改时发布返回 409，后台界面提示「拉取仓库覆盖 / 强制发布覆盖」二选一，绝不静默合并。仓库文件已被删除时，「拉取仓库覆盖本地」会移除本地工作区行（与仓库一致），不再报错。
+
+## CI 自动同步（CI_SYNC_TOKEN）
+
+D1 工作区是草稿区、仓库是发布区；在后台之外（IDE、GitHub 网页）直接改仓库后 D1 不会自动感知。部署工作流（`.github/workflows/deploy.yml`）在每次 push 部署完成后回调 `POST /hooks/sync`，按**安全模式**把仓库现状对齐进 D1：只更新已同步行、移除仓库中已删除的行；有未发布修改（dirty）的条目/整域一律跳过，绝不覆盖后台草稿（这类行打开编辑器时仍会走冲突横幅人工二选一）。
+
+1. 生成随机令牌：`openssl rand -hex 24`
+2. `cd worker && bunx wrangler secret put CI_SYNC_TOKEN`（本地联调写 `worker/.dev.vars`）
+3. 仓库 Settings → Secrets and variables → Actions → New repository secret：同名 `CI_SYNC_TOKEN`，同值
+4. 两边任一处未配置时端点返回 404（关闭），工作流中该步骤自动跳过；同步结果记入审计 `ci-sync`
 
 ## 验证（探针接口）
 

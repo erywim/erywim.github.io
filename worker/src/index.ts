@@ -4,6 +4,7 @@
  * 路由分层：
  *   /health, /api/hello   公开探针（只读）
  *   /visit                公开埋点（页面 PV 记录，POST）
+ *   /hooks/*              CI 回调（令牌鉴权：部署后安全同步 D1）
  *   /admin/*              后台 API（权限系统 + 内容管理，随 openspec change 逐步上线）
  */
 import { Hono } from 'hono'
@@ -11,6 +12,7 @@ import { Hono } from 'hono'
 import type { Env } from './env'
 import { cors } from './middleware/cors'
 import { admin } from './routes/admin'
+import { hooks } from './routes/hooks'
 import { probe } from './routes/probe'
 import { visit } from './routes/visit'
 
@@ -23,6 +25,7 @@ app.use('*', async (c, next) => {
 })
 app.route('/', probe)
 app.route('/visit', visit)
+app.route('/hooks', hooks)
 app.route('/admin', admin)
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404))

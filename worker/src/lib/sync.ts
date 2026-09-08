@@ -1,7 +1,7 @@
 /**
  * 同步引擎（Git → D1，任务 6.2）：仓库现状导入/覆盖工作区。
  * 解析 md frontmatter / json 数据文件 → upsert 内容表（清 dirty、写 repo_sha）。
- * 仓库里已消失的集合条目 → 标记 deleted=1（与仓库一致）。
+ * 仓库里已消失的集合条目 → 直接移除该行（与仓库一致）。
  */
 
 import type { Env } from '../env'
@@ -9,6 +9,7 @@ import { DOMAINS, DOMAIN_KEYS, type DomainDef } from './domains'
 import { parseMarkdown, type ParsedFile } from './frontmatter'
 import { getFile, listDir } from './github'
 import { sha256Hex } from './db'
+import { PublishError } from './publish'
 
 /** frontmatter key → D1 列 */
 function fmToRow(domain: DomainDef, data: Record<string, unknown>): Record<string, string | number | null> {
@@ -49,6 +50,7 @@ export function fmRowWithBody(domain: DomainDef, parsed: ParsedFile): Record<str
   return row
 }
 
+/** skipDirty（CI 安全模式）：已存在且 dirty=1 的行不覆盖，保留给后台人工处理冲突 */
 async function upsertRow(
   env: Env,
   domain: DomainDef,
@@ -56,8 +58,9 @@ async function upsertRow(
   row: Record<string, string | number | null>,
   repoPath: string,
   repoSha: string,
-  fmHeader: string | null
-): Promise<void> {
+  fmHeader: string | null,
+  opts: { skipDirty?: boolean } = {}
+): Promise<number> {
   const cols = ['id', ...Object.keys(row), 'repo_path', 'repo_sha', 'dirty', 'deleted', 'fm_header', 'updated_at']
   const binds: (string | number | null)[] = [
     id,
@@ -73,18 +76,26 @@ async function upsertRow(
   const updates = [...Object.keys(row), 'repo_path', 'repo_sha', 'dirty', 'deleted', 'fm_header', 'updated_at']
     .map((c) => `${c} = excluded.${c}`)
     .join(', ')
-  await env.DB.prepare(
+  // upsert WHERE 门：dirty 行保持原样（repo_sha 停留在旧基线 → 后台冲突横幅可见）
+  const guard = opts.skipDirty ? ` WHERE ${domain.table}.dirty = 0` : ''
+  const r = await env.DB.prepare(
     `INSERT INTO ${domain.table} (${cols.join(', ')}) VALUES (${placeholders})
-     ON CONFLICT(id) DO UPDATE SET ${updates}`
+     ON CONFLICT(id) DO UPDATE SET ${updates}${guard}`
   )
     .bind(...binds)
     .run()
+  return r.meta.changes ?? 1
 }
 
-async function syncCollection(env: Env, domain: DomainDef): Promise<{ imported: number; vanished: number }> {
+async function syncCollection(
+  env: Env,
+  domain: DomainDef,
+  opts: { skipDirty?: boolean } = {}
+): Promise<{ imported: number; skipped: number; vanished: number }> {
   const entries = await listDir(env, domain.repoDir)
   const seen = new Set<string>()
   let imported = 0
+  let skipped = 0
 
   for (const entry of entries) {
     let path: string
@@ -102,25 +113,29 @@ async function syncCollection(env: Env, domain: DomainDef): Promise<{ imported: 
     if (!file) continue
     const parsed = parseMarkdown(file.content)
     if (!parsed) continue
-    await upsertRow(env, domain, id, fmRowWithBody(domain, parsed), path, file.sha, parsed.headerText)
+    const changes = await upsertRow(env, domain, id, fmRowWithBody(domain, parsed), path, file.sha, parsed.headerText, opts)
+    if (changes > 0) imported += 1
+    else skipped += 1
     seen.add(id)
-    imported += 1
   }
 
-  // 仓库中已消失：与仓库保持一致 → 标记 deleted（不动从未发布的草稿行）
+  // 仓库中已消失：与仓库保持一致 → 移除该行（不标记 deleted——那会计入待发布数，
+  // 且「全部发布」会去删仓库里已不存在的文件而 409/404 中断）。
+  // 从未发布的草稿行 repo_sha 为空天然不受影响；安全模式保留 dirty 行待人工处理。
   const rows = await env.DB.prepare(`SELECT id FROM ${domain.table}`).all<{ id: string }>()
   let vanished = 0
   for (const r of rows.results ?? []) {
     if (!seen.has(r.id)) {
-      await env.DB.prepare(
-        `UPDATE ${domain.table} SET deleted = 1, dirty = 0 WHERE id = ? AND repo_sha IS NOT NULL`
+      const guard = opts.skipDirty ? ' AND dirty = 0' : ''
+      const res = await env.DB.prepare(
+        `DELETE FROM ${domain.table} WHERE id = ? AND repo_sha IS NOT NULL${guard}`
       )
         .bind(r.id)
         .run()
-      vanished += 1
+      vanished += res.meta.changes ?? 0
     }
   }
-  return { imported, vanished }
+  return { imported, skipped, vanished }
 }
 
 /** json 域：数组对象的公开键 → 列 */
@@ -136,8 +151,19 @@ function jsonObjToRow(domain: DomainDef, obj: Record<string, unknown>): Record<s
   return row
 }
 
-async function syncJsonArray(env: Env, domain: DomainDef): Promise<{ imported: number }> {
+async function syncJsonArray(
+  env: Env,
+  domain: DomainDef,
+  opts: { skipDirty?: boolean } = {}
+): Promise<{ imported: number; skipped?: boolean }> {
   const path = domain.repoPath('')
+  // json 域同步 = 整文件重灌，粒度做不到按行保留 → 安全模式下域内有任何未发布改动就整域跳过
+  if (opts.skipDirty) {
+    const pend = await env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM ${domain.table} WHERE dirty = 1 OR deleted = 1`
+    ).first<{ n: number }>()
+    if ((pend?.n ?? 0) > 0) return { imported: 0, skipped: true }
+  }
   const file = await getFile(env, path)
   if (!file) return { imported: 0 }
   const arr = JSON.parse(file.content) as Record<string, unknown>[]
@@ -154,8 +180,18 @@ async function syncJsonArray(env: Env, domain: DomainDef): Promise<{ imported: n
   return { imported: arr.length }
 }
 
-async function syncHero(env: Env, domain: DomainDef): Promise<{ imported: number }> {
+async function syncHero(
+  env: Env,
+  domain: DomainDef,
+  opts: { skipDirty?: boolean } = {}
+): Promise<{ imported: number; skipped?: boolean }> {
   const path = domain.repoPath('')
+  if (opts.skipDirty) {
+    const pend = await env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM ${domain.table} WHERE dirty = 1 OR deleted = 1`
+    ).first<{ n: number }>()
+    if ((pend?.n ?? 0) > 0) return { imported: 0, skipped: true }
+  }
   const file = await getFile(env, path)
   if (!file) return { imported: 0 }
   const obj = JSON.parse(file.content) as Record<string, unknown>
@@ -163,20 +199,33 @@ async function syncHero(env: Env, domain: DomainDef): Promise<{ imported: number
   return { imported: 1 }
 }
 
-export interface SyncReport {
-  [domain: string]: { imported: number; vanished?: number }
+export interface SyncDomainReport {
+  imported: number
+  /** 仓库中已消失、从工作区移除的条数 */
+  vanished?: number
+  /** 安全模式下被跳过：collection 为条数，json 域为 true（整域） */
+  skipped?: number | boolean
 }
 
-export async function syncAll(env: Env): Promise<SyncReport> {
+export interface SyncReport {
+  [domain: string]: SyncDomainReport
+}
+
+/**
+ * 全量同步（Git → D1）。
+ * 手动「从仓库同步」：强制覆盖工作区（含 dirty 行，用户明确意图）。
+ * CI 回调（/hooks/sync）：skipDirty 安全模式，只对齐已同步行、清理仓库已删行，不动后台草稿。
+ */
+export async function syncAll(env: Env, opts: { skipDirty?: boolean } = {}): Promise<SyncReport> {
   const report: SyncReport = {}
   for (const key of DOMAIN_KEYS) {
     const domain = DOMAINS[key]
     if (domain.fileKind === 'collection') {
-      report[key] = await syncCollection(env, domain)
+      report[key] = await syncCollection(env, domain, opts)
     } else if (domain.fileKind === 'json-array') {
-      report[key] = await syncJsonArray(env, domain)
+      report[key] = await syncJsonArray(env, domain, opts)
     } else {
-      report[key] = await syncHero(env, domain)
+      report[key] = await syncHero(env, domain, opts)
     }
   }
   return report
@@ -185,26 +234,35 @@ export async function syncAll(env: Env): Promise<SyncReport> {
 /**
  * 单条拉取（冲突处理「以仓库覆盖本地」）：
  * 集合域 → 重读该文件 upsert 单行；json 域 → 重新同步整文件（丢弃该域本地修改）。
+ * 仓库文件已不存在时 → removed: true（本地行随之移除，与仓库一致），不再抛错。
  */
-export async function syncSingle(env: Env, domainKey: string, id: string): Promise<void> {
+export async function syncSingle(env: Env, domainKey: string, id: string): Promise<{ removed: boolean }> {
   const domain = DOMAINS[domainKey]
-  if (!domain) throw new Error('未知内容域')
+  if (!domain) throw new PublishError('未知内容域', 'other')
   const primary = (env.DB as unknown as { withSession: (c: string) => D1Database }).withSession('first-primary')
   if (domain.fileKind === 'collection') {
     const row = await primary.prepare(`SELECT repo_path FROM ${domain.table} WHERE id = ?`)
       .bind(id)
       .first<{ repo_path: string }>()
-    if (!row) throw new Error('条目不存在')
+    if (!row) throw new PublishError('条目不存在', 'not_found')
     const file = await getFile(env, row.repo_path)
-    if (!file) throw new Error('仓库中已不存在该文件')
+    if (!file) {
+      // 仓库已删该文件：「以仓库覆盖本地」= 移除本地行（想找回走 git 历史或「强制发布覆盖仓库」重建）
+      await primary
+        .prepare(`DELETE FROM ${domain.table} WHERE id = ? AND repo_sha IS NOT NULL`)
+        .bind(id)
+        .run()
+      return { removed: true }
+    }
     const parsed = parseMarkdown(file.content)
-    if (!parsed) throw new Error('文件解析失败')
+    if (!parsed) throw new PublishError('文件解析失败', 'other')
     await upsertRow(env, domain, id, fmRowWithBody(domain, parsed), row.repo_path, file.sha, parsed.headerText)
-    return
+    return { removed: false }
   }
   if (domain.fileKind === 'json-array') {
     await syncJsonArray(env, domain)
-    return
+    return { removed: false }
   }
   await syncHero(env, domain)
+  return { removed: false }
 }

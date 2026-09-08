@@ -49,14 +49,14 @@ publishRoutes.post('/sync', async (c) => {
   }
 })
 
-/** 单条拉取（冲突处理：以仓库覆盖本地） */
+/** 单条拉取（冲突处理：以仓库覆盖本地；removed=仓库已删该文件、本地行随之移除） */
 publishRoutes.post('/sync-item/:domain/:id', async (c) => {
   const domain = getDomain(c.req.param('domain'))
   if (!domain) return c.json({ error: 'unknown_domain' }, 404)
   try {
-    await syncSingle(c.env, domain.key, c.req.param('id'))
+    const result = await syncSingle(c.env, domain.key, c.req.param('id'))
     await writeAudit(c.env, c.get('adminSession').userId, 'sync-item', `${domain.key}/${c.req.param('id')}`)
-    return c.json({ ok: true })
+    return c.json({ ok: true, ...result })
   } catch (err) {
     const { status, body } = errorStatus(err)
     return c.json(body, status as 400 | 404 | 409 | 500 | 503)

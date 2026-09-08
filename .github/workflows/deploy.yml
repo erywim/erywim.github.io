@@ -18,6 +18,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # 供下方同步步骤的 if 判断使用（steps.if 读不到自身 env，须先挂到 job 级）
+      CI_SYNC_TOKEN: ${{ secrets.CI_SYNC_TOKEN }}
+      SYNC_API_BASE: ${{ vars.PUBLIC_API_BASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,3 +48,11 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # 部署后把仓库现状安全同步进后台 D1（跳过未发布修改；仓库外的删除/修改由此自动对齐）。
+      # 需在仓库配置 secret CI_SYNC_TOKEN，与 `wrangler secret put CI_SYNC_TOKEN` 同值；缺省时此步自动跳过。
+      - name: Sync D1 workspace from repo
+        if: ${{ env.CI_SYNC_TOKEN != '' && env.SYNC_API_BASE != '' }}
+        run: |
+          curl -fsS --max-time 180 -X POST "$SYNC_API_BASE/hooks/sync" \
+            -H "Authorization: Bearer $CI_SYNC_TOKEN"
