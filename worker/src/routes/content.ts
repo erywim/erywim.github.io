@@ -106,8 +106,11 @@ content.post('/:domain', async (c) => {
     return c.json({ error: 'invalid_json' }, 400)
   }
 
-  // id：hero 固定；其余校验 slug；已存在则 409
-  const id = domain.fixedId ?? String(body.id ?? '')
+  // id：hero 固定；json 域（整文件发布，id 不进仓库）未提供时自动生成；collection 域（id=文件名）校验 slug
+  let id = domain.fixedId ?? String(body.id ?? '').trim()
+  if (!domain.fixedId && id === '' && domain.fileKind !== 'collection') {
+    id = `row-${crypto.randomUUID().replaceAll('-', '').slice(0, 10)}`
+  }
   if (!domain.fixedId && !SLUG_RE.test(id)) {
     return c.json({ error: 'invalid_id', message: 'id 需为小写字母/数字/连字符的 slug。' }, 400)
   }

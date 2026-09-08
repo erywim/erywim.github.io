@@ -741,8 +741,8 @@ function renderEditor(d: DomainUI, item: Item | null, conflict: boolean, conflic
 
   const form = el('form', { class: 'adm-form', id: 'admForm' }) as HTMLFormElement
 
-  // id / 冲突横幅
-  if (isCreate && d.key !== 'hero') {
+  // id / 冲突横幅（仅 collection 域手填 id=文件名；json 域 id 由 worker 自动生成，不进仓库）
+  if (isCreate && d.fileKind === 'collection') {
     form.append(
       fieldWrap(
         'id',
@@ -1185,7 +1185,7 @@ async function saveItem(d: DomainUI, existing: Item | null): Promise<void> {
     } else {
       if (d.key === 'hero') delete body.id
       const created = await api(`/admin/content/${d.key}`, { method: 'POST', body: JSON.stringify(body) })
-      log(`已创建：${String(created.id)}`, 'ok')
+      log(`已创建：${String(created[d.titleKey] ?? created.id)}`, 'ok')
       S.editing = { domain: d.key, id: String(created.id), conflict: false }
     }
     await refreshSummary()
