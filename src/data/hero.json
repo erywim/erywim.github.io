@@ -2,8 +2,8 @@
   "name": "erywim",
   "class": "勇者 · 全栈 Agent 开发工程师",
   "bio": "喜欢动漫；喜欢摄影；喜欢交朋友；喜欢技术探讨互相学习；喜欢写点代码，把天马行空想象的内容做出来是一件非常有意思的事情；还喜欢你来看我的博客～",
-  "location": "中国/北京",
-  "status": "跳槽中",
+  "location": "中国/上海",
+  "status": "正在努力成为后浪～",
   "stats": {
     "hp": {
       "value": 92,
@@ -62,9 +62,7 @@
         "MySQL",
         "PostgreSQL",
         "Redis",
-        "Dubbo",
         "Nacos",
-        "OpenFeign",
         "Kafka",
         "RabbitMQ",
         "高并发治理"
@@ -75,13 +73,20 @@
       "chips": [
         "Java",
         "Python",
+        "Golang",
         "TypeScript",
-        "Spring",
-        "MyBatis",
+        "Spring / SpringBoot",
         "Netty",
+        "MyBatis",
+        "Dubbo",
+        "OpenFeign",
         "FastAPI",
         "SqlModel",
-        "Vue"
+        "Kitex",
+        "Hertz",
+        "Vue",
+        "React",
+        "NextJS"
       ]
     },
     {
@@ -97,7 +102,12 @@
   ],
   "timeline": [
     {
-      "date": "2025.09 - NOW",
+      "date": "2026.09 - NOW",
+      "title": "某 AI 基模公司 · AI 全栈（Agent 方向）",
+      "desc": "第三章：勇者转职大魔导师ing"
+    },
+    {
+      "date": "2025.09 - 2026.08",
       "title": "某 AI 科技公司 · AI 全栈（Agent 方向）",
       "desc": "第二章：勇者习得魔法（志愿填报Agent、LLM网关）"
     },
