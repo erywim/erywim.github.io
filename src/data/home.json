@@ -5,7 +5,12 @@
     "desc": "快速落地想法的感觉真不戳～",
     "period": "2025 - NOW",
     "avatar": "mage",
-    "chips": ["Agent", "LLM", "RAG", "全栈"]
+    "chips": [
+      "Agent",
+      "LLM",
+      "RAG",
+      "全栈"
+    ]
   },
   {
     "title": "Javaer",
@@ -13,6 +18,12 @@
     "desc": "重铸java荣光，吾辈义不容辞",
     "period": "2019 - 2025",
     "avatar": "warrior",
-    "chips": ["Java", "Spring", "Netty", "项目管理"]
+    "chips": [
+      "Java",
+      "Spring",
+      "Golang",
+      "Python",
+      "项目管理"
+    ]
   }
 ]
